@@ -90,30 +90,27 @@
         </div>
     </div>
 
-    <!-- Обновим модальное окно -->
+    <!-- Вернем старую версию модального окна -->
     <div id="dateRangeModal" class="modal">
         <div class="modal-content">
             <h3>Выберите период</h3>
             <div class="period-options">
-                <label class="md-radio">
+                <label class="radio-button">
                     <input type="radio" name="period" value="week" checked>
-                    <span class="radio-circle"></span>
                     <span class="radio-label">За неделю</span>
                 </label>
-                <label class="md-radio">
+                <label class="radio-button">
                     <input type="radio" name="period" value="month">
-                    <span class="radio-circle"></span>
                     <span class="radio-label">За месяц</span>
                 </label>
-                <label class="md-radio">
+                <label class="radio-button">
                     <input type="radio" name="period" value="custom">
-                    <span class="radio-circle"></span>
                     <span class="radio-label">За период</span>
                 </label>
             </div>
             <div class="modal-buttons">
-                <button id="cancelDateRange" class="btn-text">Отмена</button>
-                <button id="applyDateRange" class="btn-filled">Применить</button>
+                <button id="cancelDateRange" class="btn-cancel">Отмена</button>
+                <button id="applyDateRange" class="btn-apply">Применить</button>
             </div>
         </div>
     </div>
