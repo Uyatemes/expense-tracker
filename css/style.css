@@ -5,6 +5,13 @@
 
 /* Светлая тема (по умолчанию) */
 :root {
+    --md-sys-color-surface: #FBFDF9;
+    --md-sys-color-surface-container: #FFFFFF;
+    --md-sys-color-surface-container-low: #FBFDF9;
+    --md-sys-color-surface-container-high: #E9EAE6;
+    --md-sys-color-on-surface: #191C1A;
+    --md-sys-color-on-surface-variant: #404943;
+    
     --md-sys-color-primary: #006C4A;
     --md-sys-color-on-primary: #FFFFFF;
     --md-sys-color-primary-container: #85F8C3;
@@ -16,16 +23,9 @@
     --md-sys-color-on-secondary-container: #0A1F16;
     
     --md-sys-color-error: #B47D3C;
-    --md-sys-color-on-error: #FFFFFF;
     --md-sys-color-error-container: #FFDDB9;
+    --md-sys-color-on-error: #FFFFFF;
     --md-sys-color-on-error-container: #2C1600;
-    
-    --md-sys-color-surface: #FBFDF9;
-    --md-sys-color-surface-container: #F2F3EF;
-    --md-sys-color-surface-container-low: #FBFDF9;
-    --md-sys-color-surface-container-high: #E9EAE6;
-    --md-sys-color-on-surface: #191C1A;
-    --md-sys-color-on-surface-variant: #404943;
     
     --md-sys-color-outline: #707973;
     --md-sys-color-outline-variant: #BFC9C2;
@@ -38,25 +38,27 @@
 /* Темная тема (автоматически при системной темной теме) */
 @media (prefers-color-scheme: dark) {
     :root {
-        --md-sys-color-primary: #6CDBA9;
-        --md-sys-color-on-primary: #003826;
-        --md-sys-color-primary-container: #005138;
-        --md-sys-color-on-primary-container: #89F8C7;
+        --md-sys-color-surface: #191C1A;
+        --md-sys-color-surface-container: #1E211F;
+        --md-sys-color-surface-container-low: #191C1A;
+        --md-sys-color-surface-container-high: #292B29;
+        --md-sys-color-on-surface: #E1E3DF;
+        --md-sys-color-on-surface-variant: #BFC9C2;
+        
+        --md-sys-color-primary: #67DBa7;
+        --md-sys-color-on-primary: #003824;
+        --md-sys-color-primary-container: #005236;
+        --md-sys-color-on-primary-container: #85F8C3;
         
         --md-sys-color-secondary: #B3CCBF;
         --md-sys-color-on-secondary: #1F352C;
         --md-sys-color-secondary-container: #354B41;
-        --md-sys-color-on-secondary-container: #CFE9DB;
+        --md-sys-color-on-secondary-container: #CEE9DB;
         
         --md-sys-color-error: #FFB95C;
-        --md-sys-color-on-error: #482900;
         --md-sys-color-error-container: #663D00;
+        --md-sys-color-on-error: #482900;
         --md-sys-color-on-error-container: #FFDDB9;
-        
-        --md-sys-color-surface: #191C1A;
-        --md-sys-color-on-surface: #E1E3DF;
-        --md-sys-color-surface-variant: #404943;
-        --md-sys-color-on-surface-variant: #BFC9C2;
         
         --md-sys-color-outline: #8A938C;
         --md-sys-color-outline-variant: #404943;
@@ -186,11 +188,15 @@ body {
 .transaction-amount.income {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
+    padding: 8px 16px;
+    border-radius: 16px;
 }
 
 .transaction-amount.expense {
     background-color: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error-container);
+    padding: 8px 16px;
+    border-radius: 16px;
 }
 
 /* Filters */
@@ -391,8 +397,8 @@ body {
     padding: 0.75rem 1rem;
     border: none;
     border-radius: 20px;
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
     cursor: pointer;
     transition: background-color 0.2s;
     font-size: 1rem;
