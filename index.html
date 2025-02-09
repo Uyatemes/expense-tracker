@@ -100,35 +100,30 @@
         </div>
     </div>
 
-    <!-- Добавим модальное окно для выбора периода -->
+    <!-- Обновим модальное окно -->
     <div id="dateRangeModal" class="modal">
         <div class="modal-content">
             <h3>Выберите период</h3>
             <div class="period-options">
-                <label class="radio-button">
+                <label class="md-radio">
                     <input type="radio" name="period" value="week" checked>
+                    <span class="radio-circle"></span>
                     <span class="radio-label">За неделю</span>
                 </label>
-                <label class="radio-button">
+                <label class="md-radio">
                     <input type="radio" name="period" value="month">
+                    <span class="radio-circle"></span>
                     <span class="radio-label">За месяц</span>
                 </label>
-                <label class="radio-button">
+                <label class="md-radio">
                     <input type="radio" name="period" value="custom">
+                    <span class="radio-circle"></span>
                     <span class="radio-label">За период</span>
                 </label>
             </div>
-            <div id="customDateRange" class="custom-date-range" style="display: none;">
-                <button id="customDateButton" class="date-select-button">
-                    <span id="customDateText">Выберите период</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/>
-                    </svg>
-                </button>
-            </div>
             <div class="modal-buttons">
-                <button id="cancelDateRange" class="btn-cancel">Отмена</button>
-                <button id="applyDateRange" class="btn-apply">Применить</button>
+                <button id="cancelDateRange" class="btn-text">Отмена</button>
+                <button id="applyDateRange" class="btn-filled">Применить</button>
             </div>
         </div>
     </div>
