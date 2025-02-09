@@ -312,4 +312,37 @@ body {
 .btn-delete {
     background: var(--kaspi-red);
     color: white;
+}
+
+/* Добавьте в конец файла */
+.export-btn {
+    background: var(--kaspi-green) !important;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.export-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media print {
+    .kaspi-header,
+    .kaspi-assistant,
+    .date-filter,
+    .kaspi-analytics {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
 } 

@@ -6,6 +6,7 @@
     <title>Учёт расходов</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header class="kaspi-header">
@@ -44,6 +45,12 @@
                 <input type="date" id="dateTo">
                 <button id="applyDateFilter">Показать</button>
                 <button id="resetDateFilter">Сбросить</button>
+                <button id="exportPDF" class="export-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
+                    </svg>
+                    Экспорт PDF
+                </button>
             </div>
             <div class="totals">
                 <div id="totalIncome" class="total-item income">

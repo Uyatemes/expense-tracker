@@ -30,6 +30,11 @@ class ExpenseManager {
         if (resetFilter) {
             resetFilter.onclick = this.handleResetFilter;
         }
+
+        const exportBtn = document.getElementById('exportPDF');
+        if (exportBtn) {
+            exportBtn.onclick = () => this.exportToPDF();
+        }
     }
 
     loadFromLocalStorage() {
@@ -269,6 +274,99 @@ class ExpenseManager {
         confirmBtn.onclick = handleDelete;
         cancelBtn.onclick = handleCancel;
         confirmDialog.classList.add('active');
+    }
+
+    async exportToPDF() {
+        const dateFrom = document.getElementById('dateFrom')?.value;
+        const dateTo = document.getElementById('dateTo')?.value;
+        
+        // Создаем временный контейнер для PDF
+        const container = document.createElement('div');
+        container.className = 'pdf-container';
+        
+        // Добавляем заголовок и период
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #333; margin-bottom: 10px;">Отчет по операциям</h1>
+                <p style="color: #666;">
+                    Период: ${dateFrom ? new Date(dateFrom).toLocaleDateString() : 'начало'} — 
+                    ${dateTo ? new Date(dateTo).toLocaleDateString() : 'конец'}
+                </p>
+            </div>
+        `;
+
+        // Получаем отфильтрованные транзакции
+        const transactions = this.getTransactions();
+        
+        // Добавляем итоги
+        const totals = transactions.reduce((acc, t) => {
+            if (t.type === 'income') {
+                acc.income += Math.abs(t.amount);
+            } else {
+                acc.expense += Math.abs(t.amount);
+            }
+            return acc;
+        }, { income: 0, expense: 0 });
+
+        container.innerHTML += `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <div style="text-align: center; flex: 1;">
+                    <h3 style="color: #00A76D; margin-bottom: 5px;">Доходы</h3>
+                    <p style="font-size: 1.2em;">${totals.income.toLocaleString('ru-RU')} ₸</p>
+                </div>
+                <div style="text-align: center; flex: 1;">
+                    <h3 style="color: #F14635; margin-bottom: 5px;">Расходы</h3>
+                    <p style="font-size: 1.2em;">${totals.expense.toLocaleString('ru-RU')} ₸</p>
+                </div>
+            </div>
+        `;
+
+        // Добавляем таблицу транзакций
+        container.innerHTML += `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f5f5f5;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Дата</th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Описание</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${transactions.map(t => `
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                ${new Date(t.date).toLocaleDateString()}
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                ${t.description}
+                            </td>
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right; color: ${t.type === 'income' ? '#00A76D' : '#F14635'};">
+                                ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        // Конфигурация PDF
+        const opt = {
+            margin: 1,
+            filename: 'операции.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Генерируем PDF
+        try {
+            document.body.appendChild(container);
+            await html2pdf().set(opt).from(container).save();
+            document.body.removeChild(container);
+        } catch (error) {
+            console.error('Ошибка при создании PDF:', error);
+            alert('Произошла ошибка при создании PDF');
+        }
     }
 }
 
