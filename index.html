@@ -10,93 +10,44 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="kaspi-header">
-        <div class="container">
-            <h1>Мои операции</h1>
+    <div class="container">
+        <h1>Учёт расходов</h1>
+        
+        <!-- Форма добавления -->
+        <div class="input-form">
+            <input type="number" id="amount" placeholder="Сумма" step="0.01">
+            <input type="text" id="category" placeholder="Категория">
+            <input type="date" id="date">
+            <input type="text" id="note" placeholder="Примечание">
+            <button onclick="addNewTransaction()">Добавить</button>
         </div>
-    </header>
 
-    <main class="container">
-        <!-- AI Ассистент -->
-        <section class="kaspi-assistant">
-            <div class="chat-container">
-                <div id="chat-messages" class="chat-messages">
-                    <div class="message system">
-                        Привет! Я помогу записать ваши доходы и расходы. Примеры:<br>
-                        "5000 расход каспий такси"<br>
-                        "приход 10000 халык зарплата"
-                    </div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="user-input" placeholder="Введите операцию...">
-                    <button id="send-message">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Итоги -->
-        <section class="kaspi-totals">
-            <div class="date-filter">
-                <input type="date" id="dateFrom">
-                <span>—</span>
-                <input type="date" id="dateTo">
-                <button id="applyDateFilter">Показать</button>
-                <button id="resetDateFilter">Сбросить</button>
-            </div>
-            <div class="totals">
-                <div id="totalIncome" class="total-item income">
-                    <span class="total-label">Доходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-                <div id="totalExpense" class="total-item expense">
-                    <span class="total-label">Расходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Список операций -->
-        <section class="kaspi-transactions">
-            <div class="transactions-list" id="expensesTableBody">
-                <!-- Операции будут добавляться сюда -->
-            </div>
-        </section>
+        <!-- Таблица транзакций -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Категория</th>
+                        <th>Сумма</th>
+                        <th>Примечание</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTable">
+                    <!-- Здесь будут транзакции -->
+                </tbody>
+            </table>
+        </div>
 
         <!-- Графики -->
-        <section class="kaspi-analytics">
-            <div class="charts">
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-        </section>
+        <div class="charts">
+            <canvas id="categoryChart"></canvas>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
 
-        <button onclick="exportData()">Скачать данные</button>
-        <input type="file" onchange="importData(this.files[0])" style="display: none" id="importFile">
-        <button onclick="document.getElementById('importFile').click()">Загрузить данные</button>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Дата</th>
-                    <th>Категория</th>
-                    <th>Сумма</th>
-                    <th>Примечание</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody id="transactionsTable"></tbody>
-        </table>
-    </main>
-
-    <!-- Подключение скриптов в конце body -->
+    <!-- Скрипты -->
     <script src="js/main.js"></script>
     <script src="js/chart.js"></script>
 

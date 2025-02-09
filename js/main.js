@@ -89,12 +89,14 @@ function renderTransactionsTable() {
 }
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    const tableBody = document.getElementById('transactionsTable');
-    if (tableBody) { // Проверяем существование элемента
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
+    console.log('Table element:', document.getElementById('transactionsTable')); // Для отладки
+    
+    setTimeout(() => {
         renderTransactionsTable();
-    }
-    if(typeof updateCharts === 'function') {
-        updateCharts();
-    }
+        if(typeof updateCharts === 'function') {
+            updateCharts();
+        }
+    }, 100);
 }); 
