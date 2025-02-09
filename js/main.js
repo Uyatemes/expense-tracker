@@ -208,33 +208,49 @@ window.updateTotals = function(transactions) {
     // ... остальной код функции ...
 };
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    const expenseManager = window.expenseManager;
-    
-    // Сначала рендерим транзакции
-    expenseManager.renderTransactions();
+// Функция инициализации фильтров
+function initializeFilters() {
+    const dateFrom = document.querySelector('#dateFrom');
+    const dateTo = document.querySelector('#dateTo');
+    const applyFilter = document.querySelector('#applyDateFilter');
+    const resetFilter = document.querySelector('#resetDateFilter');
 
-    // Находим все необходимые элементы
-    const elements = {
-        dateFrom: document.getElementById('dateFrom'),
-        dateTo: document.getElementById('dateTo'),
-        applyFilter: document.getElementById('applyDateFilter'),
-        resetFilter: document.getElementById('resetDateFilter')
-    };
-
-    // Проверяем наличие всех необходимых элементов перед добавлением обработчиков
-    if (elements.applyFilter && elements.dateFrom && elements.dateTo) {
-        elements.applyFilter.addEventListener('click', () => {
-            expenseManager.setDateFilter(elements.dateFrom.value, elements.dateTo.value);
-        });
+    // Проверяем наличие всех элементов
+    if (!dateFrom || !dateTo || !applyFilter || !resetFilter) {
+        console.log('Элементы фильтров не найдены');
+        return;
     }
 
-    if (elements.resetFilter && elements.dateFrom && elements.dateTo) {
-        elements.resetFilter.addEventListener('click', () => {
-            elements.dateFrom.value = '';
-            elements.dateTo.value = '';
-            expenseManager.resetDateFilter();
-        });
+    // Добавляем обработчики
+    applyFilter.addEventListener('click', () => {
+        window.expenseManager.setDateFilter(dateFrom.value, dateTo.value);
+    });
+
+    resetFilter.addEventListener('click', () => {
+        dateFrom.value = '';
+        dateTo.value = '';
+        window.expenseManager.resetDateFilter();
+    });
+}
+
+// Функция инициализации приложения
+function initializeApp() {
+    try {
+        // Рендерим транзакции
+        window.expenseManager.renderTransactions();
+        
+        // Инициализируем фильтры
+        initializeFilters();
+        
+        console.log('Приложение успешно инициализировано');
+    } catch (error) {
+        console.error('Ошибка при инициализации приложения:', error);
     }
-}); 
+}
+
+// Ждем полной загрузки DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+} 
