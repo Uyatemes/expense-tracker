@@ -210,24 +210,30 @@ window.updateTotals = function(transactions) {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    renderExpensesTable();
+    const expenseManager = window.expenseManager;
+    
+    // Сначала рендерим транзакции
+    expenseManager.renderTransactions();
 
-    // Инициализация обработчиков фильтров
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
-    const applyFilter = document.getElementById('applyDateFilter');
-    const resetFilter = document.getElementById('resetDateFilter');
+    // Находим все необходимые элементы
+    const elements = {
+        dateFrom: document.getElementById('dateFrom'),
+        dateTo: document.getElementById('dateTo'),
+        applyFilter: document.getElementById('applyDateFilter'),
+        resetFilter: document.getElementById('resetDateFilter')
+    };
 
-    if (applyFilter && dateFrom && dateTo) {
-        applyFilter.addEventListener('click', () => {
-            expenseManager.setDateFilter(dateFrom.value, dateTo.value);
+    // Проверяем наличие всех необходимых элементов перед добавлением обработчиков
+    if (elements.applyFilter && elements.dateFrom && elements.dateTo) {
+        elements.applyFilter.addEventListener('click', () => {
+            expenseManager.setDateFilter(elements.dateFrom.value, elements.dateTo.value);
         });
     }
 
-    if (resetFilter && dateFrom && dateTo) {
-        resetFilter.addEventListener('click', () => {
-            dateFrom.value = '';
-            dateTo.value = '';
+    if (elements.resetFilter && elements.dateFrom && elements.dateTo) {
+        elements.resetFilter.addEventListener('click', () => {
+            elements.dateFrom.value = '';
+            elements.dateTo.value = '';
             expenseManager.resetDateFilter();
         });
     }
