@@ -10,6 +10,25 @@ class ExpenseManager {
         // Привязываем методы к контексту
         this.handleApplyFilter = this.handleApplyFilter.bind(this);
         this.handleResetFilter = this.handleResetFilter.bind(this);
+        
+        // Инициализация при создании экземпляра
+        window.onload = () => {
+            this.renderTransactions();
+            this.initializeEventHandlers();
+        };
+    }
+
+    initializeEventHandlers() {
+        const applyFilter = document.getElementById('applyDateFilter');
+        const resetFilter = document.getElementById('resetDateFilter');
+
+        if (applyFilter) {
+            applyFilter.onclick = this.handleApplyFilter;
+        }
+
+        if (resetFilter) {
+            resetFilter.onclick = this.handleResetFilter;
+        }
     }
 
     loadFromLocalStorage() {
@@ -210,33 +229,7 @@ class ExpenseManager {
 // Создаем глобальный экземпляр менеджера
 window.expenseManager = new ExpenseManager();
 
-// Инициализация при загрузке страницы
-if (document.readyState === 'complete') {
-    initApp();
-} else {
-    window.onload = initApp;
-}
-
-function initApp() {
-    const expenseManager = window.expenseManager;
-    
-    // Рендерим начальное состояние
-    expenseManager.renderTransactions();
-
-    // Добавляем обработчики через onclick
-    const applyFilter = document.getElementById('applyDateFilter');
-    const resetFilter = document.getElementById('resetDateFilter');
-
-    if (applyFilter) {
-        applyFilter.onclick = () => expenseManager.handleApplyFilter();
-    }
-
-    if (resetFilter) {
-        resetFilter.onclick = () => expenseManager.handleResetFilter();
-    }
-}
-
-// Глобальная функция удаления
+// Глобальная функция удаления для использования в onclick
 window.deleteTransaction = function(id) {
     if (confirm('Вы уверены, что хотите удалить эту запись?')) {
         window.expenseManager.deleteTransaction(id);
