@@ -211,7 +211,13 @@ class ExpenseManager {
 window.expenseManager = new ExpenseManager();
 
 // Инициализация при загрузке страницы
-window.onload = function() {
+if (document.readyState === 'complete') {
+    initApp();
+} else {
+    window.onload = initApp;
+}
+
+function initApp() {
     const expenseManager = window.expenseManager;
     
     // Рендерим начальное состояние
@@ -228,7 +234,7 @@ window.onload = function() {
     if (resetFilter) {
         resetFilter.onclick = () => expenseManager.handleResetFilter();
     }
-};
+}
 
 // Глобальная функция удаления
 window.deleteTransaction = function(id) {
