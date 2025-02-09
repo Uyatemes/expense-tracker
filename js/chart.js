@@ -1,81 +1,92 @@
 let categoryChart = null;
 let balanceChart = null;
 
-function updateCharts() {
-    updateCategoryChart();
-    updateBalanceChart();
-}
-
-function updateCategoryChart() {
-    const ctx = document.getElementById('categoryChart');
-    if (categoryChart) {
-        categoryChart.destroy();
+document.addEventListener('DOMContentLoaded', () => {
+    function updateCharts() {
+        updateCategoryChart();
+        updateMonthlyChart();
     }
 
-    const transactions = window.expenseManager.getTransactions();
-    const categories = {};
-    
-    transactions.forEach(t => {
-        if (t.type === 'расход') {
-            categories[t.category] = (categories[t.category] || 0) + t.amount;
-        }
-    });
+    function updateCategoryChart() {
+        const ctx = document.getElementById('categoryChart')?.getContext('2d');
+        if (!ctx) return;
 
-    categoryChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: Object.keys(categories),
-            datasets: [{
-                data: Object.values(categories),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ]
-            }]
-        }
-    });
-}
+        const transactions = expenseManager.getTransactions();
+        
+        // Группировка операций по категориям
+        const categoryData = transactions.reduce((acc, t) => {
+            const key = `${t.category} (${t.type})`;
+            acc[key] = (acc[key] || 0) + Math.abs(t.amount);
+            return acc;
+        }, {});
 
-function updateBalanceChart() {
-    const ctx = document.getElementById('balanceChart');
-    if (balanceChart) {
-        balanceChart.destroy();
-    }
-
-    const transactions = window.expenseManager.getTransactions();
-    const monthlyData = {};
-    
-    transactions.forEach(t => {
-        const month = t.date.substring(0, 7);
-        const amount = t.type === 'расход' ? -t.amount : t.amount;
-        monthlyData[month] = (monthlyData[month] || 0) + amount;
-    });
-
-    const months = Object.keys(monthlyData).sort();
-    const data = months.map(m => monthlyData[m]);
-
-    balanceChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: months,
-            datasets: [{
-                label: 'Баланс',
-                data: data,
-                backgroundColor: '#36A2EB'
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(categoryData),
+                datasets: [{
+                    data: Object.values(categoryData),
+                    backgroundColor: [
+                        '#2ecc71',
+                        '#3498db',
+                        '#9b59b6',
+                        '#f1c40f',
+                        '#e74c3c',
+                        '#1abc9c'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Операции по категориям'
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
-document.addEventListener('DOMContentLoaded', updateCharts); 
+    function updateMonthlyChart() {
+        const ctx = document.getElementById('monthlyChart')?.getContext('2d');
+        if (!ctx) return;
+
+        const transactions = expenseManager.getTransactions();
+
+        // Группировка операций по месяцам
+        const monthlyData = transactions.reduce((acc, t) => {
+            const month = t.date.substring(0, 7);
+            acc[month] = (acc[month] || 0) + t.amount;
+            return acc;
+        }, {});
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(monthlyData),
+                datasets: [{
+                    label: 'Баланс по месяцам',
+                    data: Object.values(monthlyData),
+                    borderColor: '#3498db',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Динамика баланса'
+                    }
+                }
+            }
+        });
+    }
+
+    // Инициализация графиков
+    updateCharts();
+
+    // Делаем функцию updateCharts доступной глобально
+    window.updateCharts = updateCharts;
+}); 

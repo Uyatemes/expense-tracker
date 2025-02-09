@@ -1,207 +1,85 @@
 :root {
     --kaspi-red: #F14635;
-    --kaspi-green: #2ECC71;
-    --kaspi-gray: #666;
-    --kaspi-light-gray: #f5f5f5;
-    --kaspi-border: #eee;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    --kaspi-red-dark: #D13F30;
+    --kaspi-gray: #757575;
+    --kaspi-light-gray: #F5F5F5;
+    --kaspi-green: #00A76D;
+    --kaspi-border: #E0E0E0;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--kaspi-light-gray);
+    color: #333;
+    line-height: 1.5;
 }
 
-header {
-    background: #E74C3C;
-    color: white;
-    padding: 20px;
-}
-
-main {
+.container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 1rem;
+}
+
+/* Header */
+.kaspi-header {
+    background: var(--kaspi-red);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.kaspi-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+/* Assistant */
+.kaspi-assistant {
+    margin: 1rem 0;
 }
 
 .chat-container {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-#chatBox {
-    min-height: 60px;
-    margin-bottom: 15px;
+.chat-messages {
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.message {
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    max-width: 80%;
-}
-
-.message.assistant {
-    background: #f8f9fa;
-}
-
-.message.user {
-    background: #E74C3C;
-    color: white;
-    margin-left: auto;
-}
-
-.message.example {
-    background: #f8f9fa;
-    color: #666;
-}
-
-.input-container {
+.chat-input {
     display: flex;
-    gap: 10px;
+    padding: 1rem;
+    gap: 0.5rem;
+    border-top: 1px solid var(--kaspi-border);
 }
 
-#operationInput {
+.chat-input input {
     flex: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--kaspi-border);
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 1rem;
 }
 
-#sendButton {
-    background: #E74C3C;
+.chat-input button {
+    background: var(--kaspi-red);
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 0 20px;
+    width: 42px;
+    height: 42px;
     cursor: pointer;
-    font-size: 20px;
-}
-
-.date-filter {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
     display: flex;
-    gap: 10px;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.date-filter input[type="date"] {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.date-filter button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.show-btn {
-    background: #E74C3C;
-    color: white;
-}
-
-.reset-btn {
-    background: #f8f9fa;
-}
-
-.summary {
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.summary h3 {
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.summary p {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-#totalIncome {
-    color: #27AE60;
-}
-
-#totalExpenses {
-    color: #E74C3C;
-}
-
-.transactions {
-    background: white;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.transaction {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.transaction:last-child {
-    border-bottom: none;
-}
-
-.transaction-info {
-    flex: 1;
-}
-
-.transaction-date {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 5px;
-}
-
-.amount-income {
-    color: #27AE60;
-}
-
-.amount-expense {
-    color: #E74C3C;
-}
-
-.charts {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.chart {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.chart h3 {
-    margin-bottom: 15px;
-    color: #666;
+    justify-content: center;
 }
 
 /* Totals */
