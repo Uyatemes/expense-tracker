@@ -1,5 +1,5 @@
 {
-  "name": "Raul",
+  "name": "expense-tracker",
   "short_name": "Raul",
   "start_url": "/",
   "display": "standalone",
@@ -21,13 +21,13 @@
     }
   ],
   "version": "1.0.0",
-  "description": "Expense Tracker App",
+  "description": "Expense tracking application",
   "main": "index.js",
   "scripts": {
     "build": "npm run copy-files && cap sync",
     "copy-files": "mkdir -p www && cp -r index.html css js www/",
     "add-android": "cap add android",
-    "start": "live-server --port=5000 --host=0.0.0.0"
+    "start": "live-server --port=3000 --host=0.0.0.0"
   },
   "dependencies": {
     "@capacitor/core": "^5.0.0",
