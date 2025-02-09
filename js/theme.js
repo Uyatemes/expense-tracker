@@ -4,8 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Проверяем сохраненную тему
     const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    console.log('Theme set to:', savedTheme);
+    applyTheme(savedTheme);
+    console.log('Initial theme set to:', savedTheme);
+    
+    // Функция применения темы
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        console.log('Theme applied:', theme);
+    }
     
     // Устанавливаем правильное состояние переключателя
     if (themeToggle) {
@@ -13,8 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
             console.log('Theme toggled to:', newTheme);
         });
     }
@@ -22,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Слушаем изменения системной темы
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
         if (!localStorage.getItem('theme')) {
-            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            applyTheme(e.matches ? 'dark' : 'light');
         }
     });
 
@@ -31,9 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleFab.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
             console.log('Theme toggled to:', newTheme);
         });
     }
