@@ -1,8 +1,8 @@
-let categoryChart = null;
-let balanceChart = null;
-
 document.addEventListener('DOMContentLoaded', () => {
-    function updateCharts() {
+    let categoryChart = null;
+    let monthlyChart = null;
+
+    window.updateCharts = function() {
         updateCategoryChart();
         updateMonthlyChart();
     }
@@ -11,7 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = document.getElementById('categoryChart')?.getContext('2d');
         if (!ctx) return;
 
-        const transactions = expenseManager.getTransactions();
+        // Уничтожаем предыдущий график если он существует
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+
+        const transactions = window.expenseManager?.getTransactions() || [];
         
         // Группировка операций по категориям
         const categoryData = transactions.reduce((acc, t) => {
@@ -20,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
 
-        new Chart(ctx, {
+        categoryChart = new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: Object.keys(categoryData),
@@ -52,7 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = document.getElementById('monthlyChart')?.getContext('2d');
         if (!ctx) return;
 
-        const transactions = expenseManager.getTransactions();
+        // Уничтожаем предыдущий график если он существует
+        if (monthlyChart) {
+            monthlyChart.destroy();
+        }
+
+        const transactions = window.expenseManager?.getTransactions() || [];
 
         // Группировка операций по месяцам
         const monthlyData = transactions.reduce((acc, t) => {
@@ -61,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
 
-        new Chart(ctx, {
+        monthlyChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: Object.keys(monthlyData),
@@ -84,9 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Инициализация графиков
-    updateCharts();
-
-    // Делаем функцию updateCharts доступной глобально
-    window.updateCharts = updateCharts;
+    // Инициализация графиков после загрузки страницы
+    setTimeout(updateCharts, 100);
 }); 
