@@ -19,21 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const transactions = window.expenseManager?.getTransactions() || [];
         
         // Группируем транзакции по типу (доход/расход)
-        const data = transactions.reduce((acc, t) => {
-            const type = t.type === 'income' ? 'Доходы' : 'Расходы';
-            acc[type] = (acc[type] || 0) + Math.abs(t.amount);
-            return acc;
-        }, {});
+        const data = {
+            'Доходы': transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0),
+            'Расходы': transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+        };
 
         categoryChart = new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: Object.keys(data),
+                labels: ['Доходы', 'Расходы'],
                 datasets: [{
-                    data: Object.values(data),
+                    data: [data['Доходы'], data['Расходы']],
                     backgroundColor: [
-                        '#2ecc71', // зеленый для доходов
-                        '#e74c3c'  // красный для расходов
+                        'var(--kaspi-green)',  // зеленый для доходов
+                        'var(--kaspi-red)'     // красный для расходов
                     ]
                 }]
             },
