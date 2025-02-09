@@ -46,21 +46,18 @@
 
         <!-- Фильтры и экспорт -->
         <section class="date-filter">
-            <div class="date-range">
-                <input type="date" id="dateFrom">
-                <span>—</span>
-                <input type="date" id="dateTo">
-            </div>
-            <div class="buttons">
-                <button id="applyDateFilter">Показать</button>
-                <button id="resetDateFilter">Сбросить</button>
-                <button id="exportPDF" class="export-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                    Экспорт PDF
-                </button>
-            </div>
+            <button id="dateRangeButton" class="date-range-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/>
+                </svg>
+                <span id="dateRangeText">Загрузка...</span>
+            </button>
+            <button id="exportPDF" class="export-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Экспорт PDF
+            </button>
         </section>
 
         <!-- Итоги -->
@@ -99,6 +96,27 @@
             <div class="confirm-dialog-buttons">
                 <button id="confirmCancel" class="btn-cancel">Отмена</button>
                 <button id="confirmDelete" class="btn-delete">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавим модальное окно для выбора периода -->
+    <div id="dateRangeModal" class="modal">
+        <div class="modal-content">
+            <h3>Выберите период</h3>
+            <div class="period-options">
+                <label class="radio-button">
+                    <input type="radio" name="period" value="week" checked>
+                    <span class="radio-label">За неделю</span>
+                </label>
+                <label class="radio-button">
+                    <input type="radio" name="period" value="month">
+                    <span class="radio-label">За месяц</span>
+                </label>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelDateRange" class="btn-cancel">Отмена</button>
+                <button id="applyDateRange" class="btn-apply">Применить</button>
             </div>
         </div>
     </div>
