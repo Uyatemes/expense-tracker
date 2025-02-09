@@ -117,6 +117,9 @@ class ExpenseManager {
         if (!transactionsList) return;
         
         const transactions = this.getTransactions();
+        
+        // Сортируем транзакции по дате (новые сверху)
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         transactionsList.innerHTML = transactions.map(t => `
             <div class="transaction-item">
