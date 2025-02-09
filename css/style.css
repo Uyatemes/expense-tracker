@@ -1,4 +1,6 @@
 :root {
+    color-scheme: light dark;
+
     /* Material You colors */
     --md-sys-color-primary: #006C4C;
     --md-sys-color-on-primary: #FFFFFF;
@@ -27,6 +29,34 @@
     --md-elevation-1: 0px 1px 2px rgba(0,0,0,0.3), 0px 1px 3px 1px rgba(0,0,0,0.15);
     --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15), 0px 1px 2px rgba(0,0,0,0.3);
     --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark theme colors */
+        --md-sys-color-primary: #6CDBA9;
+        --md-sys-color-on-primary: #003826;
+        --md-sys-color-primary-container: #005138;
+        --md-sys-color-on-primary-container: #89F8C7;
+        
+        --md-sys-color-secondary: #B3CCBF;
+        --md-sys-color-on-secondary: #1F352C;
+        --md-sys-color-secondary-container: #354B41;
+        --md-sys-color-on-secondary-container: #CFE9DB;
+        
+        --md-sys-color-error: #FFB4AB;
+        --md-sys-color-on-error: #690005;
+        --md-sys-color-error-container: #93000A;
+        --md-sys-color-on-error-container: #FFDAD6;
+        
+        --md-sys-color-surface: #191C1A;
+        --md-sys-color-on-surface: #E1E3DF;
+        --md-sys-color-surface-variant: #404943;
+        --md-sys-color-on-surface-variant: #BFC9C2;
+        
+        --md-sys-color-outline: #8A938C;
+        --md-sys-color-outline-variant: #404943;
+    }
 }
 
 body {
@@ -288,4 +318,23 @@ body {
         max-width: 100%;
         padding: 0;
     }
+}
+
+/* Добавим переключатель темы */
+.theme-toggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    cursor: pointer;
+    box-shadow: var(--md-elevation-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 } 
