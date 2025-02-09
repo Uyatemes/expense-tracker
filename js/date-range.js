@@ -1,7 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Принудительно устанавливаем светлую тему
-    document.documentElement.setAttribute('data-theme', 'light');
-    localStorage.setItem('theme', 'light');
+    // Удалим принудительную установку светлой темы
+    // document.documentElement.setAttribute('data-theme', 'light');
+    // localStorage.setItem('theme', 'light');
+
+    // Добавим обработчик для переключения темы
+    const themeToggle = document.getElementById('themeToggle');
+    
+    // Проверяем сохраненную тему
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Устанавливаем правильное состояние переключателя
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'dark';
+        
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
 
     const dateRangeButton = document.getElementById('dateRangeButton');
     const dateRangeModal = document.getElementById('dateRangeModal');
