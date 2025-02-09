@@ -76,30 +76,88 @@ class AIAssistant {
         const text = this.input.value.trim();
         if (!text) return;
 
-        // Добавляем сообщение пользователя
         this.addMessage('Вы: ' + text, 'user');
 
-        // Простой анализ текста
-        const amount = this.extractAmount(text);
-        const category = this.extractCategory(text);
-        const date = new Date().toISOString().split('T')[0];
+        // Анализ текста
+        const result = this.analyzeText(text);
 
-        if (amount && category) {
-            // Добавляем транзакцию
+        if (result.amount && result.category) {
             window.expenseManager.addTransaction({
-                amount: amount,
-                category: category,
-                date: date,
-                note: text
+                amount: result.amount,
+                category: result.category,
+                date: new Date().toISOString().split('T')[0],
+                note: result.note || text
             });
 
-            // Ответ ассистента
-            this.addMessage(`Добавлена транзакция: ${amount}₸ в категории "${category}"`, 'assistant');
+            this.addMessage(`Добавлена транзакция:
+                Сумма: ${result.amount}₸
+                Категория: ${result.category}
+                ${result.note ? 'Примечание: ' + result.note : ''}`, 'assistant');
+            
             this.input.value = '';
             renderTransactionsTable();
         } else {
-            this.addMessage('Не удалось распознать сумму или категорию. Попробуйте еще раз.', 'assistant');
+            this.addMessage('Не удалось распознать транзакцию. Попробуйте написать например: "1600 полиграфия расход каспий"', 'assistant');
         }
+    }
+
+    analyzeText(text) {
+        const result = {
+            amount: null,
+            category: null,
+            note: null
+        };
+
+        // Поиск суммы (число)
+        const amountMatch = text.match(/\d+(\.\d+)?/);
+        if (amountMatch) {
+            result.amount = parseFloat(amountMatch[0]);
+        }
+
+        // Поиск категории
+        const categories = [
+            'полиграфия',
+            'каспий',
+            'продукты',
+            'транспорт',
+            'развлечения',
+            'кафе',
+            'одежда',
+            'такси',
+            'аренда',
+            'связь',
+            'интернет',
+            'коммуналка'
+        ];
+
+        for (let category of categories) {
+            if (text.toLowerCase().includes(category.toLowerCase())) {
+                result.category = category;
+                break;
+            }
+        }
+
+        // Поиск примечания
+        const noteKeywords = ['за', 'на', 'для', 'примечание:', 'note:'];
+        for (let keyword of noteKeywords) {
+            const index = text.toLowerCase().indexOf(keyword.toLowerCase());
+            if (index !== -1) {
+                result.note = text.slice(index + keyword.length).trim();
+                break;
+            }
+        }
+
+        // Если примечание не найдено, но есть категория
+        if (!result.note && result.category) {
+            const categoryIndex = text.toLowerCase().indexOf(result.category.toLowerCase());
+            if (categoryIndex !== -1) {
+                const beforeCategory = text.slice(0, categoryIndex).trim();
+                const afterCategory = text.slice(categoryIndex + result.category.length).trim();
+                result.note = (beforeCategory + ' ' + afterCategory).trim();
+            }
+        }
+
+        return result;
     }
 
     addMessage(text, type) {
@@ -113,21 +171,6 @@ class AIAssistant {
         message.textContent = text;
         this.chatBox.appendChild(message);
         this.chatBox.scrollTop = this.chatBox.scrollHeight;
-    }
-
-    extractAmount(text) {
-        const match = text.match(/\d+(\.\d+)?/);
-        return match ? parseFloat(match[0]) : null;
-    }
-
-    extractCategory(text) {
-        const categories = ['продукты', 'транспорт', 'развлечения', 'кафе', 'одежда'];
-        for (let category of categories) {
-            if (text.toLowerCase().includes(category)) {
-                return category;
-            }
-        }
-        return 'другое';
     }
 }
 
