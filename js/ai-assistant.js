@@ -1,110 +1,166 @@
-class AIAssistant {
-    constructor() {
-        // Ждем загрузки DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            this.chatBox = document.getElementById('chatBox');
-            this.input = document.getElementById('operationInput');
-            this.sendButton = document.getElementById('sendButton');
-            
-            if (this.chatBox && this.input && this.sendButton) {
-                this.sendButton.onclick = () => this.processInput();
-                this.input.onkeypress = (e) => {
-                    if (e.key === 'Enter') this.processInput();
-                };
-                this.showWelcomeMessage();
+class AIExpenseAssistant {
+    constructor(expenseManager) {
+        this.expenseManager = expenseManager;
+        this.initializeUI();
+    }
+
+    initializeUI() {
+        this.sendButton = document.getElementById('send-message');
+        this.userInput = document.getElementById('user-input');
+        this.chatMessages = document.getElementById('chat-messages');
+
+        // Добавляем проверку
+        if (!this.sendButton || !this.userInput || !this.chatMessages) {
+            console.error('Не удалось найти необходимые элементы интерфейса');
+            return;
+        }
+
+        // Добавляем отладочную информацию
+        console.log('AI Assistant initialized');
+
+        this.sendButton.addEventListener('click', () => {
+            console.log('Send button clicked');
+            this.handleUserMessage();
+        });
+
+        this.userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                console.log('Enter pressed');
+                this.handleUserMessage();
             }
         });
     }
 
-    showWelcomeMessage() {
-        this.addMessage('Привет! Я помогу записать ваши доходы и расходы. Примеры:', 'assistant');
-        this.addMessage('"5000 расход каспий такси"', 'example');
-        this.addMessage('"расход 5000 каспий такси"', 'example');
-        this.addMessage('"каспий 5000 расход такси"', 'example');
-    }
+    async handleUserMessage() {
+        const userMessage = this.userInput.value.trim();
+        if (!userMessage) return;
 
-    addMessage(text, type) {
-        const message = document.createElement('div');
-        message.className = `message ${type}`;
-        message.textContent = text;
-        this.chatBox.appendChild(message);
-        this.chatBox.scrollTop = this.chatBox.scrollHeight;
-    }
+        // Показываем сообщение пользователя
+        this.addMessage(userMessage, 'user');
+        this.userInput.value = '';
 
-    processInput() {
-        const text = this.input.value.trim();
-        if (!text) return;
-
-        this.addMessage(text, 'user');
-
-        const result = this.parseTransaction(text);
+        // Анализируем сообщение и извлекаем данные
+        const transaction = this.parseExpenseMessage(userMessage);
         
-        if (result.success) {
-            window.expenseManager.addTransaction(result.transaction);
+        if (transaction) {
+            this.expenseManager.addTransaction(transaction);
+            renderExpensesTable();
+            updateCharts();
+            
+            const typeText = transaction.type === 'expense' ? 'Расход' : 'Доход';
             this.addMessage(
-                `✓ ${result.transaction.type} ${result.transaction.amount}₸ через ${result.transaction.source}${result.transaction.category ? ' на ' + result.transaction.category : ''}`, 
-                'assistant'
+                `Добавлена операция: ${typeText} на сумму ${Math.abs(transaction.amount).toLocaleString('ru-RU')} ₸\n` +
+                `Источник: ${transaction.source}\n` +
+                `Детали: ${transaction.description}`, 
+                'system'
             );
-            this.input.value = '';
         } else {
-            this.addMessage(result.error, 'assistant');
+            this.addMessage(
+                'Извините, не удалось распознать операцию. Примеры сообщений:\n' +
+                '"2000 приход каспий Ержан"\n' +
+                '"расход 5000 наличные такси"\n' +
+                '"халык 10000 приход зарплата"\n' +
+                'Укажите: сумму, тип операции (приход/расход), источник (Каспий/Халык/Наличные/Личный счет) и описание', 
+                'system'
+            );
         }
     }
 
-    parseTransaction(text) {
-        const words = text.toLowerCase().split(' ');
+    parseExpenseMessage(message) {
+        const words = message.trim().split(/\s+/);
         
-        // Ищем сумму (любое число в тексте)
-        const amount = words.find(word => /^\d+$/.test(word));
-        if (!amount) {
-            return {
-                success: false,
-                error: 'Укажите сумму числом, например: 5000'
-            };
+        if (words.length < 4) { // Теперь минимум 4 слова
+            return null;
         }
+
+        const incomeWords = ['доход', 'получил', 'заработал', 'приход', 'поступление', 'прибыль'];
+        const sourceWords = {
+            'каспий': 'Каспий',
+            'kaspi': 'Каспий',
+            'каспи': 'Каспий',
+            'халык': 'Халык',
+            'halyk': 'Халык',
+            'налич': 'Наличные',
+            'нал': 'Наличные',
+            'кэш': 'Наличные',
+            'личный': 'Личный счет',
+            'лс': 'Личный счет'
+        };
+        
+        let type = 'expense';
+        let typeWordIndex = -1;
+        let amount = null;
+        let amountIndex = -1;
+        let source = null;
+        let sourceIndex = -1;
 
         // Ищем тип операции
-        const type = words.find(word => word === 'расход' || word === 'приход');
-        if (!type) {
-            return {
-                success: false,
-                error: 'Укажите тип операции: расход или приход'
-            };
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i].toLowerCase();
+            if (incomeWords.some(incomeWord => word.includes(incomeWord))) {
+                type = 'income';
+                typeWordIndex = i;
+                break;
+            }
+        }
+
+        // Ищем сумму
+        for (let i = 0; i < words.length; i++) {
+            const num = parseFloat(words[i].replace(/[^0-9.]/g, ''));
+            if (!isNaN(num)) {
+                amount = num;
+                amountIndex = i;
+                break;
+            }
         }
 
         // Ищем источник
-        const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
-        const source = words.find(word => sources.includes(word));
-        if (!source) {
-            return {
-                success: false,
-                error: 'Укажите источник: каспий, халык или наличные'
-            };
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i].toLowerCase();
+            for (const [key, value] of Object.entries(sourceWords)) {
+                if (word.includes(key)) {
+                    source = value;
+                    sourceIndex = i;
+                    break;
+                }
+            }
+            if (source) break;
         }
 
-        // Остальные слова - категория
-        const category = words
-            .filter(word => 
-                word !== amount && 
-                word !== type && 
-                word !== source && 
-                !sources.includes(word))
+        if (!amount || !source) return null;
+
+        // Собираем описание из оставшихся слов
+        const details = words
+            .filter((word, index) => 
+                index !== typeWordIndex && 
+                index !== amountIndex && 
+                index !== sourceIndex)
             .join(' ');
 
+        let date = new Date();
+        if (message.toLowerCase().includes('вчера')) {
+            date.setDate(date.getDate() - 1);
+        }
+
         return {
-            success: true,
-            transaction: {
-                date: new Date().toISOString().split('T')[0],
-                amount: parseInt(amount),
-                type: type,
-                source: source,
-                category: category || 'другое'
-            }
+            amount,
+            type,
+            source,
+            date: date.toISOString().split('T')[0],
+            description: details
         };
+    }
+
+    addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = text;
+        this.chatMessages.appendChild(messageDiv);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 }
 
-// Создаем экземпляр при загрузке страницы
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    window.aiAssistant = new AIAssistant();
+    const aiAssistant = new AIExpenseAssistant(expenseManager);
 }); 
