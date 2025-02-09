@@ -1,0 +1,14 @@
+{
+  "appId": "com.expensetracker.app",
+  "appName": "Expense Tracker",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#F14635"
+    }
+  }
+} 
