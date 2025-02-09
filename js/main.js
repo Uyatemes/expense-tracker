@@ -1,11 +1,14 @@
 // Класс для управления данными
 class ExpenseManager {
     constructor() {
-        this.transactions = [];
-        this.loadFromLocalStorage();
-        this.renderTransactions();
-        this.updateSummary();
-        this.setupDateFilter();
+        // Ждем загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            this.transactions = [];
+            this.loadFromLocalStorage();
+            this.renderTransactions();
+            this.updateSummary();
+            this.setupDateFilter();
+        });
     }
 
     loadFromLocalStorage() {
