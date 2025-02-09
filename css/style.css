@@ -331,18 +331,19 @@ body {
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
     border: none;
     border-radius: 50%;
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     box-shadow: var(--md-elevation-2);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    transition: background-color 0.2s;
 }
 
 /* Стили для переключателя темы */
@@ -350,21 +351,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.theme-toggle {
-    background: transparent;
-    border: none;
-    color: var(--md-sys-color-on-surface);
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
 }
 
 .theme-toggle:hover {
@@ -387,14 +373,21 @@ body {
     transform: scale(0);
 }
 
-:root[data-theme="dark"] .theme-toggle .sun-icon {
+/* Важно! Обновляем селекторы для темной темы */
+[data-theme="dark"] .theme-toggle .sun-icon {
     opacity: 0;
     transform: scale(0);
 }
 
-:root[data-theme="dark"] .theme-toggle .moon-icon {
+[data-theme="dark"] .theme-toggle .moon-icon {
     opacity: 1;
     transform: scale(1);
+}
+
+/* Обновляем основные цвета для темной темы */
+[data-theme="dark"] {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
 }
 
 /* Обновите стили для транзакций */
