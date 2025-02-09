@@ -1,92 +1,81 @@
 let categoryChart = null;
-let monthlyChart = null;
+let balanceChart = null;
 
 function updateCharts() {
-    if (!window.expenseManager) return;
-    
     updateCategoryChart();
-    updateMonthlyChart();
+    updateBalanceChart();
 }
 
 function updateCategoryChart() {
-    const ctx = document.getElementById('categoryChart')?.getContext('2d');
-    if (!ctx) return;
+    const ctx = document.getElementById('categoryChart');
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
 
-    const transactions = expenseManager.getTransactions();
+    const transactions = window.expenseManager.getTransactions();
+    const categories = {};
     
-    // Группировка операций по категориям
-    const categoryData = transactions.reduce((acc, t) => {
-        const key = `${t.category} (${t.type})`;
-        acc[key] = (acc[key] || 0) + Math.abs(t.amount);
-        return acc;
-    }, {});
+    transactions.forEach(t => {
+        if (t.type === 'расход') {
+            categories[t.category] = (categories[t.category] || 0) + t.amount;
+        }
+    });
 
-    new Chart(ctx, {
+    categoryChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: Object.keys(categoryData),
+            labels: Object.keys(categories),
             datasets: [{
-                data: Object.values(categoryData),
+                data: Object.values(categories),
                 backgroundColor: [
-                    '#2ecc71',
-                    '#3498db',
-                    '#9b59b6',
-                    '#f1c40f',
-                    '#e74c3c',
-                    '#1abc9c'
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
                 ]
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Операции по категориям'
-                }
-            }
         }
     });
 }
 
-function updateMonthlyChart() {
-    const ctx = document.getElementById('monthlyChart')?.getContext('2d');
-    if (!ctx) return;
+function updateBalanceChart() {
+    const ctx = document.getElementById('balanceChart');
+    if (balanceChart) {
+        balanceChart.destroy();
+    }
 
-    const transactions = expenseManager.getTransactions();
-
-    // Группировка операций по месяцам
-    const monthlyData = transactions.reduce((acc, t) => {
+    const transactions = window.expenseManager.getTransactions();
+    const monthlyData = {};
+    
+    transactions.forEach(t => {
         const month = t.date.substring(0, 7);
-        acc[month] = (acc[month] || 0) + t.amount;
-        return acc;
-    }, {});
+        const amount = t.type === 'расход' ? -t.amount : t.amount;
+        monthlyData[month] = (monthlyData[month] || 0) + amount;
+    });
 
-    new Chart(ctx, {
-        type: 'line',
+    const months = Object.keys(monthlyData).sort();
+    const data = months.map(m => monthlyData[m]);
+
+    balanceChart = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: Object.keys(monthlyData),
+            labels: months,
             datasets: [{
-                label: 'Баланс по месяцам',
-                data: Object.values(monthlyData),
-                borderColor: '#3498db',
-                tension: 0.1
+                label: 'Баланс',
+                data: data,
+                backgroundColor: '#36A2EB'
             }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Динамика баланса'
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
         }
     });
 }
 
-// Инициализация графиков
-updateCharts();
-
-// Делаем функцию updateCharts доступной глобально
-window.updateCharts = updateCharts; 
+document.addEventListener('DOMContentLoaded', updateCharts); 

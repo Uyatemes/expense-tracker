@@ -1,99 +1,21 @@
 class AIAssistant {
     constructor() {
-        document.addEventListener('DOMContentLoaded', () => {
-            this.chatBox = document.getElementById('chat-messages');
-            this.input = document.getElementById('user-input');
-            this.sendButton = document.getElementById('send-message');
-            
-            if (this.sendButton && this.input) {
-                this.sendButton.onclick = () => this.processInput();
-                this.input.onkeypress = (e) => {
-                    if (e.key === 'Enter') this.processInput();
-                };
-            }
-
-            this.showWelcomeMessage();
-        });
-    }
-
-    initializeUI() {
-        this.sendButton = document.getElementById('send-message');
-        this.userInput = document.getElementById('user-input');
-        this.chatMessages = document.getElementById('chat-messages');
-
-        // Добавляем проверку
-        if (!this.sendButton || !this.userInput || !this.chatMessages) {
-            console.error('Не удалось найти необходимые элементы интерфейса');
-            return;
-        }
-
-        // Добавляем отладочную информацию
-        console.log('AI Assistant initialized');
-
-        this.sendButton.addEventListener('click', () => {
-            console.log('Send button clicked');
-            this.handleUserMessage();
-        });
-
-        this.userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                console.log('Enter pressed');
-                this.handleUserMessage();
-            }
-        });
-    }
-
-    async handleUserMessage() {
-        const userMessage = this.userInput.value.trim();
-        if (!userMessage) return;
-
-        // Показываем сообщение пользователя
-        this.addMessage(userMessage, 'user');
-        this.userInput.value = '';
-
-        // Анализируем сообщение и извлекаем данные
-        const transaction = this.parseExpenseMessage(userMessage);
+        this.chatBox = document.getElementById('chatBox');
+        this.input = document.getElementById('operationInput');
+        this.sendButton = document.getElementById('sendButton');
         
-        if (transaction) {
-            window.expenseManager.addTransaction(transaction);
-            this.addMessage(`✓ ${transaction.type === 'расход' ? 'Расход' : 'Доход'} ${transaction.amount}₸ через ${transaction.source}${transaction.category ? ' на ' + transaction.category : ''}`, 'assistant');
-            this.input.value = '';
-        } else {
-            this.addMessage('Не могу распознать операцию. Примеры:\n"5000 расход каспий такси"\n"приход 10000 халык зарплата"', 'assistant');
-        }
-    }
-
-    parseExpenseMessage(message) {
-        const words = message.toLowerCase().split(' ');
-        
-        // Ищем сумму (первое число)
-        const amount = parseFloat(words.find(word => /^\d+$/.test(word)));
-        if (!amount) return null;
-
-        // Ищем тип операции
-        const type = words.find(word => word === 'расход' || word === 'приход');
-        if (!type) return null;
-
-        // Ищем источник
-        const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
-        const source = words.find(word => sources.includes(word));
-        if (!source) return null;
-
-        // Остальные слова - категория
-        const category = words
-            .filter(word => 
-                word !== amount.toString() && 
-                word !== type && 
-                word !== source)
-            .join(' ');
-
-        return {
-            amount,
-            type,
-            source,
-            category: category || 'другое',
-            date: new Date().toISOString().split('T')[0]
+        this.sendButton.onclick = () => this.processInput();
+        this.input.onkeypress = (e) => {
+            if (e.key === 'Enter') this.processInput();
         };
+
+        this.showWelcomeMessage();
+    }
+
+    showWelcomeMessage() {
+        this.addMessage('Привет! Я помогу записать ваши доходы и расходы. Примеры:', 'assistant');
+        this.addMessage('"5000 расход каспий такси"', 'example');
+        this.addMessage('"10000 приход халык зарплата"', 'example');
     }
 
     addMessage(text, type) {
@@ -104,14 +26,60 @@ class AIAssistant {
         this.chatBox.scrollTop = this.chatBox.scrollHeight;
     }
 
-    showWelcomeMessage() {
-        this.addMessage('Добро пожаловать! Я готов помочь с управлением финансами.', 'system');
-    }
-
     processInput() {
-        this.handleUserMessage();
+        const text = this.input.value.trim();
+        if (!text) return;
+
+        this.addMessage(text, 'user');
+
+        // Разбиваем текст на части
+        const parts = text.toLowerCase().split(' ');
+        
+        // Ищем сумму (первое число)
+        const amount = parseFloat(parts[0]);
+        if (isNaN(amount)) {
+            this.addMessage('Не могу найти сумму. Напишите сумму первым числом.', 'assistant');
+            return;
+        }
+
+        // Ищем тип операции
+        const type = parts.find(word => word === 'расход' || word === 'приход');
+        if (!type) {
+            this.addMessage('Укажите тип операции: расход или приход', 'assistant');
+            return;
+        }
+
+        // Ищем источник
+        const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
+        const source = parts.find(word => sources.includes(word));
+        if (!source) {
+            this.addMessage('Укажите источник: каспий, халык или наличные', 'assistant');
+            return;
+        }
+
+        // Все оставшиеся слова считаем категорией
+        const category = parts
+            .filter(word => 
+                word !== amount.toString() && 
+                word !== type && 
+                word !== source)
+            .join(' ');
+
+        // Добавляем транзакцию
+        window.expenseManager.addTransaction({
+            date: new Date().toISOString().split('T')[0],
+            amount: amount,
+            type: type,
+            category: category || 'другое',
+            source: source
+        });
+
+        this.addMessage(`✓ ${type} ${amount}₸ через ${source}${category ? ' на ' + category : ''}`, 'assistant');
+        this.input.value = '';
     }
 }
 
-// Создаем экземпляр
-window.aiAssistant = new AIAssistant(); 
+// Создаем экземпляр при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    window.aiAssistant = new AIAssistant();
+}); 
