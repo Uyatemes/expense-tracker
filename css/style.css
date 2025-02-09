@@ -1,7 +1,10 @@
+/* В начале файла определяем поддержку светлой и темной темы */
 :root {
     color-scheme: light dark;
+}
 
-    /* Material You colors */
+/* Светлая тема (по умолчанию) */
+:root {
     --md-sys-color-primary: #006C4C;
     --md-sys-color-on-primary: #FFFFFF;
     --md-sys-color-primary-container: #89F8C7;
@@ -25,15 +28,14 @@
     --md-sys-color-outline: #707973;
     --md-sys-color-outline-variant: #BFC9C2;
     
-    /* Material elevation */
     --md-elevation-1: 0px 1px 2px rgba(0,0,0,0.3), 0px 1px 3px 1px rgba(0,0,0,0.15);
     --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15), 0px 1px 2px rgba(0,0,0,0.3);
     --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
 }
 
+/* Темная тема (автоматически при системной темной теме) */
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Dark theme colors */
         --md-sys-color-primary: #6CDBA9;
         --md-sys-color-on-primary: #003826;
         --md-sys-color-primary-container: #005138;
@@ -56,6 +58,10 @@
         
         --md-sys-color-outline: #8A938C;
         --md-sys-color-outline-variant: #404943;
+        
+        --md-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.15);
+        --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15);
+        --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15);
     }
 }
 
