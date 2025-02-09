@@ -33,16 +33,29 @@ class ExpenseManager {
         });
         this.saveToLocalStorage();
         this.renderTransactions();
-        this.updateSummary();
-        updateCharts();
+        if (typeof window.updateCharts === 'function') {
+            window.updateCharts();
+        }
     }
 
-    deleteTransaction(index) {
-        this.transactions.splice(index, 1);
+    deleteTransaction(id) {
+        this.transactions = this.transactions.filter(transaction => transaction.id !== id);
         this.saveToLocalStorage();
         this.renderTransactions();
-        this.updateSummary();
-        updateCharts();
+        if (typeof window.updateCharts === 'function') {
+            window.updateCharts();
+        }
+    }
+
+    updateTransaction(id, updatedTransaction) {
+        this.transactions = this.transactions.map(transaction => 
+            transaction.id === id ? {...updatedTransaction, id} : transaction
+        );
+        this.saveToLocalStorage();
+        this.renderTransactions();
+        if (typeof window.updateCharts === 'function') {
+            window.updateCharts();
+        }
     }
 
     setupDateFilter() {
@@ -98,7 +111,7 @@ class ExpenseManager {
                 <div class="${amountClass}">
                     ${sign}${t.amount} ₸
                 </div>
-                <button onclick="expenseManager.deleteTransaction(${index})">×</button>
+                <button onclick="expenseManager.deleteTransaction(${t.id})">×</button>
             `;
 
             container.appendChild(div);
@@ -126,7 +139,39 @@ class ExpenseManager {
     }
 
     getTransactions() {
-        return this.getFilteredTransactions();
+        let filtered = [...this.transactions];
+        
+        // Применяем фильтры по дате
+        if (this.dateFilters.from) {
+            filtered = filtered.filter(t => 
+                new Date(t.date) >= new Date(this.dateFilters.from)
+            );
+        }
+        if (this.dateFilters.to) {
+            filtered = filtered.filter(t => 
+                new Date(t.date) <= new Date(this.dateFilters.to)
+            );
+        }
+        
+        return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    setDateFilter(from, to) {
+        this.dateFilters.from = from || null;
+        this.dateFilters.to = to || null;
+        this.renderTransactions();
+        if (typeof window.updateCharts === 'function') {
+            window.updateCharts();
+        }
+    }
+
+    resetDateFilter() {
+        this.dateFilters.from = null;
+        this.dateFilters.to = null;
+        this.renderTransactions();
+        if (typeof window.updateCharts === 'function') {
+            window.updateCharts();
+        }
     }
 }
 
@@ -140,9 +185,7 @@ function getTransactionType(type) {
 // Обновляем обработчик удаления
 window.deleteTransaction = function(id) {
     if (confirm('Вы уверены, что хотите удалить эту запись?')) {
-        window.expenseManager.transactions = window.expenseManager.transactions.filter(t => t.id !== id);
-        window.expenseManager.saveToLocalStorage();
-        window.expenseManager.renderTransactions();
+        window.expenseManager.deleteTransaction(id);
     }
 };
 
@@ -175,21 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyFilter = document.getElementById('applyDateFilter');
     const resetFilter = document.getElementById('resetDateFilter');
 
-    if (applyFilter) {
+    if (applyFilter && dateFrom && dateTo) {
         applyFilter.addEventListener('click', () => {
-            expenseManager.setDateFilter(dateFrom?.value || '', dateTo?.value || '');
-            renderExpensesTable();
-            updateCharts();
+            expenseManager.setDateFilter(dateFrom.value, dateTo.value);
         });
     }
 
-    if (resetFilter) {
+    if (resetFilter && dateFrom && dateTo) {
         resetFilter.addEventListener('click', () => {
-            if (dateFrom) dateFrom.value = '';
-            if (dateTo) dateTo.value = '';
+            dateFrom.value = '';
+            dateTo.value = '';
             expenseManager.resetDateFilter();
-            renderExpensesTable();
-            updateCharts();
         });
     }
 }); 
