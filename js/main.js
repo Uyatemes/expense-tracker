@@ -1,11 +1,14 @@
 // Определяем класс для управления расходами
 class ExpenseManager {
     constructor() {
-        this.transactions = [];
-        this.loadFromLocalStorage();
-        this.renderTransactions();
-        this.updateTotals();
-        this.setupDateFilter();
+        // Ждем загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            this.transactions = [];
+            this.loadFromLocalStorage();
+            this.renderTransactions();
+            this.updateTotals();
+            this.setupDateFilter();
+        });
     }
 
     loadFromLocalStorage() {
@@ -119,8 +122,10 @@ class ExpenseManager {
     }
 }
 
-// Создаем глобальный экземпляр
-window.expenseManager = new ExpenseManager();
+// Создаем глобальный экземпляр после загрузки DOM
+document.addEventListener('DOMContentLoaded', () => {
+    window.expenseManager = new ExpenseManager();
+});
 
 // Функция для добавления новой транзакции
 function addNewTransaction() {

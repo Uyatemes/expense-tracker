@@ -1,14 +1,20 @@
-// Глобальные переменные для хранения экземпляров графиков
+// Глобальные переменные для графиков
 let categoryChart = null;
-let balanceChart = null;
+let monthlyChart = null;
 
+// Функция обновления графиков
 function updateCharts() {
+    // Проверяем, что expenseManager существует
+    if (!window.expenseManager) return;
+    
     updateCategoryChart();
     updateBalanceChart();
 }
 
 function updateCategoryChart() {
     const ctx = document.getElementById('categoryChart');
+    if (!ctx) return;
+    
     if (categoryChart) {
         categoryChart.destroy();
     }
@@ -37,17 +43,16 @@ function updateCategoryChart() {
                     '#9966FF'
                 ]
             }]
-        },
-        options: {
-            responsive: true
         }
     });
 }
 
 function updateBalanceChart() {
-    const ctx = document.getElementById('balanceChart');
-    if (balanceChart) {
-        balanceChart.destroy();
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    if (monthlyChart) {
+        monthlyChart.destroy();
     }
 
     const transactions = window.expenseManager.getTransactions();
@@ -59,7 +64,7 @@ function updateBalanceChart() {
         monthly[month] = (monthly[month] || 0) + amount;
     });
 
-    balanceChart = new Chart(ctx, {
+    monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: Object.keys(monthly),
@@ -80,5 +85,8 @@ function updateBalanceChart() {
     });
 }
 
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', updateCharts); 
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    // Даем время на инициализацию expenseManager
+    setTimeout(updateCharts, 100);
+}); 

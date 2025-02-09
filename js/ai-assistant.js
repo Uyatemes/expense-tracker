@@ -1,15 +1,20 @@
 class AIAssistant {
     constructor() {
-        this.chatBox = document.getElementById('chat-messages');
-        this.input = document.getElementById('user-input');
-        this.sendButton = document.getElementById('send-message');
-        
-        this.sendButton.onclick = () => this.processInput();
-        this.input.onkeypress = (e) => {
-            if (e.key === 'Enter') this.processInput();
-        };
+        // Ждем загрузку DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            this.chatBox = document.getElementById('chat-messages');
+            this.input = document.getElementById('user-input');
+            this.sendButton = document.getElementById('send-message');
+            
+            if (this.sendButton && this.input) {
+                this.sendButton.onclick = () => this.processInput();
+                this.input.onkeypress = (e) => {
+                    if (e.key === 'Enter') this.processInput();
+                };
+            }
 
-        this.showWelcomeMessage();
+            this.showWelcomeMessage();
+        });
     }
 
     showWelcomeMessage() {
@@ -79,7 +84,5 @@ class AIAssistant {
     }
 }
 
-// Создаем экземпляр при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    window.aiAssistant = new AIAssistant();
-});
+// Создаем экземпляр
+window.aiAssistant = new AIAssistant();
