@@ -6,14 +6,6 @@ class ExpenseManager {
             from: null,
             to: null
         };
-
-        // Ждем загрузки DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            this.loadFromLocalStorage();
-            this.renderTransactions();
-            this.updateSummary();
-            this.setupDateFilter();
-        });
     }
 
     loadFromLocalStorage() {
@@ -175,14 +167,44 @@ class ExpenseManager {
     }
 }
 
-// Создаем глобальный экземпляр
+// Создаем глобальный экземпляр менеджера
 window.expenseManager = new ExpenseManager();
 
-function getTransactionType(type) {
-    return type === 'expense' ? 'Расход' : 'Доход';
-}
+// Дожидаемся полной загрузки страницы
+window.addEventListener('load', () => {
+    console.log('Страница полностью загружена');
+    
+    // Инициализация менеджера
+    const expenseManager = window.expenseManager;
+    expenseManager.renderTransactions();
 
-// Обновляем обработчик удаления
+    // Находим элементы фильтров
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const applyFilter = document.getElementById('applyDateFilter');
+    const resetFilter = document.getElementById('resetDateFilter');
+
+    console.log('Элементы фильтров:', { dateFrom, dateTo, applyFilter, resetFilter });
+
+    // Добавляем обработчики только если все элементы найдены
+    if (dateFrom && dateTo && applyFilter && resetFilter) {
+        console.log('Добавляем обработчики фильтров');
+        
+        applyFilter.onclick = () => {
+            expenseManager.setDateFilter(dateFrom.value, dateTo.value);
+        };
+
+        resetFilter.onclick = () => {
+            dateFrom.value = '';
+            dateTo.value = '';
+            expenseManager.resetDateFilter();
+        };
+    } else {
+        console.warn('Не все элементы фильтров найдены');
+    }
+});
+
+// Глобальная функция удаления
 window.deleteTransaction = function(id) {
     if (confirm('Вы уверены, что хотите удалить эту запись?')) {
         window.expenseManager.deleteTransaction(id);
