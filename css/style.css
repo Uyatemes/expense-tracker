@@ -159,6 +159,7 @@ body {
 
 /* Transactions */
 .transaction-item {
+    display: flex;
     background-color: var(--md-sys-color-surface-container);
     border-radius: 28px;
     padding: 16px;
