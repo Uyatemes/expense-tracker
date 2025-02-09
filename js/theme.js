@@ -2,10 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
     const themeToggleFab = document.getElementById('themeToggleFab');
     
-    // Проверяем сохраненную тему
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
-    console.log('Initial theme set to:', savedTheme);
+    // Функция определения системной темы
+    function getSystemTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
     
     // Функция применения темы
     function applyTheme(theme) {
@@ -14,9 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Theme applied:', theme);
     }
     
+    // Проверяем сохраненную тему или используем системную
+    const savedTheme = localStorage.getItem('theme');
+    const initialTheme = savedTheme || getSystemTheme();
+    applyTheme(initialTheme);
+    
+    // Следим за изменением системной темы
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) { // Если пользователь не выбрал тему вручную
+            const newTheme = e.matches ? 'dark' : 'light';
+            applyTheme(newTheme);
+        }
+    });
+    
     // Устанавливаем правильное состояние переключателя
     if (themeToggle) {
-        themeToggle.checked = savedTheme === 'dark';
+        themeToggle.checked = initialTheme === 'dark';
         
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
@@ -24,13 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Theme toggled to:', newTheme);
         });
     }
-
-    // Слушаем изменения системной темы
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('theme')) {
-            applyTheme(e.matches ? 'dark' : 'light');
-        }
-    });
 
     // Обработчик клика по FAB
     if (themeToggleFab) {
