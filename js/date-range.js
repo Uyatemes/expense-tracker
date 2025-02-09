@@ -1,10 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Добавим отладочный вывод
+    console.log('Theme before:', localStorage.getItem('theme'));
+    
     // Удалим принудительную установку светлой темы
     // document.documentElement.setAttribute('data-theme', 'light');
     // localStorage.setItem('theme', 'light');
 
     // Добавим обработчик для переключения темы
     const themeToggle = document.getElementById('themeToggle');
+    console.log('Theme toggle element:', themeToggle);
     
     // Проверяем сохраненную тему
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -13,9 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Устанавливаем правильное состояние переключателя
     if (themeToggle) {
         themeToggle.checked = savedTheme === 'dark';
+        console.log('Theme toggle checked:', themeToggle.checked);
         
         themeToggle.addEventListener('change', () => {
             const newTheme = themeToggle.checked ? 'dark' : 'light';
+            console.log('Switching theme to:', newTheme);
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
         });
