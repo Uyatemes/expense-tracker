@@ -81,32 +81,50 @@ class AIAssistant {
         // Анализ текста
         const result = this.analyzeText(text);
 
-        if (result.amount && result.category) {
+        if (result.amount && result.type && result.source) {
             window.expenseManager.addTransaction({
+                date: result.date || new Date().toISOString().split('T')[0],
+                type: result.type,
                 amount: result.amount,
-                category: result.category,
-                date: new Date().toISOString().split('T')[0],
+                source: result.source,
                 note: result.note || text
             });
 
             this.addMessage(`Добавлена транзакция:
+                Дата: ${result.date || 'сегодня'}
+                Тип: ${result.type}
                 Сумма: ${result.amount}₸
-                Категория: ${result.category}
+                Источник: ${result.source}
                 ${result.note ? 'Примечание: ' + result.note : ''}`, 'assistant');
             
             this.input.value = '';
             renderTransactionsTable();
         } else {
-            this.addMessage('Не удалось распознать транзакцию. Попробуйте написать например: "1600 полиграфия расход каспий"', 'assistant');
+            this.addMessage('Не удалось распознать транзакцию. Попробуйте написать например: "расход 1600 каспий за полиграфию" или "приход 50000 халык зарплата"', 'assistant');
         }
     }
 
     analyzeText(text) {
         const result = {
+            date: null,
+            type: null,
             amount: null,
-            category: null,
+            source: null,
             note: null
         };
+
+        // Поиск даты (если есть)
+        const dateMatch = text.match(/\d{4}-\d{2}-\d{2}|\d{2}\.\d{2}\.\d{4}/);
+        if (dateMatch) {
+            result.date = dateMatch[0].replace(/\./g, '-');
+        }
+
+        // Поиск типа (расход/приход)
+        if (text.toLowerCase().includes('расход')) {
+            result.type = 'расход';
+        } else if (text.toLowerCase().includes('приход')) {
+            result.type = 'приход';
+        }
 
         // Поиск суммы (число)
         const amountMatch = text.match(/\d+(\.\d+)?/);
@@ -114,25 +132,21 @@ class AIAssistant {
             result.amount = parseFloat(amountMatch[0]);
         }
 
-        // Поиск категории
-        const categories = [
-            'полиграфия',
+        // Поиск источника
+        const sources = [
             'каспий',
-            'продукты',
-            'транспорт',
-            'развлечения',
-            'кафе',
-            'одежда',
-            'такси',
-            'аренда',
-            'связь',
-            'интернет',
-            'коммуналка'
+            'халык',
+            'сбербанк',
+            'jusan',
+            'наличные',
+            'kaspi',
+            'halyk',
+            'сбер'
         ];
 
-        for (let category of categories) {
-            if (text.toLowerCase().includes(category.toLowerCase())) {
-                result.category = category;
+        for (let source of sources) {
+            if (text.toLowerCase().includes(source.toLowerCase())) {
+                result.source = source;
                 break;
             }
         }
@@ -144,16 +158,6 @@ class AIAssistant {
             if (index !== -1) {
                 result.note = text.slice(index + keyword.length).trim();
                 break;
-            }
-        }
-
-        // Если примечание не найдено, но есть категория
-        if (!result.note && result.category) {
-            const categoryIndex = text.toLowerCase().indexOf(result.category.toLowerCase());
-            if (categoryIndex !== -1) {
-                const beforeCategory = text.slice(0, categoryIndex).trim();
-                const afterCategory = text.slice(categoryIndex + result.category.length).trim();
-                result.note = (beforeCategory + ' ' + afterCategory).trim();
             }
         }
 
