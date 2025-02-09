@@ -430,6 +430,20 @@ body {
         width: 100%;
         justify-content: center;
     }
+
+    main.container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #expensesTableBody {
+        order: 1;
+    }
+
+    .charts {
+        order: 2;
+        grid-template-columns: 1fr;
+    }
 }
 
 @media print {
