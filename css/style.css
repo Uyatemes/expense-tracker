@@ -394,19 +394,42 @@ body {
     color: var(--md-sys-color-on-error);
 }
 
-/* Добавьте в конец файла */
+/* Обновляем стили для кнопки экспорта */
 .export-btn {
-    background: var(--md-sys-color-primary) !important;
-    color: var(--md-sys-color-on-primary) !important;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-left: auto;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 20px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+}
+
+.export-btn:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
 }
 
 .export-btn svg {
     width: 20px;
     height: 20px;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 600px) {
+    .date-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .export-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 @media print {
