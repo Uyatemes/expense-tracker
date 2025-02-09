@@ -6,6 +6,10 @@ class ExpenseManager {
             from: null,
             to: null
         };
+        
+        // Привязываем методы к контексту
+        this.handleApplyFilter = this.handleApplyFilter.bind(this);
+        this.handleResetFilter = this.handleResetFilter.bind(this);
     }
 
     loadFromLocalStorage() {
@@ -83,31 +87,30 @@ class ExpenseManager {
     }
 
     renderTransactions() {
-        const container = document.querySelector('.transactions');
-        container.innerHTML = '';
+        const transactionsList = document.getElementById('expensesTableBody');
+        if (!transactionsList) return;
+        
+        const transactions = this.getTransactions();
 
-        this.getFilteredTransactions().forEach((t, index) => {
-            const div = document.createElement('div');
-            div.className = 'transaction';
-
-            const isExpense = t.type === 'расход';
-            const sign = isExpense ? '-' : '+';
-            const amountClass = isExpense ? 'amount-expense' : 'amount-income';
-
-            div.innerHTML = `
+        transactionsList.innerHTML = transactions.map(t => `
+            <div class="transaction-item">
                 <div class="transaction-info">
-                    <div class="transaction-date">${this.formatDate(t.date)}</div>
-                    <div>${t.category}</div>
-                    <div>${t.source}</div>
+                    <div class="transaction-date">${new Date(t.date).toLocaleDateString()}</div>
+                    <div class="transaction-description">${t.description}</div>
+                    <div class="transaction-source">${t.source}</div>
                 </div>
-                <div class="${amountClass}">
-                    ${sign}${t.amount} ₸
+                <div class="transaction-amount ${t.type}">
+                    ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
                 </div>
-                <button onclick="expenseManager.deleteTransaction(${t.id})">×</button>
-            `;
+                <button onclick="window.expenseManager.deleteTransaction(${t.id})" class="delete-btn" title="Удалить">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
 
-            container.appendChild(div);
-        });
+        this.updateTotals(transactions);
     }
 
     updateSummary() {
@@ -133,7 +136,6 @@ class ExpenseManager {
     getTransactions() {
         let filtered = [...this.transactions];
         
-        // Применяем фильтры по дате
         if (this.dateFilters.from) {
             filtered = filtered.filter(t => 
                 new Date(t.date) >= new Date(this.dateFilters.from)
@@ -146,6 +148,24 @@ class ExpenseManager {
         }
         
         return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    handleApplyFilter() {
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        if (dateFrom && dateTo) {
+            this.setDateFilter(dateFrom.value, dateTo.value);
+        }
+    }
+
+    handleResetFilter() {
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        if (dateFrom && dateTo) {
+            dateFrom.value = '';
+            dateTo.value = '';
+            this.resetDateFilter();
+        }
     }
 
     setDateFilter(from, to) {
@@ -165,44 +185,50 @@ class ExpenseManager {
             window.updateCharts();
         }
     }
+
+    updateTotals(transactions) {
+        const totalIncome = document.getElementById('totalIncome');
+        const totalExpense = document.getElementById('totalExpense');
+
+        if (totalIncome && totalExpense) {
+            const income = transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                
+            const expense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+            totalIncome.querySelector('.total-amount').textContent = 
+                `${income.toLocaleString('ru-RU')} ₸`;
+            totalExpense.querySelector('.total-amount').textContent = 
+                `${expense.toLocaleString('ru-RU')} ₸`;
+        }
+    }
 }
 
 // Создаем глобальный экземпляр менеджера
 window.expenseManager = new ExpenseManager();
 
-// Дожидаемся полной загрузки страницы
-window.addEventListener('load', () => {
-    console.log('Страница полностью загружена');
-    
-    // Инициализация менеджера
+// Инициализация при загрузке страницы
+window.onload = function() {
     const expenseManager = window.expenseManager;
+    
+    // Рендерим начальное состояние
     expenseManager.renderTransactions();
 
-    // Находим элементы фильтров
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
+    // Добавляем обработчики через onclick
     const applyFilter = document.getElementById('applyDateFilter');
     const resetFilter = document.getElementById('resetDateFilter');
 
-    console.log('Элементы фильтров:', { dateFrom, dateTo, applyFilter, resetFilter });
-
-    // Добавляем обработчики только если все элементы найдены
-    if (dateFrom && dateTo && applyFilter && resetFilter) {
-        console.log('Добавляем обработчики фильтров');
-        
-        applyFilter.onclick = () => {
-            expenseManager.setDateFilter(dateFrom.value, dateTo.value);
-        };
-
-        resetFilter.onclick = () => {
-            dateFrom.value = '';
-            dateTo.value = '';
-            expenseManager.resetDateFilter();
-        };
-    } else {
-        console.warn('Не все элементы фильтров найдены');
+    if (applyFilter) {
+        applyFilter.onclick = () => expenseManager.handleApplyFilter();
     }
-});
+
+    if (resetFilter) {
+        resetFilter.onclick = () => expenseManager.handleResetFilter();
+    }
+};
 
 // Глобальная функция удаления
 window.deleteTransaction = function(id) {
