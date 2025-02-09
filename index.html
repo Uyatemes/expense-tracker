@@ -81,6 +81,19 @@
         <button onclick="exportData()">Скачать данные</button>
         <input type="file" onchange="importData(this.files[0])" style="display: none" id="importFile">
         <button onclick="document.getElementById('importFile').click()">Загрузить данные</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Категория</th>
+                    <th>Сумма</th>
+                    <th>Примечание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="transactionsTable"></tbody>
+        </table>
     </main>
 
     <!-- Подключение скриптов в конце body -->

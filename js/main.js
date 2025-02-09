@@ -66,8 +66,10 @@ function addNewTransaction() {
 
 // Функция для отображения таблицы транзакций
 function renderTransactionsTable() {
-    const transactions = window.expenseManager.getTransactions();
     const tableBody = document.getElementById('transactionsTable');
+    if (!tableBody) return; // Проверяем существование элемента
+
+    const transactions = window.expenseManager.getTransactions();
     
     tableBody.innerHTML = '';
     
@@ -88,7 +90,10 @@ function renderTransactionsTable() {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    renderTransactionsTable();
+    const tableBody = document.getElementById('transactionsTable');
+    if (tableBody) { // Проверяем существование элемента
+        renderTransactionsTable();
+    }
     if(typeof updateCharts === 'function') {
         updateCharts();
     }
