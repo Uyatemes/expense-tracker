@@ -2,12 +2,22 @@
 class ExpenseManager {
     constructor() {
         this.transactions = [];
+        this.loadFromLocalStorage();
         this.userId = null;
         this.db = firebase.firestore();
         this.dateFilters = {
             from: null,
             to: null
         };
+    }
+
+    loadFromLocalStorage() {
+        const saved = localStorage.getItem('expenses');
+        this.transactions = saved ? JSON.parse(saved) : [];
+    }
+
+    saveToLocalStorage() {
+        localStorage.setItem('expenses', JSON.stringify(this.transactions));
     }
 
     // Авторизация пользователя
@@ -46,6 +56,7 @@ class ExpenseManager {
         this.transactions.push(transaction);
         
         renderExpensesTable();
+        updateCharts();
     }
 
     // Удаление транзакции
@@ -60,6 +71,7 @@ class ExpenseManager {
         this.transactions = this.transactions.filter(t => t.id !== id);
         
         renderExpensesTable();
+        updateCharts();
     }
 
     updateTransaction(id, updatedTransaction) {
@@ -67,10 +79,6 @@ class ExpenseManager {
             transaction.id === id ? {...updatedTransaction, id} : transaction
         );
         this.saveToLocalStorage();
-    }
-
-    saveToLocalStorage() {
-        localStorage.setItem('transactions', JSON.stringify(this.transactions));
     }
 
     getTransactions(filters = {}) {
@@ -231,4 +239,28 @@ document.getElementById('typeFilter').addEventListener('change', renderExpensesT
 document.getElementById('categoryFilter').addEventListener('change', renderExpensesTable);
 
 // Инициализация при загрузке страницы
-renderExpensesTable(); 
+renderExpensesTable();
+
+// Экспорт данных (скачать файл)
+function exportData() {
+    const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    const dataStr = JSON.stringify(expenses);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'expenses.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+// Импорт данных (загрузить файл)
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const expenses = JSON.parse(e.target.result);
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+        location.reload(); // Перезагрузить страницу для отображения данных
+    };
+    reader.readAsText(file);
+} 

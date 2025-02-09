@@ -3,21 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#F14635">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Учёт расходов</title>
-    
-    <!-- PWA мета-теги -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Expenses">
-    
-    <!-- Иконки для iOS -->
-    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
-    
     <link rel="stylesheet" href="css/style.css">
-    <!-- Chart.js для графиков -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Подключаем Chart.js локально -->
+    <script src="js/chart.min.js"></script>
 </head>
 <body>
     <header class="kaspi-header">
@@ -87,6 +77,10 @@
                 </div>
             </div>
         </section>
+
+        <button onclick="exportData()">Скачать данные</button>
+        <input type="file" onchange="importData(this.files[0])" style="display: none" id="importFile">
+        <button onclick="document.getElementById('importFile').click()">Загрузить данные</button>
     </main>
 
     <!-- Подключение скриптов в конце body -->
