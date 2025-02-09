@@ -8,14 +8,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateRangeText = document.getElementById('dateRangeText');
     const cancelButton = document.getElementById('cancelDateRange');
     const applyButton = document.getElementById('applyDateRange');
+    const customDateRange = document.getElementById('customDateRange');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
 
     let customStartDate = new Date();
     let customEndDate = new Date();
+    customStartDate.setDate(customEndDate.getDate() - 7);
 
     // Форматирование даты
     function formatDate(date) {
         const options = { day: 'numeric', month: 'long' };
         return date.toLocaleDateString('ru-RU', options);
+    }
+
+    // Форматирование даты для input type="date"
+    function formatDateForInput(date) {
+        return date.toISOString().split('T')[0];
     }
 
     // Обновление текста с датами
@@ -34,41 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
             startDate.setMonth(endDate.getMonth() - 1);
         } else if (period === 'custom') {
             return {
-                startDate: customStartDate,
-                endDate: customEndDate
+                startDate: new Date(startDateInput.value),
+                endDate: new Date(endDateInput.value)
             };
         }
         
         return { startDate, endDate };
-    }
-
-    // Показ календаря для выбора даты
-    async function showDatePicker(isStartDate) {
-        const input = document.createElement('input');
-        input.type = 'date';
-        input.style.position = 'absolute';
-        input.style.opacity = '0';
-        document.body.appendChild(input);
-
-        try {
-            await input.showPicker();
-            
-            return new Promise((resolve) => {
-                input.addEventListener('change', () => {
-                    const selectedDate = new Date(input.value);
-                    document.body.removeChild(input);
-                    resolve(selectedDate);
-                });
-
-                input.addEventListener('cancel', () => {
-                    document.body.removeChild(input);
-                    resolve(null);
-                });
-            });
-        } catch (e) {
-            document.body.removeChild(input);
-            return null;
-        }
     }
 
     // Установка начального периода
@@ -76,20 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDateRangeText(initialRange.startDate, initialRange.endDate);
     window.expenseManager.setDateFilter(initialRange.startDate, initialRange.endDate);
 
+    // Установка начальных значений для календарей
+    startDateInput.value = formatDateForInput(customStartDate);
+    endDateInput.value = formatDateForInput(customEndDate);
+
     // Обработчик изменения типа периода
     document.querySelectorAll('input[name="period"]').forEach(radio => {
-        radio.addEventListener('change', async (e) => {
-            if (e.target.value === 'custom') {
-                // Показываем календарь для начальной даты
-                const startDate = await showDatePicker(true);
-                if (startDate) {
-                    customStartDate = startDate;
-                    // Показываем календарь для конечной даты
-                    const endDate = await showDatePicker(false);
-                    if (endDate) {
-                        customEndDate = endDate;
-                    }
-                }
+        radio.addEventListener('change', (e) => {
+            customDateRange.style.display = e.target.value === 'custom' ? 'block' : 'none';
+            
+            if (e.target.value !== 'custom') {
+                const { startDate, endDate } = getDateRange(e.target.value);
+                startDateInput.value = formatDateForInput(startDate);
+                endDateInput.value = formatDateForInput(endDate);
             }
         });
     });

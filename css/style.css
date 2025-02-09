@@ -585,24 +585,42 @@ body {
 
 /* Добавим стили для кастомного выбора дат */
 .custom-date-range {
-    margin-top: 1rem;
-}
-
-.date-select-button {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border: none;
+    margin-top: 12px;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container-high);
     border-radius: 16px;
-    background-color: var(--md-sys-color-surface-variant);
-    color: var(--md-sys-color-on-surface-variant);
-    cursor: pointer;
-    transition: background-color 0.2s;
 }
 
-.date-select-button:hover {
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+.date-input-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.date-input-group:last-child {
+    margin-bottom: 0;
+}
+
+.date-input-group label {
+    color: var(--md-sys-color-on-surface);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+    font-size: 14px;
+    min-width: 30px;
+}
+
+.date-input-group input[type="date"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+    font-size: 14px;
+}
+
+.date-input-group input[type="date"]:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
 } 
