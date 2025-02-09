@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Принудительно устанавливаем светлую тему
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+
     const dateRangeButton = document.getElementById('dateRangeButton');
     const dateRangeModal = document.getElementById('dateRangeModal');
     const dateRangeText = document.getElementById('dateRangeText');
