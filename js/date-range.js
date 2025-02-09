@@ -8,11 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateRangeText = document.getElementById('dateRangeText');
     const cancelButton = document.getElementById('cancelDateRange');
     const applyButton = document.getElementById('applyDateRange');
+    const customDateRange = document.getElementById('customDateRange');
+    const customDateFrom = document.getElementById('customDateFrom');
+    const customDateTo = document.getElementById('customDateTo');
 
     // Форматирование даты
     function formatDate(date) {
         const options = { day: 'numeric', month: 'long' };
         return date.toLocaleDateString('ru-RU', options);
+    }
+
+    // Форматирование даты для input type="date"
+    function formatDateForInput(date) {
+        return date.toISOString().split('T')[0];
     }
 
     // Обновление текста с датами
@@ -29,6 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
             startDate.setDate(endDate.getDate() - 7);
         } else if (period === 'month') {
             startDate.setMonth(endDate.getMonth() - 1);
+        } else if (period === 'custom') {
+            return {
+                startDate: new Date(customDateFrom.value),
+                endDate: new Date(customDateTo.value)
+            };
         }
         
         return { startDate, endDate };
@@ -38,6 +51,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialRange = getDateRange('week');
     updateDateRangeText(initialRange.startDate, initialRange.endDate);
     window.expenseManager.setDateFilter(initialRange.startDate, initialRange.endDate);
+
+    // Обработчик изменения типа периода
+    document.querySelectorAll('input[name="period"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            customDateRange.style.display = e.target.value === 'custom' ? 'block' : 'none';
+            
+            if (e.target.value !== 'custom') {
+                const { startDate, endDate } = getDateRange(e.target.value);
+                customDateFrom.value = formatDateForInput(startDate);
+                customDateTo.value = formatDateForInput(endDate);
+            }
+        });
+    });
+
+    // Установка текущей даты для кастомного периода
+    const today = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 7);
+    customDateFrom.value = formatDateForInput(weekAgo);
+    customDateTo.value = formatDateForInput(today);
 
     // Обработчики событий
     dateRangeButton.addEventListener('click', () => {
