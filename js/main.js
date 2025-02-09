@@ -121,7 +121,7 @@ class ExpenseManager {
                 <div class="transaction-amount ${t.type}">
                     ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
                 </div>
-                <button onclick="window.expenseManager.deleteTransaction(${t.id})" class="delete-btn" title="Удалить">
+                <button onclick="window.expenseManager.showConfirmDialog(${t.id})" class="delete-btn" title="Удалить">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
                     </svg>
@@ -224,12 +224,41 @@ class ExpenseManager {
                 `${expense.toLocaleString('ru-RU')} ₸`;
         }
     }
+
+    showConfirmDialog(id) {
+        const dialog = document.getElementById('confirmDialog');
+        const confirmBtn = document.getElementById('confirmDelete');
+        const cancelBtn = document.getElementById('confirmCancel');
+        
+        if (!dialog) return;
+        
+        dialog.classList.add('active');
+        
+        const handleDelete = () => {
+            this.deleteTransaction(id);
+            dialog.classList.remove('active');
+            cleanup();
+        };
+        
+        const handleCancel = () => {
+            dialog.classList.remove('active');
+            cleanup();
+        };
+        
+        const cleanup = () => {
+            confirmBtn.removeEventListener('click', handleDelete);
+            cancelBtn.removeEventListener('click', handleCancel);
+        };
+        
+        confirmBtn.addEventListener('click', handleDelete);
+        cancelBtn.addEventListener('click', handleCancel);
+    }
 }
 
 // Создаем глобальный экземпляр менеджера
 window.expenseManager = new ExpenseManager();
 
-// Глобальная функция удаления для использования в onclick
+// Глобальная функция удаления
 window.deleteTransaction = function(id) {
     if (confirm('Вы уверены, что хотите удалить эту запись?')) {
         window.expenseManager.deleteTransaction(id);

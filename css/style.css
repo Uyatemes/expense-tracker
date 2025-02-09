@@ -251,4 +251,65 @@ body {
     .charts {
         grid-template-columns: 1fr;
     }
+}
+
+/* Добавьте в конец файла */
+.confirm-dialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-dialog.active {
+    display: flex;
+}
+
+.confirm-dialog-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-dialog h3 {
+    margin: 0 0 1rem;
+    color: #333;
+}
+
+.confirm-dialog p {
+    margin: 0 0 1.5rem;
+    color: var(--kaspi-gray);
+}
+
+.confirm-dialog-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.confirm-dialog button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: var(--kaspi-light-gray);
+    color: var(--kaspi-gray);
+}
+
+.btn-delete {
+    background: var(--kaspi-red);
+    color: white;
 } 
