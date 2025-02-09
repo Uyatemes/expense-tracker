@@ -46,17 +46,21 @@
 
         <!-- Фильтры и экспорт -->
         <section class="date-filter">
-            <input type="date" id="dateFrom">
-            <span>—</span>
-            <input type="date" id="dateTo">
-            <button id="applyDateFilter">Показать</button>
-            <button id="resetDateFilter">Сбросить</button>
-            <button id="exportPDF" class="export-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                </svg>
-                Экспорт PDF
-            </button>
+            <div class="date-range">
+                <input type="date" id="dateFrom">
+                <span>—</span>
+                <input type="date" id="dateTo">
+            </div>
+            <div class="buttons">
+                <button id="applyDateFilter">Показать</button>
+                <button id="resetDateFilter">Сбросить</button>
+                <button id="exportPDF" class="export-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                    Экспорт PDF
+                </button>
+            </div>
         </section>
 
         <!-- Итоги -->
