@@ -10,6 +10,7 @@ class ExpenseManager {
         // Привязываем методы к контексту
         this.handleApplyFilter = this.handleApplyFilter.bind(this);
         this.handleResetFilter = this.handleResetFilter.bind(this);
+        this.showConfirmDialog = this.showConfirmDialog.bind(this);
         
         // Инициализация при создании экземпляра
         window.onload = () => {
@@ -44,6 +45,7 @@ class ExpenseManager {
         this.transactions.push({
             ...transaction, 
             id: Date.now(),
+            category: transaction.category || 'Другое',
             amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)
         });
         this.saveToLocalStorage();
@@ -116,7 +118,7 @@ class ExpenseManager {
                 <div class="transaction-info">
                     <div class="transaction-date">${new Date(t.date).toLocaleDateString()}</div>
                     <div class="transaction-description">${t.description}</div>
-                    <div class="transaction-source">${t.source}</div>
+                    <div class="transaction-source">${t.source || ''}</div>
                 </div>
                 <div class="transaction-amount ${t.type}">
                     ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
@@ -227,31 +229,46 @@ class ExpenseManager {
 
     showConfirmDialog(id) {
         const dialog = document.getElementById('confirmDialog');
+        if (!dialog) {
+            // Если диалог не найден, создаем его
+            const dialogHTML = `
+                <div id="confirmDialog" class="confirm-dialog">
+                    <div class="confirm-dialog-content">
+                        <h3>Подтверждение удаления</h3>
+                        <p>Вы действительно хотите удалить эту запись?</p>
+                        <div class="confirm-dialog-buttons">
+                            <button id="confirmCancel" class="btn-cancel">Отмена</button>
+                            <button id="confirmDelete" class="btn-delete">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', dialogHTML);
+        }
+
+        const confirmDialog = document.getElementById('confirmDialog');
         const confirmBtn = document.getElementById('confirmDelete');
         const cancelBtn = document.getElementById('confirmCancel');
-        
-        if (!dialog) return;
-        
-        dialog.classList.add('active');
-        
+
         const handleDelete = () => {
             this.deleteTransaction(id);
-            dialog.classList.remove('active');
+            confirmDialog.classList.remove('active');
             cleanup();
         };
         
         const handleCancel = () => {
-            dialog.classList.remove('active');
+            confirmDialog.classList.remove('active');
             cleanup();
         };
         
         const cleanup = () => {
-            confirmBtn.removeEventListener('click', handleDelete);
-            cancelBtn.removeEventListener('click', handleCancel);
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
         };
-        
-        confirmBtn.addEventListener('click', handleDelete);
-        cancelBtn.addEventListener('click', handleCancel);
+
+        confirmBtn.onclick = handleDelete;
+        cancelBtn.onclick = handleCancel;
+        confirmDialog.classList.add('active');
     }
 }
 

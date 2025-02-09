@@ -142,12 +142,25 @@ class AIExpenseAssistant {
             date.setDate(date.getDate() - 1);
         }
 
+        // Определяем категорию на основе описания
+        let category = 'Другое';
+        if (message.toLowerCase().includes('зарплата')) {
+            category = 'Зарплата';
+        } else if (message.toLowerCase().includes('продукты')) {
+            category = 'Продукты';
+        } else if (message.toLowerCase().includes('такси') || message.toLowerCase().includes('автобус')) {
+            category = 'Транспорт';
+        } else if (message.toLowerCase().includes('кафе') || message.toLowerCase().includes('ресторан')) {
+            category = 'Рестораны';
+        }
+
         return {
             amount,
             type,
             source,
             date: date.toISOString().split('T')[0],
-            description: details
+            description: details,
+            category: category
         };
     }
 
