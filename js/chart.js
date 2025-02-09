@@ -18,26 +18,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const transactions = window.expenseManager?.getTransactions() || [];
         
-        // Группировка операций по категориям
-        const categoryData = transactions.reduce((acc, t) => {
-            const key = `${t.category} (${t.type})`;
-            acc[key] = (acc[key] || 0) + Math.abs(t.amount);
+        // Группируем транзакции по типу (доход/расход)
+        const data = transactions.reduce((acc, t) => {
+            const type = t.type === 'income' ? 'Доходы' : 'Расходы';
+            acc[type] = (acc[type] || 0) + Math.abs(t.amount);
             return acc;
         }, {});
 
         categoryChart = new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: Object.keys(categoryData),
+                labels: Object.keys(data),
                 datasets: [{
-                    data: Object.values(categoryData),
+                    data: Object.values(data),
                     backgroundColor: [
-                        '#2ecc71',
-                        '#3498db',
-                        '#9b59b6',
-                        '#f1c40f',
-                        '#e74c3c',
-                        '#1abc9c'
+                        '#2ecc71', // зеленый для доходов
+                        '#e74c3c'  // красный для расходов
                     ]
                 }]
             },
@@ -46,7 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Операции по категориям'
+                        text: 'Соотношение доходов и расходов'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw;
+                                return `${label}: ${value.toLocaleString('ru-RU')} ₸`;
+                            }
+                        }
                     }
                 }
             }
