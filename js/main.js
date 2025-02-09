@@ -1,9 +1,14 @@
 // Класс для управления данными
 class ExpenseManager {
     constructor() {
+        this.transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        this.dateFilters = {
+            from: null,
+            to: null
+        };
+
         // Ждем загрузки DOM
         document.addEventListener('DOMContentLoaded', () => {
-            this.transactions = [];
             this.loadFromLocalStorage();
             this.renderTransactions();
             this.updateSummary();
@@ -21,8 +26,11 @@ class ExpenseManager {
     }
 
     addTransaction(transaction) {
-        this.transactions.push(transaction);
-        this.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        this.transactions.push({
+            ...transaction, 
+            id: Date.now(),
+            amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)
+        });
         this.saveToLocalStorage();
         this.renderTransactions();
         this.updateSummary();
@@ -140,4 +148,48 @@ window.deleteTransaction = function(id) {
 
 // Фильтрация
 document.getElementById('typeFilter').addEventListener('change', window.expenseManager.renderTransactions);
-document.getElementById('categoryFilter').addEventListener('change', window.expenseManager.renderTransactions); 
+document.getElementById('categoryFilter').addEventListener('change', window.expenseManager.renderTransactions);
+
+// Функции рендеринга и обновления
+window.renderExpensesTable = function() {
+    const transactionsList = document.getElementById('expensesTableBody');
+    if (!transactionsList) return;
+    
+    const transactions = expenseManager.getTransactions();
+    // ... остальной код функции ...
+};
+
+window.updateTotals = function(transactions) {
+    const totalIncome = document.getElementById('totalIncome');
+    const totalExpense = document.getElementById('totalExpense');
+    // ... остальной код функции ...
+};
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    renderExpensesTable();
+
+    // Инициализация обработчиков фильтров
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const applyFilter = document.getElementById('applyDateFilter');
+    const resetFilter = document.getElementById('resetDateFilter');
+
+    if (applyFilter) {
+        applyFilter.addEventListener('click', () => {
+            expenseManager.setDateFilter(dateFrom?.value || '', dateTo?.value || '');
+            renderExpensesTable();
+            updateCharts();
+        });
+    }
+
+    if (resetFilter) {
+        resetFilter.addEventListener('click', () => {
+            if (dateFrom) dateFrom.value = '';
+            if (dateTo) dateTo.value = '';
+            expenseManager.resetDateFilter();
+            renderExpensesTable();
+            updateCharts();
+        });
+    }
+}); 
