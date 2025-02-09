@@ -81,58 +81,70 @@ class AIAssistant {
         // Анализ текста
         const result = this.analyzeText(text);
 
-        if (result.amount && result.type && result.source) {
+        if (result.amount && result.type && result.category && result.source) {
             window.expenseManager.addTransaction({
-                date: result.date || new Date().toISOString().split('T')[0],
-                type: result.type,
+                date: new Date().toISOString().split('T')[0],
                 amount: result.amount,
-                source: result.source,
-                note: result.note || text
+                type: result.type,
+                category: result.category,
+                source: result.source
             });
 
             this.addMessage(`Добавлена транзакция:
-                Дата: ${result.date || 'сегодня'}
-                Тип: ${result.type}
                 Сумма: ${result.amount}₸
-                Источник: ${result.source}
-                ${result.note ? 'Примечание: ' + result.note : ''}`, 'assistant');
+                Тип: ${result.type}
+                Категория: ${result.category}
+                Источник: ${result.source}`, 'assistant');
             
             this.input.value = '';
             renderTransactionsTable();
         } else {
-            this.addMessage('Не удалось распознать транзакцию. Попробуйте написать например: "расход 1600 каспий за полиграфию" или "приход 50000 халык зарплата"', 'assistant');
+            this.addMessage('Не удалось распознать транзакцию. Напишите в формате: "1600 расход полиграфия каспий"', 'assistant');
         }
     }
 
     analyzeText(text) {
+        const words = text.toLowerCase().split(' ');
         const result = {
-            date: null,
-            type: null,
             amount: null,
-            source: null,
-            note: null
+            type: null,
+            category: null,
+            source: null
         };
 
-        // Поиск даты (если есть)
-        const dateMatch = text.match(/\d{4}-\d{2}-\d{2}|\d{2}\.\d{2}\.\d{4}/);
-        if (dateMatch) {
-            result.date = dateMatch[0].replace(/\./g, '-');
-        }
-
-        // Поиск типа (расход/приход)
-        if (text.toLowerCase().includes('расход')) {
-            result.type = 'расход';
-        } else if (text.toLowerCase().includes('приход')) {
-            result.type = 'приход';
-        }
-
-        // Поиск суммы (число)
+        // Поиск суммы (первое число)
         const amountMatch = text.match(/\d+(\.\d+)?/);
         if (amountMatch) {
             result.amount = parseFloat(amountMatch[0]);
         }
 
-        // Поиск источника
+        // Поиск типа
+        if (text.includes('расход')) {
+            result.type = 'расход';
+        } else if (text.includes('приход')) {
+            result.type = 'приход';
+        }
+
+        // Поиск категории
+        const categories = [
+            'полиграфия',
+            'продукты',
+            'транспорт',
+            'развлечения',
+            'кафе',
+            'одежда',
+            'такси',
+            'аренда'
+        ];
+
+        for (let category of categories) {
+            if (text.includes(category)) {
+                result.category = category;
+                break;
+            }
+        }
+
+        // Поиск источника (последнее слово)
         const sources = [
             'каспий',
             'халык',
@@ -145,18 +157,8 @@ class AIAssistant {
         ];
 
         for (let source of sources) {
-            if (text.toLowerCase().includes(source.toLowerCase())) {
+            if (text.includes(source)) {
                 result.source = source;
-                break;
-            }
-        }
-
-        // Поиск примечания
-        const noteKeywords = ['за', 'на', 'для', 'примечание:', 'note:'];
-        for (let keyword of noteKeywords) {
-            const index = text.toLowerCase().indexOf(keyword.toLowerCase());
-            if (index !== -1) {
-                result.note = text.slice(index + keyword.length).trim();
                 break;
             }
         }

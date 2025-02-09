@@ -75,10 +75,10 @@ function renderTransactionsTable() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${transaction.date}</td>
-            <td>${transaction.type || ''}</td>
             <td>${transaction.amount}</td>
+            <td>${transaction.type || ''}</td>
+            <td>${transaction.category || ''}</td>
             <td>${transaction.source || ''}</td>
-            <td>${transaction.note || ''}</td>
             <td>
                 <button onclick="window.expenseManager.deleteTransaction(${index}); renderTransactionsTable();">Удалить</button>
             </td>
