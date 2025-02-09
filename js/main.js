@@ -4,7 +4,8 @@ class ExpenseManager {
         this.transactions = [];
         this.loadFromLocalStorage();
         this.renderTransactions();
-        this.updateSummary();
+        this.updateTotals();
+        this.setupDateFilter();
     }
 
     loadFromLocalStorage() {
@@ -18,40 +19,69 @@ class ExpenseManager {
 
     addTransaction(transaction) {
         this.transactions.push(transaction);
+        this.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
         this.saveToLocalStorage();
         this.renderTransactions();
-        this.updateSummary();
-        if (typeof updateCharts === 'function') {
-            updateCharts();
-        }
+        this.updateTotals();
+        updateCharts();
     }
 
     deleteTransaction(index) {
         this.transactions.splice(index, 1);
         this.saveToLocalStorage();
         this.renderTransactions();
-        this.updateSummary();
-        if (typeof updateCharts === 'function') {
+        this.updateTotals();
+        updateCharts();
+    }
+
+    setupDateFilter() {
+        const applyFilter = document.getElementById('applyDateFilter');
+        const resetFilter = document.getElementById('resetDateFilter');
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+
+        applyFilter.onclick = () => {
+            this.renderTransactions();
+            this.updateTotals();
             updateCharts();
-        }
+        };
+
+        resetFilter.onclick = () => {
+            dateFrom.value = '';
+            dateTo.value = '';
+            this.renderTransactions();
+            this.updateTotals();
+            updateCharts();
+        };
+    }
+
+    getFilteredTransactions() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        return this.transactions.filter(t => {
+            if (dateFrom && t.date < dateFrom) return false;
+            if (dateTo && t.date > dateTo) return false;
+            return true;
+        });
     }
 
     renderTransactions() {
-        const container = document.querySelector('.transactions');
+        const container = document.getElementById('expensesTableBody');
         container.innerHTML = '';
 
-        this.transactions.forEach((t, index) => {
+        this.getFilteredTransactions().forEach((t, index) => {
             const div = document.createElement('div');
             div.className = 'transaction';
-            
+
             const isExpense = t.type === 'расход';
             const sign = isExpense ? '-' : '+';
-            const amountClass = isExpense ? 'amount-expense' : 'amount-income';
+            const amountClass = isExpense ? 'expense' : 'income';
 
             div.innerHTML = `
                 <div class="transaction-info">
-                    <div class="transaction-date">${t.date}</div>
-                    <div>${t.type} ${t.category || ''}</div>
+                    <div class="transaction-date">${this.formatDate(t.date)}</div>
+                    <div>${t.category || ''}</div>
                     <div>${t.source}</div>
                 </div>
                 <div class="transaction-amount ${amountClass}">
@@ -59,26 +89,33 @@ class ExpenseManager {
                 </div>
                 <button onclick="expenseManager.deleteTransaction(${index})">×</button>
             `;
-            
+
             container.appendChild(div);
         });
     }
 
-    updateSummary() {
-        const income = this.transactions
+    updateTotals() {
+        const transactions = this.getFilteredTransactions();
+        
+        const income = transactions
             .filter(t => t.type === 'приход')
             .reduce((sum, t) => sum + t.amount, 0);
 
-        const expenses = this.transactions
+        const expense = transactions
             .filter(t => t.type === 'расход')
             .reduce((sum, t) => sum + t.amount, 0);
 
-        document.getElementById('totalIncome').textContent = `${income} ₸`;
-        document.getElementById('totalExpenses').textContent = `${expenses} ₸`;
+        document.querySelector('#totalIncome .total-amount').textContent = `${income} ₸`;
+        document.querySelector('#totalExpense .total-amount').textContent = `${expense} ₸`;
+    }
+
+    formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ru-RU');
     }
 
     getTransactions() {
-        return this.transactions;
+        return this.getFilteredTransactions();
     }
 }
 

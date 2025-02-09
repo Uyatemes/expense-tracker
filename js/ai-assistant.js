@@ -1,8 +1,8 @@
 class AIAssistant {
     constructor() {
-        this.chatBox = document.getElementById('chatBox');
-        this.input = document.getElementById('operationInput');
-        this.sendButton = document.getElementById('sendButton');
+        this.chatBox = document.getElementById('chat-messages');
+        this.input = document.getElementById('user-input');
+        this.sendButton = document.getElementById('send-message');
         
         this.sendButton.onclick = () => this.processInput();
         this.input.onkeypress = (e) => {
