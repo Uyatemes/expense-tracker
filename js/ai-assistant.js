@@ -1,6 +1,5 @@
 class AIAssistant {
     constructor() {
-        // Ждем загрузку DOM
         document.addEventListener('DOMContentLoaded', () => {
             this.chatBox = document.getElementById('chat-messages');
             this.input = document.getElementById('user-input');
@@ -17,10 +16,84 @@ class AIAssistant {
         });
     }
 
-    showWelcomeMessage() {
-        this.addMessage('Привет! Я помогу записать ваши доходы и расходы. Примеры:', 'assistant');
-        this.addMessage('"5000 расход каспий такси"', 'example');
-        this.addMessage('"10000 приход халык зарплата"', 'example');
+    initializeUI() {
+        this.sendButton = document.getElementById('send-message');
+        this.userInput = document.getElementById('user-input');
+        this.chatMessages = document.getElementById('chat-messages');
+
+        // Добавляем проверку
+        if (!this.sendButton || !this.userInput || !this.chatMessages) {
+            console.error('Не удалось найти необходимые элементы интерфейса');
+            return;
+        }
+
+        // Добавляем отладочную информацию
+        console.log('AI Assistant initialized');
+
+        this.sendButton.addEventListener('click', () => {
+            console.log('Send button clicked');
+            this.handleUserMessage();
+        });
+
+        this.userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                console.log('Enter pressed');
+                this.handleUserMessage();
+            }
+        });
+    }
+
+    async handleUserMessage() {
+        const userMessage = this.userInput.value.trim();
+        if (!userMessage) return;
+
+        // Показываем сообщение пользователя
+        this.addMessage(userMessage, 'user');
+        this.userInput.value = '';
+
+        // Анализируем сообщение и извлекаем данные
+        const transaction = this.parseExpenseMessage(userMessage);
+        
+        if (transaction) {
+            window.expenseManager.addTransaction(transaction);
+            this.addMessage(`✓ ${transaction.type === 'расход' ? 'Расход' : 'Доход'} ${transaction.amount}₸ через ${transaction.source}${transaction.category ? ' на ' + transaction.category : ''}`, 'assistant');
+            this.input.value = '';
+        } else {
+            this.addMessage('Не могу распознать операцию. Примеры:\n"5000 расход каспий такси"\n"приход 10000 халык зарплата"', 'assistant');
+        }
+    }
+
+    parseExpenseMessage(message) {
+        const words = message.toLowerCase().split(' ');
+        
+        // Ищем сумму (первое число)
+        const amount = parseFloat(words.find(word => /^\d+$/.test(word)));
+        if (!amount) return null;
+
+        // Ищем тип операции
+        const type = words.find(word => word === 'расход' || word === 'приход');
+        if (!type) return null;
+
+        // Ищем источник
+        const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
+        const source = words.find(word => sources.includes(word));
+        if (!source) return null;
+
+        // Остальные слова - категория
+        const category = words
+            .filter(word => 
+                word !== amount.toString() && 
+                word !== type && 
+                word !== source)
+            .join(' ');
+
+        return {
+            amount,
+            type,
+            source,
+            category: category || 'другое',
+            date: new Date().toISOString().split('T')[0]
+        };
     }
 
     addMessage(text, type) {
@@ -31,81 +104,14 @@ class AIAssistant {
         this.chatBox.scrollTop = this.chatBox.scrollHeight;
     }
 
-    processInput() {
-        const text = this.input.value.trim();
-        if (!text) return;
-
-        this.addMessage(text, 'user');
-
-        // Анализ текста
-        const result = this.analyzeText(text);
-
-        if (result.success) {
-            window.expenseManager.addTransaction({
-                date: new Date().toISOString().split('T')[0],
-                type: result.type,
-                amount: result.amount,
-                source: result.source,
-                category: result.category
-            });
-
-            this.addMessage(`✓ ${result.type} ${result.amount}₸ через ${result.source}${result.category ? ' на ' + result.category : ''}`, 'assistant');
-            this.input.value = '';
-        } else {
-            this.addMessage(result.error, 'assistant');
-        }
+    showWelcomeMessage() {
+        this.addMessage('Добро пожаловать! Я готов помочь с управлением финансами.', 'system');
     }
 
-    analyzeText(text) {
-        const words = text.toLowerCase().split(' ');
-        
-        // Поиск суммы (первое число)
-        const amountStr = words.find(word => /^\d+$/.test(word));
-        if (!amountStr) {
-            return {
-                success: false,
-                error: 'Не могу найти сумму. Напишите сумму числом, например: "5000 расход"'
-            };
-        }
-        const amount = parseInt(amountStr);
-
-        // Поиск типа операции
-        const type = words.find(word => word === 'расход' || word === 'приход');
-        if (!type) {
-            return {
-                success: false,
-                error: 'Укажите тип операции: расход или приход'
-            };
-        }
-
-        // Поиск источника
-        const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
-        const source = words.find(word => sources.includes(word));
-        if (!source) {
-            return {
-                success: false,
-                error: 'Укажите источник: каспий, халык или наличные'
-            };
-        }
-
-        // Все оставшиеся слова (кроме суммы, типа и источника) считаем категорией
-        const category = words
-            .filter(word => 
-                word !== amountStr && 
-                word !== type && 
-                word !== source)
-            .join(' ')
-            .trim();
-
-        return {
-            success: true,
-            amount: amount,
-            type: type,
-            source: source,
-            category: category || 'другое'
-        };
+    processInput() {
+        this.handleUserMessage();
     }
 }
 
 // Создаем экземпляр
-window.aiAssistant = new AIAssistant();
+window.aiAssistant = new AIAssistant(); 

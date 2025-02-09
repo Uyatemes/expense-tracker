@@ -1,92 +1,92 @@
-// Глобальные переменные для графиков
 let categoryChart = null;
 let monthlyChart = null;
 
-// Функция обновления графиков
 function updateCharts() {
-    // Проверяем, что expenseManager существует
     if (!window.expenseManager) return;
     
     updateCategoryChart();
-    updateBalanceChart();
+    updateMonthlyChart();
 }
 
 function updateCategoryChart() {
-    const ctx = document.getElementById('categoryChart');
+    const ctx = document.getElementById('categoryChart')?.getContext('2d');
     if (!ctx) return;
-    
-    if (categoryChart) {
-        categoryChart.destroy();
-    }
 
-    const transactions = window.expenseManager.getTransactions();
-    const categories = {};
+    const transactions = expenseManager.getTransactions();
     
-    transactions.forEach(t => {
-        if (t.type === 'расход') {
-            const category = t.category || 'Другое';
-            categories[category] = (categories[category] || 0) + t.amount;
-        }
-    });
+    // Группировка операций по категориям
+    const categoryData = transactions.reduce((acc, t) => {
+        const key = `${t.category} (${t.type})`;
+        acc[key] = (acc[key] || 0) + Math.abs(t.amount);
+        return acc;
+    }, {});
 
-    categoryChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: Object.keys(categories),
+            labels: Object.keys(categoryData),
             datasets: [{
-                data: Object.values(categories),
+                data: Object.values(categoryData),
                 backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF'
+                    '#2ecc71',
+                    '#3498db',
+                    '#9b59b6',
+                    '#f1c40f',
+                    '#e74c3c',
+                    '#1abc9c'
                 ]
-            }]
-        }
-    });
-}
-
-function updateBalanceChart() {
-    const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
-    
-    if (monthlyChart) {
-        monthlyChart.destroy();
-    }
-
-    const transactions = window.expenseManager.getTransactions();
-    const monthly = {};
-    
-    transactions.forEach(t => {
-        const month = t.date.substring(0, 7);
-        const amount = t.type === 'расход' ? -t.amount : t.amount;
-        monthly[month] = (monthly[month] || 0) + amount;
-    });
-
-    monthlyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: Object.keys(monthly),
-            datasets: [{
-                label: 'Баланс по месяцам',
-                data: Object.values(monthly),
-                backgroundColor: '#36A2EB'
             }]
         },
         options: {
             responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Операции по категориям'
                 }
             }
         }
     });
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    // Даем время на инициализацию expenseManager
-    setTimeout(updateCharts, 100);
-}); 
+function updateMonthlyChart() {
+    const ctx = document.getElementById('monthlyChart')?.getContext('2d');
+    if (!ctx) return;
+
+    const transactions = expenseManager.getTransactions();
+
+    // Группировка операций по месяцам
+    const monthlyData = transactions.reduce((acc, t) => {
+        const month = t.date.substring(0, 7);
+        acc[month] = (acc[month] || 0) + t.amount;
+        return acc;
+    }, {});
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(monthlyData),
+            datasets: [{
+                label: 'Баланс по месяцам',
+                data: Object.values(monthlyData),
+                borderColor: '#3498db',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Динамика баланса'
+                }
+            }
+        }
+    });
+}
+
+// Инициализация графиков
+updateCharts();
+
+// Делаем функцию updateCharts доступной глобально
+window.updateCharts = updateCharts; 

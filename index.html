@@ -3,110 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#F14635">
-    <title>Учёт расходов</title>
-    
-    <!-- PWA мета-теги -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Expenses">
-    
-    <!-- Иконки для iOS -->
-    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
-    
+    <title>Мои операции</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Chart.js для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header class="kaspi-header">
-        <div class="container">
-            <h1>Мои операции</h1>
-        </div>
+    <header>
+        <h1>Мои операции</h1>
     </header>
 
-    <main class="container">
-        <!-- AI Ассистент -->
-        <section class="kaspi-assistant">
-            <div class="chat-container">
-                <div id="chat-messages" class="chat-messages">
-                    <div class="message system">
-                        Привет! Я помогу записать ваши доходы и расходы. Примеры:<br>
-                        "5000 расход каспий такси"<br>
-                        "приход 10000 халык зарплата"
-                    </div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="user-input" placeholder="Введите операцию...">
-                    <button id="send-message">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
-                        </svg>
-                    </button>
-                </div>
+    <main>
+        <div class="chat-container">
+            <div id="chatBox"></div>
+            <div class="input-container">
+                <input type="text" id="operationInput" placeholder="Введите операцию...">
+                <button id="sendButton">→</button>
             </div>
-        </section>
+        </div>
 
-        <!-- Итоги -->
-        <section class="kaspi-totals">
-            <div class="date-filter">
-                <input type="date" id="dateFrom">
-                <span>—</span>
-                <input type="date" id="dateTo">
-                <button id="applyDateFilter">Показать</button>
-                <button id="resetDateFilter">Сбросить</button>
-            </div>
-            <div class="totals">
-                <div id="totalIncome" class="total-item income">
-                    <span class="total-label">Доходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-                <div id="totalExpense" class="total-item expense">
-                    <span class="total-label">Расходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-            </div>
-        </section>
+        <div class="date-filter">
+            <input type="date" id="startDate">
+            <span>—</span>
+            <input type="date" id="endDate">
+            <button class="show-btn">Показать</button>
+            <button class="reset-btn">Сбросить</button>
+        </div>
 
-        <!-- Список операций -->
-        <section class="kaspi-transactions">
-            <div class="transactions-list" id="expensesTableBody">
-                <!-- Операции будут добавляться сюда -->
+        <div class="summary">
+            <div class="income">
+                <h3>Доходы</h3>
+                <p id="totalIncome">0 ₸</p>
             </div>
-        </section>
+            <div class="expenses">
+                <h3>Расходы</h3>
+                <p id="totalExpenses">0 ₸</p>
+            </div>
+        </div>
 
-        <!-- Графики -->
-        <section class="kaspi-analytics">
-            <div class="charts">
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
+        <div class="transactions"></div>
+
+        <div class="charts">
+            <div class="chart">
+                <h3>Операции по категориям</h3>
+                <canvas id="categoryChart"></canvas>
             </div>
-        </section>
+            <div class="chart">
+                <h3>Динамика баланса</h3>
+                <canvas id="balanceChart"></canvas>
+            </div>
+        </div>
     </main>
 
-    <!-- Подключение скриптов -->
     <script src="js/main.js"></script>
     <script src="js/chart.js"></script>
     <script src="js/ai-assistant.js"></script>
-
-    <!-- Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
 </body>
 </html> 
