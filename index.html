@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Учёт расходов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <header class="kaspi-header">
+    <header class="header">
         <div class="container">
             <h1>Мои операции</h1>
         </div>
@@ -17,79 +18,68 @@
 
     <main class="container">
         <!-- AI Ассистент -->
-        <section class="kaspi-assistant">
-            <div class="chat-container">
-                <div id="chat-messages" class="chat-messages">
-                    <div class="message system">
-                        Привет! Я помогу записать ваши доходы и расходы. Примеры:<br>
-                        "5000 расход каспий такси"<br>
-                        "приход 10000 халык зарплата"
-                    </div>
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="user-input" placeholder="Введите операцию...">
-                    <button id="send-message">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
-                        </svg>
-                    </button>
+        <section class="chat-container">
+            <div id="chat-messages" class="chat-messages">
+                <div class="message system">
+                    Привет! Я помогу записать ваши доходы и расходы. Примеры:<br>
+                    "5000 расход каспий такси"<br>
+                    "приход 10000 халык зарплата"
                 </div>
             </div>
+            <div class="chat-input">
+                <input type="text" id="user-input" placeholder="Введите операцию...">
+                <button id="send-message">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Фильтры и экспорт -->
+        <section class="date-filter">
+            <input type="date" id="dateFrom">
+            <span>—</span>
+            <input type="date" id="dateTo">
+            <button id="applyDateFilter">Показать</button>
+            <button id="resetDateFilter">Сбросить</button>
+            <button id="exportPDF" class="export-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Экспорт PDF
+            </button>
         </section>
 
         <!-- Итоги -->
-        <section class="kaspi-totals">
-            <div class="date-filter">
-                <input type="date" id="dateFrom">
-                <span>—</span>
-                <input type="date" id="dateTo">
-                <button id="applyDateFilter">Показать</button>
-                <button id="resetDateFilter">Сбросить</button>
-                <button id="exportPDF" class="export-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
-                    </svg>
-                    Экспорт PDF
-                </button>
+        <section class="totals">
+            <div id="totalIncome" class="total-item income">
+                <span class="total-label">Доходы</span>
+                <span class="total-amount">0 ₸</span>
             </div>
-            <div class="totals">
-                <div id="totalIncome" class="total-item income">
-                    <span class="total-label">Доходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-                <div id="totalExpense" class="total-item expense">
-                    <span class="total-label">Расходы</span>
-                    <span class="total-amount">0 ₸</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Список операций -->
-        <section class="kaspi-transactions">
-            <div class="transactions-list" id="expensesTableBody">
-                <!-- Операции будут добавляться сюда -->
+            <div id="totalExpense" class="total-item expense">
+                <span class="total-label">Расходы</span>
+                <span class="total-amount">0 ₸</span>
             </div>
         </section>
 
         <!-- Графики -->
-        <section class="kaspi-analytics">
-            <div class="charts">
-                <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
+        <section class="charts">
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
             </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Список операций -->
+        <section id="expensesTableBody" class="transactions">
+            <!-- Операции будут добавляться сюда -->
         </section>
     </main>
 
-    <!-- Подключение скриптов в конце body -->
-    <script src="js/main.js"></script>
-    <script src="js/chart.js"></script>
-    <script src="js/ai-assistant.js"></script>
-
-    <!-- Добавьте в конец body, перед скриптами -->
+    <!-- Диалог подтверждения -->
     <div id="confirmDialog" class="confirm-dialog">
         <div class="confirm-dialog-content">
             <h3>Подтверждение удаления</h3>
@@ -100,5 +90,9 @@
             </div>
         </div>
     </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/ai-assistant.js"></script>
 </body>
 </html> 
