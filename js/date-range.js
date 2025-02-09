@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelButton = document.getElementById('cancelDateRange');
     const applyButton = document.getElementById('applyDateRange');
     const customDateRange = document.getElementById('customDateRange');
-    const customDateFrom = document.getElementById('customDateFrom');
-    const customDateTo = document.getElementById('customDateTo');
+    const customDateButton = document.getElementById('customDateButton');
+    const customDateText = document.getElementById('customDateText');
+
+    let customStartDate = new Date();
+    let customEndDate = new Date();
+    customStartDate.setDate(customEndDate.getDate() - 7);
 
     // Форматирование даты
     function formatDate(date) {
@@ -18,14 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return date.toLocaleDateString('ru-RU', options);
     }
 
-    // Форматирование даты для input type="date"
-    function formatDateForInput(date) {
-        return date.toISOString().split('T')[0];
-    }
-
     // Обновление текста с датами
     function updateDateRangeText(startDate, endDate) {
         dateRangeText.textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    }
+
+    function updateCustomDateText() {
+        customDateText.textContent = `${formatDate(customStartDate)} - ${formatDate(customEndDate)}`;
     }
 
     // Получение дат для периода
@@ -39,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
             startDate.setMonth(endDate.getMonth() - 1);
         } else if (period === 'custom') {
             return {
-                startDate: new Date(customDateFrom.value),
-                endDate: new Date(customDateTo.value)
+                startDate: customStartDate,
+                endDate: customEndDate
             };
         }
         
@@ -51,28 +54,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialRange = getDateRange('week');
     updateDateRangeText(initialRange.startDate, initialRange.endDate);
     window.expenseManager.setDateFilter(initialRange.startDate, initialRange.endDate);
+    updateCustomDateText();
 
     // Обработчик изменения типа периода
     document.querySelectorAll('input[name="period"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             customDateRange.style.display = e.target.value === 'custom' ? 'block' : 'none';
-            
-            if (e.target.value !== 'custom') {
-                const { startDate, endDate } = getDateRange(e.target.value);
-                customDateFrom.value = formatDateForInput(startDate);
-                customDateTo.value = formatDateForInput(endDate);
-            }
         });
     });
 
-    // Установка текущей даты для кастомного периода
-    const today = new Date();
-    const weekAgo = new Date();
-    weekAgo.setDate(today.getDate() - 7);
-    customDateFrom.value = formatDateForInput(weekAgo);
-    customDateTo.value = formatDateForInput(today);
+    // Обработчик клика по кнопке выбора дат
+    customDateButton.addEventListener('click', () => {
+        // Создаем input type="date" для начальной даты
+        const startInput = document.createElement('input');
+        startInput.type = 'date';
+        startInput.value = customStartDate.toISOString().split('T')[0];
+        
+        // Создаем input type="date" для конечной даты
+        const endInput = document.createElement('input');
+        endInput.type = 'date';
+        endInput.value = customEndDate.toISOString().split('T')[0];
 
-    // Обработчики событий
+        // Последовательно показываем календари
+        startInput.showPicker().then(() => {
+            startInput.addEventListener('change', () => {
+                customStartDate = new Date(startInput.value);
+                endInput.showPicker().then(() => {
+                    endInput.addEventListener('change', () => {
+                        customEndDate = new Date(endInput.value);
+                        updateCustomDateText();
+                    });
+                });
+            });
+        });
+    });
+
+    // Остальные обработчики событий
     dateRangeButton.addEventListener('click', () => {
         dateRangeModal.classList.add('active');
     });
