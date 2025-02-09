@@ -1,34 +1,27 @@
 // Глобальные переменные для хранения экземпляров графиков
 let categoryChart = null;
-let monthlyChart = null;
-
-function destroyCharts() {
-    if (categoryChart) {
-        categoryChart.destroy();
-        categoryChart = null;
-    }
-    if (monthlyChart) {
-        monthlyChart.destroy();
-        monthlyChart = null;
-    }
-}
+let balanceChart = null;
 
 function updateCharts() {
-    destroyCharts();
     updateCategoryChart();
-    updateMonthlyChart();
+    updateBalanceChart();
 }
 
 function updateCategoryChart() {
+    const ctx = document.getElementById('categoryChart');
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
+
     const transactions = window.expenseManager.getTransactions();
     const categories = {};
     
     transactions.forEach(t => {
-        categories[t.category] = (categories[t.category] || 0) + t.amount;
+        if (t.type === 'расход') {
+            const category = t.category || 'Другое';
+            categories[category] = (categories[category] || 0) + t.amount;
+        }
     });
-
-    const ctx = document.getElementById('categoryChart');
-    if (!ctx) return;
 
     categoryChart = new Chart(ctx, {
         type: 'pie',
@@ -37,46 +30,43 @@ function updateCategoryChart() {
             datasets: [{
                 data: Object.values(categories),
                 backgroundColor: [
-                    '#3E2005',
-                    '#5E3B1C',
-                    '#7E5633',
-                    '#9E714A',
-                    '#BE8C61'
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
                 ]
             }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Расходы по категориям'
-                }
-            }
+            responsive: true
         }
     });
 }
 
-function updateMonthlyChart() {
+function updateBalanceChart() {
+    const ctx = document.getElementById('balanceChart');
+    if (balanceChart) {
+        balanceChart.destroy();
+    }
+
     const transactions = window.expenseManager.getTransactions();
     const monthly = {};
     
     transactions.forEach(t => {
         const month = t.date.substring(0, 7);
-        monthly[month] = (monthly[month] || 0) + t.amount;
+        const amount = t.type === 'расход' ? -t.amount : t.amount;
+        monthly[month] = (monthly[month] || 0) + amount;
     });
 
-    const ctx = document.getElementById('monthlyChart');
-    if (!ctx) return;
-
-    monthlyChart = new Chart(ctx, {
+    balanceChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: Object.keys(monthly),
             datasets: [{
-                label: 'Расходы по месяцам',
+                label: 'Баланс по месяцам',
                 data: Object.values(monthly),
-                backgroundColor: '#3E2005'
+                backgroundColor: '#36A2EB'
             }]
         },
         options: {
@@ -91,6 +81,4 @@ function updateMonthlyChart() {
 }
 
 // Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(updateCharts, 100);
-}); 
+document.addEventListener('DOMContentLoaded', updateCharts); 

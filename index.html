@@ -3,48 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Учёт расходов</title>
+    <title>Мои операции</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Учёт расходов</h1>
-        
-        <div class="input-form">
-            <input type="number" id="amount" placeholder="Сумма" step="0.01">
-            <input type="text" id="category" placeholder="Категория">
-            <input type="date" id="date">
-            <input type="text" id="note" placeholder="Примечание">
-            <button onclick="addNewTransaction()">Добавить</button>
+    <header>
+        <h1>Мои операции</h1>
+    </header>
+
+    <main>
+        <div class="chat-container">
+            <div id="chatBox"></div>
+            <div class="input-container">
+                <input type="text" id="operationInput" placeholder="Введите операцию...">
+                <button id="sendButton">→</button>
+            </div>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Сумма</th>
-                        <th>Тип</th>
-                        <th>Категория</th>
-                        <th>Источник</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionsTable"></tbody>
-            </table>
+        <div class="date-filter">
+            <input type="date" id="startDate">
+            <span>—</span>
+            <input type="date" id="endDate">
+            <button class="show-btn">Показать</button>
+            <button class="reset-btn">Сбросить</button>
         </div>
+
+        <div class="summary">
+            <div class="income">
+                <h3>Доходы</h3>
+                <p id="totalIncome">0 ₸</p>
+            </div>
+            <div class="expenses">
+                <h3>Расходы</h3>
+                <p id="totalExpenses">0 ₸</p>
+            </div>
+        </div>
+
+        <div class="transactions"></div>
 
         <div class="charts">
-            <div>
+            <div class="chart">
+                <h3>Операции по категориям</h3>
                 <canvas id="categoryChart"></canvas>
             </div>
-            <div>
-                <canvas id="monthlyChart"></canvas>
+            <div class="chart">
+                <h3>Динамика баланса</h3>
+                <canvas id="balanceChart"></canvas>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="js/main.js"></script>
     <script src="js/chart.js"></script>

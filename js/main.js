@@ -3,21 +3,25 @@ class ExpenseManager {
     constructor() {
         this.transactions = [];
         this.loadFromLocalStorage();
+        this.renderTransactions();
+        this.updateSummary();
     }
 
     loadFromLocalStorage() {
-        const saved = localStorage.getItem('expenses');
+        const saved = localStorage.getItem('transactions');
         this.transactions = saved ? JSON.parse(saved) : [];
     }
 
     saveToLocalStorage() {
-        localStorage.setItem('expenses', JSON.stringify(this.transactions));
+        localStorage.setItem('transactions', JSON.stringify(this.transactions));
     }
 
     addTransaction(transaction) {
         this.transactions.push(transaction);
         this.saveToLocalStorage();
-        if(typeof updateCharts === 'function') {
+        this.renderTransactions();
+        this.updateSummary();
+        if (typeof updateCharts === 'function') {
             updateCharts();
         }
     }
@@ -25,9 +29,52 @@ class ExpenseManager {
     deleteTransaction(index) {
         this.transactions.splice(index, 1);
         this.saveToLocalStorage();
-        if(typeof updateCharts === 'function') {
+        this.renderTransactions();
+        this.updateSummary();
+        if (typeof updateCharts === 'function') {
             updateCharts();
         }
+    }
+
+    renderTransactions() {
+        const container = document.querySelector('.transactions');
+        container.innerHTML = '';
+
+        this.transactions.forEach((t, index) => {
+            const div = document.createElement('div');
+            div.className = 'transaction';
+            
+            const isExpense = t.type === 'расход';
+            const sign = isExpense ? '-' : '+';
+            const amountClass = isExpense ? 'amount-expense' : 'amount-income';
+
+            div.innerHTML = `
+                <div class="transaction-info">
+                    <div class="transaction-date">${t.date}</div>
+                    <div>${t.type} ${t.category || ''}</div>
+                    <div>${t.source}</div>
+                </div>
+                <div class="transaction-amount ${amountClass}">
+                    ${sign}${t.amount} ₸
+                </div>
+                <button onclick="expenseManager.deleteTransaction(${index})">×</button>
+            `;
+            
+            container.appendChild(div);
+        });
+    }
+
+    updateSummary() {
+        const income = this.transactions
+            .filter(t => t.type === 'приход')
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        const expenses = this.transactions
+            .filter(t => t.type === 'расход')
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        document.getElementById('totalIncome').textContent = `${income} ₸`;
+        document.getElementById('totalExpenses').textContent = `${expenses} ₸`;
     }
 
     getTransactions() {
