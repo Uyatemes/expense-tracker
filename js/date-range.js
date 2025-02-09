@@ -1,32 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Добавим отладочный вывод
-    console.log('Theme before:', localStorage.getItem('theme'));
+    // Удалим весь код управления темой из date-range.js, так как это уже есть в theme.js
     
-    // Удалим принудительную установку светлой темы
-    // document.documentElement.setAttribute('data-theme', 'light');
-    // localStorage.setItem('theme', 'light');
-
-    // Добавим обработчик для переключения темы
-    const themeToggle = document.getElementById('themeToggle');
-    console.log('Theme toggle element:', themeToggle);
-    
-    // Проверяем сохраненную тему
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
-    // Устанавливаем правильное состояние переключателя
-    if (themeToggle) {
-        themeToggle.checked = savedTheme === 'dark';
-        console.log('Theme toggle checked:', themeToggle.checked);
-        
-        themeToggle.addEventListener('change', () => {
-            const newTheme = themeToggle.checked ? 'dark' : 'light';
-            console.log('Switching theme to:', newTheme);
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    }
-
     const dateRangeButton = document.getElementById('dateRangeButton');
     const dateRangeModal = document.getElementById('dateRangeModal');
     const dateRangeText = document.getElementById('dateRangeText');
