@@ -35,17 +35,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 datasets: [{
                     data: [data['Доходы'], data['Расходы']],
                     backgroundColor: [
-                        'var(--kaspi-green)',  // зеленый для доходов
-                        'var(--kaspi-red)'     // красный для расходов
-                    ]
+                        '#00A76D',  // зеленый для доходов
+                        '#F14635'   // красный для расходов
+                    ],
+                    borderWidth: 0  // убираем границы
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#333'  // цвет текста легенды
+                        }
+                    },
                     title: {
                         display: true,
-                        text: 'Соотношение доходов и расходов'
+                        text: 'Соотношение доходов и расходов',
+                        color: '#333'  // цвет заголовка
                     },
                     tooltip: {
                         callbacks: {
