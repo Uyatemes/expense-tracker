@@ -36,24 +36,24 @@ class AIAssistant {
 
         this.addMessage(text, 'user');
 
-        // Разбиваем текст на части
+        // Разбиваем текст на части и анализируем
         const parts = text.toLowerCase().split(' ');
         
-        // Ищем сумму (первое число)
-        const amount = parseFloat(parts[0]);
-        if (isNaN(amount)) {
-            this.addMessage('Не могу найти сумму. Напишите сумму первым числом.', 'assistant');
+        // Ищем сумму (любое число в тексте)
+        const amount = parts.find(word => /^\d+$/.test(word));
+        if (!amount) {
+            this.addMessage('Не могу найти сумму. Укажите сумму числом, например: "5000"', 'assistant');
             return;
         }
 
-        // Ищем тип операции
+        // Ищем тип операции в любом месте текста
         const type = parts.find(word => word === 'расход' || word === 'приход');
         if (!type) {
             this.addMessage('Укажите тип операции: расход или приход', 'assistant');
             return;
         }
 
-        // Ищем источник
+        // Ищем источник в любом месте текста
         const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
         const source = parts.find(word => sources.includes(word));
         if (!source) {
@@ -61,18 +61,19 @@ class AIAssistant {
             return;
         }
 
-        // Все оставшиеся слова считаем категорией
+        // Все остальные слова считаем категорией
         const category = parts
             .filter(word => 
-                word !== amount.toString() && 
+                word !== amount && 
                 word !== type && 
-                word !== source)
+                word !== source &&
+                !sources.includes(word))
             .join(' ');
 
         // Добавляем транзакцию
         window.expenseManager.addTransaction({
             date: new Date().toISOString().split('T')[0],
-            amount: amount,
+            amount: parseInt(amount),
             type: type,
             category: category || 'другое',
             source: source
@@ -83,5 +84,7 @@ class AIAssistant {
     }
 }
 
-// Создаем глобальный экземпляр
-window.aiAssistant = new AIAssistant(); 
+// Создаем экземпляр при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    window.aiAssistant = new AIAssistant();
+}); 
