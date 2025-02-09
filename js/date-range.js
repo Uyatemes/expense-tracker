@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', 'light');
     localStorage.setItem('theme', 'light');
 
-    const dateRangeButton = document.getElementById('dateRangeButton');
+    // Получаем элементы
+    const dateRangeButton = document.querySelector('.date-range-button');
     const dateRangeModal = document.getElementById('dateRangeModal');
     const dateRangeText = document.getElementById('dateRangeText');
     const cancelButton = document.getElementById('cancelDateRange');
@@ -54,29 +55,42 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCustomDateText();
 
     // Обработчики событий
-    dateRangeButton.addEventListener('click', () => {
-        dateRangeModal.classList.add('active');
-    });
+    if (dateRangeButton) {
+        dateRangeButton.addEventListener('click', () => {
+            console.log('Button clicked'); // Для отладки
+            if (dateRangeModal) {
+                dateRangeModal.classList.add('active');
+            }
+        });
+    }
 
-    cancelButton.addEventListener('click', () => {
-        dateRangeModal.classList.remove('active');
-    });
+    if (cancelButton) {
+        cancelButton.addEventListener('click', () => {
+            dateRangeModal.classList.remove('active');
+        });
+    }
 
-    applyButton.addEventListener('click', () => {
-        const selectedPeriod = document.querySelector('input[name="period"]:checked').value;
-        const { startDate, endDate } = getDateRange(selectedPeriod);
-        
-        updateDateRangeText(startDate, endDate);
-        window.expenseManager.setDateFilter(startDate, endDate);
-        dateRangeModal.classList.remove('active');
-    });
+    if (applyButton) {
+        applyButton.addEventListener('click', () => {
+            const selectedPeriod = document.querySelector('input[name="period"]:checked').value;
+            const { startDate, endDate } = getDateRange(selectedPeriod);
+            
+            updateDateRangeText(startDate, endDate);
+            if (window.expenseManager) {
+                window.expenseManager.setDateFilter(startDate, endDate);
+            }
+            dateRangeModal.classList.remove('active');
+        });
+    }
 
     // Закрытие по клику вне модального окна
-    dateRangeModal.addEventListener('click', (e) => {
-        if (e.target === dateRangeModal) {
-            dateRangeModal.classList.remove('active');
-        }
-    });
+    if (dateRangeModal) {
+        dateRangeModal.addEventListener('click', (e) => {
+            if (e.target === dateRangeModal) {
+                dateRangeModal.classList.remove('active');
+            }
+        });
+    }
 
     // Обработчик изменения типа периода
     document.querySelectorAll('input[name="period"]').forEach(radio => {
