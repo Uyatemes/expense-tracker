@@ -5,83 +5,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateCategoryChart() {
-        const ctx = document.getElementById('categoryChart')?.getContext('2d');
-        if (!ctx) return;
-
-        const transactions = expenseManager.getTransactions();
+        const transactions = window.expenseManager.getTransactions();
+        const categories = {};
         
-        // Группировка операций по категориям
-        const categoryData = transactions.reduce((acc, t) => {
-            const key = `${t.category} (${t.type})`;
-            acc[key] = (acc[key] || 0) + Math.abs(t.amount);
-            return acc;
-        }, {});
+        transactions.forEach(t => {
+            categories[t.category] = (categories[t.category] || 0) + t.amount;
+        });
 
+        const ctx = document.getElementById('categoryChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: Object.keys(categoryData),
+                labels: Object.keys(categories),
                 datasets: [{
-                    data: Object.values(categoryData),
+                    data: Object.values(categories),
                     backgroundColor: [
-                        '#2ecc71',
-                        '#3498db',
-                        '#9b59b6',
-                        '#f1c40f',
-                        '#e74c3c',
-                        '#1abc9c'
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF'
                     ]
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Операции по категориям'
-                    }
+                title: {
+                    display: true,
+                    text: 'Расходы по категориям'
                 }
             }
         });
     }
 
     function updateMonthlyChart() {
-        const ctx = document.getElementById('monthlyChart')?.getContext('2d');
-        if (!ctx) return;
+        const transactions = window.expenseManager.getTransactions();
+        const monthly = {};
+        
+        transactions.forEach(t => {
+            const month = t.date.substring(0, 7); // YYYY-MM
+            monthly[month] = (monthly[month] || 0) + t.amount;
+        });
 
-        const transactions = expenseManager.getTransactions();
-
-        // Группировка операций по месяцам
-        const monthlyData = transactions.reduce((acc, t) => {
-            const month = t.date.substring(0, 7);
-            acc[month] = (acc[month] || 0) + t.amount;
-            return acc;
-        }, {});
-
+        const ctx = document.getElementById('monthlyChart').getContext('2d');
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: Object.keys(monthlyData),
+                labels: Object.keys(monthly),
                 datasets: [{
-                    label: 'Баланс по месяцам',
-                    data: Object.values(monthlyData),
-                    borderColor: '#3498db',
-                    tension: 0.1
+                    label: 'Расходы по месяцам',
+                    data: Object.values(monthly),
+                    backgroundColor: '#36A2EB'
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Динамика баланса'
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
                 }
             }
         });
     }
 
-    // Инициализация графиков
+    // Инициализация при загрузке
     updateCharts();
 
     // Делаем функцию updateCharts доступной глобально
