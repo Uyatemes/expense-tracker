@@ -19,7 +19,8 @@ class AIAssistant {
     showWelcomeMessage() {
         this.addMessage('Привет! Я помогу записать ваши доходы и расходы. Примеры:', 'assistant');
         this.addMessage('"5000 расход каспий такси"', 'example');
-        this.addMessage('"10000 приход халык зарплата"', 'example');
+        this.addMessage('"расход 5000 каспий такси"', 'example');
+        this.addMessage('"каспий 5000 расход такси"', 'example');
     }
 
     addMessage(text, type) {
@@ -36,51 +37,70 @@ class AIAssistant {
 
         this.addMessage(text, 'user');
 
-        // Разбиваем текст на части и анализируем
-        const parts = text.toLowerCase().split(' ');
+        const result = this.parseTransaction(text);
+        
+        if (result.success) {
+            window.expenseManager.addTransaction(result.transaction);
+            this.addMessage(
+                `✓ ${result.transaction.type} ${result.transaction.amount}₸ через ${result.transaction.source}${result.transaction.category ? ' на ' + result.transaction.category : ''}`, 
+                'assistant'
+            );
+            this.input.value = '';
+        } else {
+            this.addMessage(result.error, 'assistant');
+        }
+    }
+
+    parseTransaction(text) {
+        const words = text.toLowerCase().split(' ');
         
         // Ищем сумму (любое число в тексте)
-        const amount = parts.find(word => /^\d+$/.test(word));
+        const amount = words.find(word => /^\d+$/.test(word));
         if (!amount) {
-            this.addMessage('Не могу найти сумму. Укажите сумму числом, например: "5000"', 'assistant');
-            return;
+            return {
+                success: false,
+                error: 'Укажите сумму числом, например: 5000'
+            };
         }
 
-        // Ищем тип операции в любом месте текста
-        const type = parts.find(word => word === 'расход' || word === 'приход');
+        // Ищем тип операции
+        const type = words.find(word => word === 'расход' || word === 'приход');
         if (!type) {
-            this.addMessage('Укажите тип операции: расход или приход', 'assistant');
-            return;
+            return {
+                success: false,
+                error: 'Укажите тип операции: расход или приход'
+            };
         }
 
-        // Ищем источник в любом месте текста
+        // Ищем источник
         const sources = ['каспий', 'халык', 'наличные', 'kaspi', 'halyk'];
-        const source = parts.find(word => sources.includes(word));
+        const source = words.find(word => sources.includes(word));
         if (!source) {
-            this.addMessage('Укажите источник: каспий, халык или наличные', 'assistant');
-            return;
+            return {
+                success: false,
+                error: 'Укажите источник: каспий, халык или наличные'
+            };
         }
 
-        // Все остальные слова считаем категорией
-        const category = parts
+        // Остальные слова - категория
+        const category = words
             .filter(word => 
                 word !== amount && 
                 word !== type && 
-                word !== source &&
+                word !== source && 
                 !sources.includes(word))
             .join(' ');
 
-        // Добавляем транзакцию
-        window.expenseManager.addTransaction({
-            date: new Date().toISOString().split('T')[0],
-            amount: parseInt(amount),
-            type: type,
-            category: category || 'другое',
-            source: source
-        });
-
-        this.addMessage(`✓ ${type} ${amount}₸ через ${source}${category ? ' на ' + category : ''}`, 'assistant');
-        this.input.value = '';
+        return {
+            success: true,
+            transaction: {
+                date: new Date().toISOString().split('T')[0],
+                amount: parseInt(amount),
+                type: type,
+                source: source,
+                category: category || 'другое'
+            }
+        };
     }
 }
 
