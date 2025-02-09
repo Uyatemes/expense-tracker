@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
+    const themeToggleFab = document.getElementById('themeToggleFab');
     
     // Проверяем сохраненную тему
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -24,4 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
         }
     });
+
+    // Обработчик клика по FAB
+    if (themeToggleFab) {
+        themeToggleFab.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            console.log('Theme toggled to:', newTheme);
+        });
+    }
 }); 
