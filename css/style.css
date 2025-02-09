@@ -268,40 +268,38 @@ body {
     gap: 12px;
 }
 
-/* Material You радио-кнопки */
-.md-radio {
+/* Стили для радио-кнопок в стиле Material You */
+.radio-button {
     display: flex;
     align-items: center;
-    padding: 12px;
-    border-radius: 20px;
+    padding: 16px;
+    border-radius: 16px;
     cursor: pointer;
     transition: background-color 0.2s;
-    user-select: none;
+    position: relative;
 }
 
-.md-radio:hover {
+.radio-button:hover {
     background-color: var(--md-sys-color-surface-container-high);
 }
 
-.md-radio input[type="radio"] {
-    display: none;
-}
-
-.radio-circle {
+.radio-button input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
     width: 20px;
     height: 20px;
     border: 2px solid var(--md-sys-color-outline);
     border-radius: 50%;
     margin-right: 12px;
     position: relative;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
-.md-radio input[type="radio"]:checked + .radio-circle {
+.radio-button input[type="radio"]:checked {
     border-color: var(--md-sys-color-primary);
 }
 
-.md-radio input[type="radio"]:checked + .radio-circle::after {
+.radio-button input[type="radio"]:checked::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -315,10 +313,11 @@ body {
 
 .radio-label {
     color: var(--md-sys-color-on-surface);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
     font-size: 16px;
 }
 
-/* Кнопки в модальном окне */
+/* Стили для кнопок в модальном окне */
 .modal-buttons {
     display: flex;
     justify-content: flex-end;
@@ -326,35 +325,37 @@ body {
     margin-top: 24px;
 }
 
-.btn-text {
+.btn-cancel {
     padding: 10px 24px;
     border: none;
     border-radius: 20px;
     background: transparent;
     color: var(--md-sys-color-primary);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.btn-text:hover {
+.btn-cancel:hover {
     background-color: var(--md-sys-color-surface-container-high);
 }
 
-.btn-filled {
+.btn-apply {
     padding: 10px 24px;
     border: none;
     border-radius: 20px;
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.btn-filled:hover {
+.btn-apply:hover {
     background-color: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
 }
