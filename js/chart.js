@@ -1,7 +1,20 @@
+// Глобальные переменные для хранения экземпляров графиков
 let categoryChart = null;
 let monthlyChart = null;
 
+function destroyCharts() {
+    if (categoryChart) {
+        categoryChart.destroy();
+        categoryChart = null;
+    }
+    if (monthlyChart) {
+        monthlyChart.destroy();
+        monthlyChart = null;
+    }
+}
+
 function updateCharts() {
+    destroyCharts();
     updateCategoryChart();
     updateMonthlyChart();
 }
@@ -14,12 +27,8 @@ function updateCategoryChart() {
         categories[t.category] = (categories[t.category] || 0) + t.amount;
     });
 
-    const ctx = document.getElementById('categoryChart').getContext('2d');
-    
-    // Уничтожаем старый график перед созданием нового
-    if (categoryChart) {
-        categoryChart.destroy();
-    }
+    const ctx = document.getElementById('categoryChart');
+    if (!ctx) return;
 
     categoryChart = new Chart(ctx, {
         type: 'pie',
@@ -53,16 +62,12 @@ function updateMonthlyChart() {
     const monthly = {};
     
     transactions.forEach(t => {
-        const month = t.date.substring(0, 7); // YYYY-MM
+        const month = t.date.substring(0, 7);
         monthly[month] = (monthly[month] || 0) + t.amount;
     });
 
-    const ctx = document.getElementById('monthlyChart').getContext('2d');
-    
-    // Уничтожаем старый график перед созданием нового
-    if (monthlyChart) {
-        monthlyChart.destroy();
-    }
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
 
     monthlyChart = new Chart(ctx, {
         type: 'bar',
@@ -86,7 +91,6 @@ function updateMonthlyChart() {
 }
 
 // Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', updateCharts);
-
-// Делаем функцию updateCharts доступной глобально
-window.updateCharts = updateCharts; 
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(updateCharts, 100);
+}); 

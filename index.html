@@ -6,14 +6,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>Учёт расходов</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Подключаем Chart.js через CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <h1>Учёт расходов</h1>
         
-        <!-- Форма добавления -->
         <div class="input-form">
             <input type="number" id="amount" placeholder="Сумма" step="0.01">
             <input type="text" id="category" placeholder="Категория">
@@ -22,7 +20,6 @@
             <button onclick="addNewTransaction()">Добавить</button>
         </div>
 
-        <!-- Таблица транзакций -->
         <div class="table-container">
             <table>
                 <thead>
@@ -34,36 +31,21 @@
                         <th>Действия</th>
                     </tr>
                 </thead>
-                <tbody id="transactionsTable">
-                    <!-- Здесь будут транзакции -->
-                </tbody>
+                <tbody id="transactionsTable"></tbody>
             </table>
         </div>
 
-        <!-- Графики -->
         <div class="charts">
-            <canvas id="categoryChart"></canvas>
-            <canvas id="monthlyChart"></canvas>
+            <div>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div>
+                <canvas id="monthlyChart"></canvas>
+            </div>
         </div>
     </div>
 
-    <!-- Скрипты -->
     <script src="js/main.js"></script>
     <script src="js/chart.js"></script>
-
-    <!-- Регистрация service worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered');
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
 </body>
 </html> 
