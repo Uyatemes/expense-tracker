@@ -1,47 +1,72 @@
 class AIExpenseAssistant {
     constructor() {
-        this.chatInput = document.getElementById('chat-input');
-        this.sendButton = document.getElementById('send-button');
+        this.chatMessages = document.getElementById('chat-messages');
+        this.userInput = document.getElementById('user-input');
+        this.sendButton = document.getElementById('send-message');
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        this.sendButton.addEventListener('click', () => {
-            const message = this.chatInput.value.trim();
-            if (message) {
-                this.handleUserMessage(message);
-                this.chatInput.value = '';
-            }
-        });
-
-        this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const message = this.chatInput.value.trim();
-                if (message) {
-                    this.handleUserMessage(message);
-                    this.chatInput.value = '';
+        // Проверяем, что элементы найдены перед добавлением обработчиков
+        if (this.sendButton && this.userInput) {
+            this.sendButton.addEventListener('click', () => this.handleUserInput());
+            this.userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleUserInput();
                 }
-            }
-        });
+            });
+        } else {
+            console.error('Не найдены элементы ввода или кнопка отправки');
+        }
     }
 
-    handleUserMessage(message) {
-        const words = message.toLowerCase().split(' ');
-        const isIncome = words[0] === 'приход';
-        const amountIndex = isIncome ? 1 : 0;
-        const amount = parseFloat(words[amountIndex]);
-
-        if (!isNaN(amount)) {
-            const description = words.slice(amountIndex + 1).join(' ');
-            const finalAmount = isIncome ? amount : -amount;
-            addExpense(finalAmount, description);
+    handleUserInput() {
+        const text = this.userInput.value.trim();
+        if (text) {
+            this.addMessage(text, 'user');
+            this.processUserInput(text);
+            this.userInput.value = '';
         }
+    }
+
+    addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = text;
+        this.chatMessages.appendChild(messageDiv);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    processUserInput(text) {
+        // Здесь логика обработки ввода пользователя
+        const response = this.parseExpenseInput(text);
+        if (response) {
+            this.addMessage(response, 'system');
+        }
+    }
+
+    parseExpenseInput(text) {
+        // Простой парсер для распознавания команд
+        const words = text.toLowerCase().split(' ');
+        const amount = parseFloat(words.find(w => !isNaN(w)));
+        
+        if (isNaN(amount)) {
+            return 'Пожалуйста, укажите сумму числом';
+        }
+
+        if (words.includes('расход')) {
+            // Обработка расхода
+            return `Записан расход: ${amount} ₸`;
+        } else if (words.includes('приход')) {
+            // Обработка дохода
+            return `Записан доход: ${amount} ₸`;
+        }
+
+        return 'Не могу распознать операцию. Используйте слова "расход" или "приход"';
     }
 }
 
-// Инициализация при загрузке страницы
+// Ждем загрузки DOM перед инициализацией
 document.addEventListener('DOMContentLoaded', () => {
-    window.aiAssistant = new AIExpenseAssistant();
-    console.log('AI Assistant initialized');
+    new AIExpenseAssistant();
 });
