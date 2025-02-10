@@ -1,12 +1,12 @@
 class AIExpenseAssistant {
     constructor() {
-        // Обновляем селекторы в соответствии с HTML
-        this.inputElement = document.querySelector('.message-input');
-        this.sendButton = document.querySelector('.send-button');
+        // Используем существующий chat-input
+        this.inputElement = document.querySelector('#chat-input');
+        this.sendButton = document.querySelector('#send-button');
         
         // Проверяем, найдены ли элементы
         if (!this.inputElement || !this.sendButton) {
-            console.error('AI Assistant: Required elements not found');
+            console.error('AI Assistant: Required elements not found in chat-input');
             return;
         }
         
