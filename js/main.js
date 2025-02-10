@@ -447,4 +447,81 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
     initializeApp();
+}
+
+// Обновляем функцию добавления расхода
+function addExpense(amount, description, paymentType) {
+    const expense = {
+        id: Date.now(),
+        amount: parseFloat(amount),
+        description: description,
+        paymentType: paymentType,
+        date: new Date()
+    };
+
+    expenses.push(expense);
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+    renderExpenses();
+}
+
+// Обновляем обработчик отправки формы
+document.getElementById('expenseForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = document.getElementById('expenseAmount').value;
+    const description = document.getElementById('expenseDescription').value;
+    const paymentType = document.getElementById('paymentType').value;
+
+    addExpense(amount, description, paymentType);
+    
+    // Очищаем форму
+    e.target.reset();
+    document.getElementById('addExpenseModal').classList.remove('active');
+});
+
+// Обновляем функцию отображения расходов
+function renderExpenses() {
+    const expensesList = document.getElementById('expensesList');
+    expensesList.innerHTML = '';
+
+    const filteredExpenses = expenses.filter(expense => {
+        // Фильтрация по дате остается без изменений
+        return true; // Добавьте здесь вашу текущую логику фильтрации по дате
+    });
+
+    filteredExpenses.forEach(expense => {
+        const expenseElement = document.createElement('div');
+        expenseElement.className = 'expense-item';
+        
+        // Добавляем иконку в зависимости от типа платежа
+        const icon = getPaymentTypeIcon(expense.paymentType);
+        
+        expenseElement.innerHTML = `
+            <div class="expense-info">
+                <div class="expense-type">${icon}</div>
+                <div class="expense-details">
+                    <div class="expense-description">${expense.description}</div>
+                    <div class="expense-date">${formatDate(expense.date)}</div>
+                </div>
+            </div>
+            <div class="expense-amount">₸ ${expense.amount.toLocaleString()}</div>
+        `;
+        
+        expensesList.appendChild(expenseElement);
+    });
+}
+
+// Функция для получения иконки типа платежа
+function getPaymentTypeIcon(type) {
+    const icons = {
+        'kaspi-gold': `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 4H4C2.89 4 2.01 4.89 2.01 6L2 18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4ZM20 18H4V12H20V18ZM20 8H4V6H20V8Z"/>
+        </svg>`,
+        'kaspi-pay': `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 2H7C5.89 2 5 2.89 5 4V20C5 21.11 5.89 22 7 22H17C18.11 22 19 21.11 19 20V4C19 2.89 18.11 2 17 2ZM17 20H7V4H17V20Z"/>
+        </svg>`,
+        'halyk': `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.8 10.9C9.53 10.31 8.8 9.7 8.8 8.75C8.8 7.66 9.81 6.9 11.5 6.9C13.28 6.9 14.43 7.75 14.47 9H16.8C16.75 7.2 15.53 5.57 13.5 5.03V3H9.5V5C7.57 5.46 6 6.93 6 8.79C6 11.01 7.89 12.19 10.76 12.88C13.3 13.5 13.85 14.38 13.85 15.31C13.85 16 13.45 17.1 11.5 17.1C9.66 17.1 8.35 16.18 8.23 15H5.9C6.03 17.19 7.6 18.54 9.5 18.97V21H13.5V19C15.45 18.59 17 17.23 17 15.3C17 12.54 14.07 11.49 11.8 10.9Z"/>
+        </svg>`
+    };
+    return icons[type] || '';
 } 

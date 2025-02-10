@@ -167,6 +167,35 @@
         </div>
     </div>
 
+    <!-- Обновляем форму добавления расхода -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <h3>Добавить расход</h3>
+            <form id="expenseForm">
+                <div class="form-group">
+                    <label for="expenseAmount">Сумма</label>
+                    <input type="number" id="expenseAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="expenseDescription">Описание</label>
+                    <input type="text" id="expenseDescription" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentType">Способ оплаты</label>
+                    <select id="paymentType" required>
+                        <option value="kaspi-gold">Каспи Голд</option>
+                        <option value="kaspi-pay">Каспи Пэй</option>
+                        <option value="halyk">Халык</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" id="cancelExpense" class="btn-cancel">Отмена</button>
+                    <button type="submit" class="btn-apply">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Сначала загружаем theme.js -->
     <script src="js/theme.js"></script>
     <!-- Затем остальные скрипты -->
