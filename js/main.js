@@ -138,18 +138,20 @@ class ExpenseManager {
         const transactionsList = document.getElementById('expensesTableBody');
         if (!transactionsList) {
             console.error('ExpenseManager: Не найден элемент expensesTableBody');
+            console.log('DOM элементы:', {
+                body: document.body.innerHTML,
+                expensesTableBody: document.getElementById('expensesTableBody')
+            });
             return;
         }
         
         const transactions = this.getTransactions();
         console.log('ExpenseManager: Транзакции для рендеринга:', transactions);
         
-        // Очищаем список
-        while (transactionsList.firstChild) {
-            transactionsList.removeChild(transactionsList.firstChild);
-        }
+        // Создаем временный контейнер
+        const tempContainer = document.createDocumentFragment();
         
-        // Добавляем транзакции
+        // Добавляем транзакции во временный контейнер
         transactions.forEach(t => {
             const transactionElement = document.createElement('div');
             transactionElement.className = 'transaction-item';
@@ -172,10 +174,26 @@ class ExpenseManager {
                 </div>
             `;
             
-            transactionsList.appendChild(transactionElement);
+            tempContainer.appendChild(transactionElement);
         });
         
+        // Очищаем текущий список
+        while (transactionsList.firstChild) {
+            transactionsList.removeChild(transactionsList.firstChild);
+        }
+        
+        // Добавляем все транзакции одним действием
+        transactionsList.appendChild(tempContainer);
+        
         console.log('ExpenseManager: Рендеринг завершен');
+        
+        // Принудительно вызываем перерисовку
+        requestAnimationFrame(() => {
+            transactionsList.style.display = 'none';
+            transactionsList.offsetHeight; // trigger reflow
+            transactionsList.style.display = '';
+        });
+        
         this.updateTotals(transactions);
     }
 
