@@ -1,21 +1,15 @@
 class AIExpenseAssistant {
     constructor() {
-        // Используем существующий chat-input
         this.inputElement = document.querySelector('#chat-input');
         this.sendButton = document.querySelector('#send-button');
-        
-        // Проверяем, найдены ли элементы
-        if (!this.inputElement || !this.sendButton) {
-            console.error('AI Assistant: Required elements not found in chat-input');
-            return;
-        }
-        
         this.setupEventListeners();
-        console.log('AI Assistant: Elements initialized successfully');
     }
 
     setupEventListeners() {
-        if (!this.inputElement || !this.sendButton) return;
+        if (!this.inputElement || !this.sendButton) {
+            console.error('AI Assistant: Required elements not found');
+            return;
+        }
 
         this.sendButton.addEventListener('click', () => this.handleUserMessage());
         this.inputElement.addEventListener('keypress', (e) => {
@@ -34,8 +28,8 @@ class AIExpenseAssistant {
             // Парсим ввод пользователя
             const expenseData = this.parseUserInput(userInput);
             if (expenseData) {
-                // Добавляем расход через основную функцию addExpense
-                addExpense(
+                // Добавляем транзакцию
+                window.addExpense(
                     expenseData.amount,
                     expenseData.description,
                     expenseData.paymentType
@@ -43,6 +37,8 @@ class AIExpenseAssistant {
                 
                 // Очищаем поле ввода
                 this.inputElement.value = '';
+            } else {
+                console.log('Не удалось распознать формат ввода');
             }
         } catch (error) {
             console.error('Error processing message:', error);
@@ -97,7 +93,8 @@ class AIExpenseAssistant {
     }
 }
 
-// Инициализация при полной загрузке DOM
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     window.aiAssistant = new AIExpenseAssistant();
+    console.log('AI Assistant initialized');
 }); 
