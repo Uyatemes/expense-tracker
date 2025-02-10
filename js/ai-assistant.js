@@ -49,4 +49,4 @@ class AIExpenseAssistant {
 document.addEventListener('DOMContentLoaded', () => {
     window.aiAssistant = new AIExpenseAssistant();
     console.log('AI Assistant initialized');
-}); 
+});
