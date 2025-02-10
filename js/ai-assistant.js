@@ -1,94 +1,46 @@
 class AIExpenseAssistant {
     constructor() {
-        this.inputElement = document.querySelector('#chat-input');
-        this.sendButton = document.querySelector('#send-button');
+        this.chatInput = document.getElementById('chat-input');
+        this.sendButton = document.getElementById('send-button');
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        if (!this.inputElement || !this.sendButton) {
-            console.error('AI Assistant: Required elements not found');
-            return;
-        }
+        this.sendButton.addEventListener('click', () => {
+            const message = this.chatInput.value.trim();
+            if (message) {
+                this.handleUserMessage(message);
+                this.chatInput.value = '';
+            }
+        });
 
-        this.sendButton.addEventListener('click', () => this.handleUserMessage());
-        this.inputElement.addEventListener('keypress', (e) => {
+        this.chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                this.handleUserMessage();
+                const message = this.chatInput.value.trim();
+                if (message) {
+                    this.handleUserMessage(message);
+                    this.chatInput.value = '';
+                }
             }
         });
     }
 
-    async handleUserMessage() {
-        const userInput = this.inputElement.value.trim();
-        if (!userInput) return;
-
-        try {
-            // Парсим ввод пользователя
-            const expenseData = this.parseUserInput(userInput);
-            if (expenseData) {
-                // Добавляем транзакцию
-                window.addExpense(
-                    expenseData.amount,
-                    expenseData.description,
-                    expenseData.paymentType
-                );
-                
-                // Очищаем поле ввода
-                this.inputElement.value = '';
-            } else {
-                console.log('Не удалось распознать формат ввода');
-            }
-        } catch (error) {
-            console.error('Error processing message:', error);
-        }
-    }
-
-    parseUserInput(input) {
-        // Паттерны для распознавания ввода
-        const incomePattern = /приход (\d+) (халык|каспий|каспи|kaspi|halyk) ?(.*)?/i;
-        const expensePattern = /(\d+) (халык|каспий|каспи|kaspi|halyk) ?(.*)?/i;
+    handleUserMessage(message) {
+        // Простая логика распознавания операций
+        const words = message.toLowerCase().split(' ');
         
-        let match;
-        
-        // Проверяем, является ли это доходом
-        if ((match = input.match(incomePattern))) {
-            const [, amount, paymentSystem, description = ''] = match;
-            return {
-                amount: parseFloat(amount),
-                description: description.trim() || 'Доход',
-                paymentType: this.normalizePaymentType(paymentSystem),
-                isIncome: true
-            };
-        }
-        
-        // Проверяем, является ли это расходом
-        if ((match = input.match(expensePattern))) {
-            const [, amount, paymentSystem, description = ''] = match;
-            return {
-                amount: -parseFloat(amount), // Отрицательное значение для расхода
-                description: description.trim() || 'Расход',
-                paymentType: this.normalizePaymentType(paymentSystem),
-                isIncome: false
-            };
-        }
-
-        return null;
-    }
-
-    normalizePaymentType(type) {
-        type = type.toLowerCase();
-        switch (type) {
-            case 'каспий':
-            case 'каспи':
-            case 'kaspi':
-                return 'kaspi-gold'; // По умолчанию используем Kaspi Gold
-            case 'халык':
-            case 'halyk':
-                return 'halyk';
-            default:
-                return 'kaspi-gold';
+        // Проверяем, является ли первое слово числом (суммой)
+        const amount = parseFloat(words[0]);
+        if (!isNaN(amount)) {
+            // Это расход
+            const description = words.slice(1).join(' ');
+            addExpense(-amount, description, 'kaspi-gold'); // По умолчанию Kaspi Gold
+        } else if (words[0] === 'приход' && !isNaN(parseFloat(words[1]))) {
+            // Это доход
+            const amount = parseFloat(words[1]);
+            const description = words.slice(2).join(' ');
+            addExpense(amount, description, 'kaspi-gold'); // По умолчанию Kaspi Gold
         }
     }
 }
