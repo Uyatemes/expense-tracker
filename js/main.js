@@ -56,6 +56,8 @@ class ExpenseManager {
     }
 
     addTransaction(transaction) {
+        console.log('Добавление транзакции:', transaction);
+        
         this.transactions.push({
             ...transaction,
             id: Date.now(),
@@ -64,8 +66,12 @@ class ExpenseManager {
                 -Math.abs(parseFloat(transaction.amount)) : 
                 Math.abs(parseFloat(transaction.amount))
         });
+        
+        console.log('Все транзакции после добавления:', this.transactions);
+        
         this.saveToLocalStorage();
         this.renderTransactions();
+        
         if (typeof window.updateCharts === 'function') {
             window.updateCharts();
         }
@@ -125,13 +131,23 @@ class ExpenseManager {
 
     renderTransactions() {
         const transactionsList = document.getElementById('expensesTableBody');
-        if (!transactionsList) return;
+        if (!transactionsList) {
+            console.error('Не найден элемент expensesTableBody');
+            return;
+        }
         
         const transactions = this.getTransactions();
         transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        transactionsList.innerHTML = transactions.map(t => `
-            <div class="transaction-item">
+        // Очищаем текущий список
+        transactionsList.innerHTML = '';
+
+        // Добавляем каждую транзакцию
+        transactions.forEach(t => {
+            const transactionElement = document.createElement('div');
+            transactionElement.className = 'transaction-item';
+            
+            transactionElement.innerHTML = `
                 <div class="transaction-info">
                     <div class="transaction-date">${new Date(t.date).toLocaleDateString('ru-RU')}</div>
                     <div class="transaction-description">${t.description}</div>
@@ -147,10 +163,15 @@ class ExpenseManager {
                         </svg>
                     </button>
                 </div>
-            </div>
-        `).join('');
+            `;
+            
+            transactionsList.appendChild(transactionElement);
+        });
 
         this.updateTotals(transactions);
+        
+        // Добавим отладочную информацию
+        console.log('Транзакции обновлены:', transactions);
     }
 
     updateSummary() {
