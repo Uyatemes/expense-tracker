@@ -27,20 +27,15 @@ class AIExpenseAssistant {
     }
 
     handleUserMessage(message) {
-        // Простая логика распознавания операций
         const words = message.toLowerCase().split(' ');
-        
-        // Проверяем, является ли первое слово числом (суммой)
-        const amount = parseFloat(words[0]);
+        const isIncome = words[0] === 'приход';
+        const amountIndex = isIncome ? 1 : 0;
+        const amount = parseFloat(words[amountIndex]);
+
         if (!isNaN(amount)) {
-            // Это расход
-            const description = words.slice(1).join(' ');
-            addExpense(-amount, description, 'kaspi-gold'); // По умолчанию Kaspi Gold
-        } else if (words[0] === 'приход' && !isNaN(parseFloat(words[1]))) {
-            // Это доход
-            const amount = parseFloat(words[1]);
-            const description = words.slice(2).join(' ');
-            addExpense(amount, description, 'kaspi-gold'); // По умолчанию Kaspi Gold
+            const description = words.slice(amountIndex + 1).join(' ');
+            const finalAmount = isIncome ? amount : -amount;
+            addExpense(finalAmount, description);
         }
     }
 }
