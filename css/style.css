@@ -800,7 +800,7 @@ select:focus {
 }
 
 /* Стили для контейнера ввода */
-.chat-input-container {
+.ai-input-container {
     display: flex;
     gap: 8px;
     padding: 16px;
