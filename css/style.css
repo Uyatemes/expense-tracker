@@ -691,7 +691,7 @@ body {
 
 /* Стили для header с логотипом */
 .app-header {
-    padding: 16px 24px;
+    padding: 24px;
     background-color: var(--md-sys-color-surface-container);
     border-radius: 0 0 24px 24px;
     margin-bottom: 24px;
@@ -700,15 +700,17 @@ body {
 
 .logo-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    text-align: center;
 }
 
 .app-logo {
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
     fill: var(--md-sys-color-primary);
-    transition: fill 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .app-logo {
@@ -718,15 +720,15 @@ body {
 .logo-container h1 {
     color: var(--md-sys-color-on-surface);
     font-family: 'Google Sans', 'Roboto', sans-serif;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 500;
     margin: 0;
 }
 
-/* Добавим небольшую анимацию при наведении */
+/* Анимация при наведении */
 .app-logo:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 /* Обновляем стили для транзакций */
@@ -860,7 +862,7 @@ body {
 
 /* Стили для header с логотипом */
 .app-header {
-    padding: 16px 24px;
+    padding: 24px;
     background-color: var(--md-sys-color-surface-container);
     border-radius: 0 0 24px 24px;
     margin-bottom: 24px;
@@ -868,15 +870,17 @@ body {
 
 .logo-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    text-align: center;
 }
 
 .app-logo {
-    width: 32px;
-    height: 32px;
+    width: 64px;
+    height: 64px;
     fill: var(--md-sys-color-primary);
-    transition: fill 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .app-logo {
@@ -886,13 +890,13 @@ body {
 .logo-container h1 {
     color: var(--md-sys-color-on-surface);
     font-family: 'Google Sans', 'Roboto', sans-serif;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 500;
     margin: 0;
 }
 
-/* Добавим небольшую анимацию при наведении */
+/* Анимация при наведении */
 .app-logo:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 } 
