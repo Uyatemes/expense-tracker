@@ -531,4 +531,9 @@ function getPaymentTypeIcon(type) {
         </svg>`
     };
     return icons[type] || '';
-} 
+}
+
+// В начале файла, после объявления ExpenseManager
+window.addTransaction = function(transaction) {
+    window.expenseManager.addTransaction(transaction);
+}; 

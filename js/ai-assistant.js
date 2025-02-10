@@ -7,7 +7,6 @@ class AIExpenseAssistant {
     }
 
     setupEventListeners() {
-        // Проверяем, что элементы найдены перед добавлением обработчиков
         if (this.sendButton && this.userInput) {
             this.sendButton.addEventListener('click', () => this.handleUserInput());
             this.userInput.addEventListener('keypress', (e) => {
@@ -16,7 +15,7 @@ class AIExpenseAssistant {
                 }
             });
         } else {
-            console.error('Не найдены элементы ввода или кнопка отправки');
+            console.error('Не найдены элементы ввода или кнопки отправки');
         }
     }
 
@@ -38,35 +37,74 @@ class AIExpenseAssistant {
     }
 
     processUserInput(text) {
-        // Здесь логика обработки ввода пользователя
-        const response = this.parseExpenseInput(text);
-        if (response) {
-            this.addMessage(response, 'system');
+        const parsedData = this.parseExpenseInput(text);
+        if (parsedData.success) {
+            // Создаем объект транзакции в формате ExpenseManager
+            const transaction = {
+                amount: parsedData.amount,
+                type: parsedData.type,
+                description: parsedData.description,
+                date: new Date().toISOString(),
+                source: parsedData.category,
+                category: parsedData.category
+            };
+
+            // Добавляем транзакцию через глобальную функцию
+            if (typeof window.addTransaction === 'function') {
+                window.addTransaction(transaction);
+                this.addMessage(`Записано: ${parsedData.type === 'income' ? 'доход' : 'расход'} ${parsedData.amount} ₸`, 'system');
+            } else {
+                console.error('Функция addTransaction не найдена');
+                this.addMessage('Извините, не могу сохранить операцию', 'system');
+            }
+        } else {
+            this.addMessage(parsedData.message, 'system');
         }
     }
 
     parseExpenseInput(text) {
-        // Простой парсер для распознавания команд
         const words = text.toLowerCase().split(' ');
         const amount = parseFloat(words.find(w => !isNaN(w)));
         
         if (isNaN(amount)) {
-            return 'Пожалуйста, укажите сумму числом';
+            return {
+                success: false,
+                message: 'Пожалуйста, укажите сумму числом'
+            };
         }
 
-        if (words.includes('расход')) {
-            // Обработка расхода
-            return `Записан расход: ${amount} ₸`;
-        } else if (words.includes('приход')) {
-            // Обработка дохода
-            return `Записан доход: ${amount} ₸`;
+        // Определяем тип операции
+        const isExpense = words.includes('расход');
+        const isIncome = words.includes('приход');
+
+        if (!isExpense && !isIncome) {
+            return {
+                success: false,
+                message: 'Укажите тип операции (расход/приход)'
+            };
         }
 
-        return 'Не могу распознать операцию. Используйте слова "расход" или "приход"';
+        // Определяем способ оплаты/категорию
+        const category = words.includes('каспий') ? 'kaspi' : 
+                        words.includes('халык') ? 'halyk' : 'other';
+
+        // Собираем описание (все слова после суммы и типа операции)
+        const description = words
+            .filter(w => isNaN(w))
+            .filter(w => !['расход', 'приход', 'каспий', 'халык'].includes(w))
+            .join(' ');
+
+        return {
+            success: true,
+            amount: amount,
+            type: isExpense ? 'expense' : 'income',
+            category: category,
+            description: description || 'Без описания'
+        };
     }
 }
 
-// Ждем загрузки DOM перед инициализацией
+// Инициализация после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     new AIExpenseAssistant();
 });
