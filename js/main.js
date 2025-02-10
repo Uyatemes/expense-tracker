@@ -1,3 +1,12 @@
+// Глобальная функция для добавления транзакций
+window.addTransaction = function(transaction) {
+    if (window.expenseManager) {
+        window.expenseManager.addTransaction(transaction);
+    } else {
+        console.error('ExpenseManager не инициализирован');
+    }
+};
+
 // Класс для управления данными
 class ExpenseManager {
     constructor() {
@@ -531,9 +540,4 @@ function getPaymentTypeIcon(type) {
         </svg>`
     };
     return icons[type] || '';
-}
-
-// В начале файла, после объявления ExpenseManager
-window.addTransaction = function(transaction) {
-    window.expenseManager.addTransaction(transaction);
-}; 
+} 
