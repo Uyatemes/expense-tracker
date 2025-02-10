@@ -800,15 +800,6 @@ select:focus {
 }
 
 /* Стили для контейнера ввода */
-.ai-input-container {
-    display: flex;
-    gap: 8px;
-    padding: 16px;
-    background-color: var(--md-sys-color-surface-container);
-    border-radius: 16px;
-    margin: 16px 24px;
-}
-
 .message-input {
     flex: 1;
     border: none;
