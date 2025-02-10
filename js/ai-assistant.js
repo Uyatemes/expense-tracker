@@ -39,7 +39,8 @@ class AIExpenseAssistant {
     processUserInput(text) {
         const parsedData = this.parseExpenseInput(text);
         if (parsedData.success) {
-            // Создаем объект транзакции в формате ExpenseManager
+            console.log('AI: Данные распознаны:', parsedData);
+            
             const transaction = {
                 amount: parsedData.amount,
                 type: parsedData.type,
@@ -48,13 +49,21 @@ class AIExpenseAssistant {
                 source: parsedData.category,
                 category: parsedData.category
             };
+            
+            console.log('AI: Создана транзакция:', transaction);
 
-            // Добавляем транзакцию через глобальную функцию
             if (typeof window.addTransaction === 'function') {
+                console.log('AI: Вызываем addTransaction');
                 window.addTransaction(transaction);
+                
+                console.log('AI: Вызываем renderTransactions напрямую');
+                if (window.expenseManager) {
+                    window.expenseManager.renderTransactions();
+                }
+                
                 this.addMessage(`Записано: ${parsedData.type === 'income' ? 'доход' : 'расход'} ${parsedData.amount} ₸`, 'system');
             } else {
-                console.error('Функция addTransaction не найдена');
+                console.error('AI: Функция addTransaction не найдена');
                 this.addMessage('Извините, не могу сохранить операцию', 'system');
             }
         } else {

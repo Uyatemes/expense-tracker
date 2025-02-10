@@ -1,5 +1,6 @@
 // Глобальная функция для добавления транзакций
 window.addTransaction = function(transaction) {
+    console.log('Global addTransaction вызван с:', transaction);
     if (window.expenseManager) {
         window.expenseManager.addTransaction(transaction);
     } else {
@@ -10,6 +11,7 @@ window.addTransaction = function(transaction) {
 // Класс для управления данными
 class ExpenseManager {
     constructor() {
+        console.log('ExpenseManager: Инициализация');
         this.transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         this.dateFilters = {
             from: null,
@@ -56,7 +58,7 @@ class ExpenseManager {
     }
 
     addTransaction(transaction) {
-        console.log('Добавление транзакции:', transaction);
+        console.log('ExpenseManager: Добавление транзакции:', transaction);
         
         this.transactions.push({
             ...transaction,
@@ -67,9 +69,10 @@ class ExpenseManager {
                 Math.abs(parseFloat(transaction.amount))
         });
         
-        console.log('Все транзакции после добавления:', this.transactions);
-        
+        console.log('ExpenseManager: Сохранение в localStorage');
         this.saveToLocalStorage();
+        
+        console.log('ExpenseManager: Вызов renderTransactions');
         this.renderTransactions();
         
         if (typeof window.updateCharts === 'function') {
@@ -130,19 +133,23 @@ class ExpenseManager {
     }
 
     renderTransactions() {
+        console.log('ExpenseManager: Начало renderTransactions');
+        
         const transactionsList = document.getElementById('expensesTableBody');
         if (!transactionsList) {
-            console.error('Не найден элемент expensesTableBody');
+            console.error('ExpenseManager: Не найден элемент expensesTableBody');
             return;
         }
         
         const transactions = this.getTransactions();
-        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        // Очищаем текущий список
-        transactionsList.innerHTML = '';
-
-        // Добавляем каждую транзакцию
+        console.log('ExpenseManager: Транзакции для рендеринга:', transactions);
+        
+        // Очищаем список
+        while (transactionsList.firstChild) {
+            transactionsList.removeChild(transactionsList.firstChild);
+        }
+        
+        // Добавляем транзакции
         transactions.forEach(t => {
             const transactionElement = document.createElement('div');
             transactionElement.className = 'transaction-item';
@@ -167,11 +174,9 @@ class ExpenseManager {
             
             transactionsList.appendChild(transactionElement);
         });
-
-        this.updateTotals(transactions);
         
-        // Добавим отладочную информацию
-        console.log('Транзакции обновлены:', transactions);
+        console.log('ExpenseManager: Рендеринг завершен');
+        this.updateTotals(transactions);
     }
 
     updateSummary() {
