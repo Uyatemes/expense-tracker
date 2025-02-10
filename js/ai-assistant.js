@@ -1,11 +1,22 @@
 class AIExpenseAssistant {
     constructor() {
-        this.inputElement = document.querySelector('.input-container input');
-        this.sendButton = document.querySelector('.input-container button');
+        // Обновляем селекторы в соответствии с HTML
+        this.inputElement = document.querySelector('.message-input');
+        this.sendButton = document.querySelector('.send-button');
+        
+        // Проверяем, найдены ли элементы
+        if (!this.inputElement || !this.sendButton) {
+            console.error('AI Assistant: Required elements not found');
+            return;
+        }
+        
         this.setupEventListeners();
+        console.log('AI Assistant: Elements initialized successfully');
     }
 
     setupEventListeners() {
+        if (!this.inputElement || !this.sendButton) return;
+
         this.sendButton.addEventListener('click', () => this.handleUserMessage());
         this.inputElement.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -86,8 +97,7 @@ class AIExpenseAssistant {
     }
 }
 
-// Инициализация при загрузке страницы
+// Инициализация при полной загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
     window.aiAssistant = new AIExpenseAssistant();
-    console.log('AI Assistant initialized');
 }); 
