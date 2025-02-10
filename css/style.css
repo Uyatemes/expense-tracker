@@ -776,4 +776,25 @@ select:focus {
     padding: 2px 8px;
     background-color: var(--md-sys-color-surface-container-high);
     border-radius: 12px;
+}
+
+/* Стили для поля ввода в темной теме */
+[data-theme="dark"] .input-container {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+[data-theme="dark"] .input-container input {
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+}
+
+[data-theme="dark"] .input-container textarea {
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* Стили для плейсхолдера в темной теме */
+[data-theme="dark"] .input-container input::placeholder,
+[data-theme="dark"] .input-container textarea::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
 } 
