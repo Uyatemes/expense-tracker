@@ -449,13 +449,21 @@ if (document.readyState === 'loading') {
     initializeApp();
 }
 
+// Определяем типы платежей
+const PAYMENT_TYPES = {
+    'kaspi-gold': 'Каспи Голд',
+    'kaspi-pay': 'Каспи Пэй',
+    'halyk': 'Халык'
+};
+
 // Обновляем функцию добавления расхода
 function addExpense(amount, description, paymentType) {
     const expense = {
         id: Date.now(),
         amount: parseFloat(amount),
         description: description,
-        paymentType: paymentType,
+        paymentType: paymentType, // kaspi-gold, kaspi-pay или halyk
+        paymentTypeName: PAYMENT_TYPES[paymentType], // Русское название
         date: new Date()
     };
 
@@ -492,15 +500,14 @@ function renderExpenses() {
         const expenseElement = document.createElement('div');
         expenseElement.className = 'expense-item';
         
-        // Добавляем иконку в зависимости от типа платежа
-        const icon = getPaymentTypeIcon(expense.paymentType);
-        
         expenseElement.innerHTML = `
             <div class="expense-info">
-                <div class="expense-type">${icon}</div>
                 <div class="expense-details">
                     <div class="expense-description">${expense.description}</div>
-                    <div class="expense-date">${formatDate(expense.date)}</div>
+                    <div class="expense-metadata">
+                        <span class="expense-date">${formatDate(expense.date)}</span>
+                        <span class="expense-payment-type">${expense.paymentTypeName}</span>
+                    </div>
                 </div>
             </div>
             <div class="expense-amount">₸ ${expense.amount.toLocaleString()}</div>
