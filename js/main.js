@@ -57,10 +57,12 @@ class ExpenseManager {
 
     addTransaction(transaction) {
         this.transactions.push({
-            ...transaction, 
+            ...transaction,
             id: Date.now(),
             category: transaction.category || 'Другое',
-            amount: transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount)
+            amount: transaction.type === 'expense' ? 
+                -Math.abs(parseFloat(transaction.amount)) : 
+                Math.abs(parseFloat(transaction.amount))
         });
         this.saveToLocalStorage();
         this.renderTransactions();
@@ -131,7 +133,7 @@ class ExpenseManager {
         transactionsList.innerHTML = transactions.map(t => `
             <div class="transaction-item">
                 <div class="transaction-info">
-                    <div class="transaction-date">${new Date(t.date).toLocaleDateString()}</div>
+                    <div class="transaction-date">${new Date(t.date).toLocaleDateString('ru-RU')}</div>
                     <div class="transaction-description">${t.description}</div>
                     <div class="transaction-source">${t.source || ''}</div>
                 </div>
