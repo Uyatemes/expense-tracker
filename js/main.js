@@ -447,19 +447,15 @@ class ExpenseManager {
     }
 
     initializeThemeToggle() {
-        const themeToggle = document.getElementById('theme-toggle');
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Загружаем сохраненную тему
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        } else if (prefersDarkScheme.matches) {
-            document.documentElement.setAttribute('data-theme', 'dark');
+        const themeToggle = document.querySelector('.fab');
+        if (!themeToggle) {
+            console.error('Не найдена кнопка переключения темы');
+            return;
         }
-        
-        // Обновляем состояние кнопки
-        this.updateThemeToggleState();
+
+        // Загружаем сохраненную тему
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
         
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -467,29 +463,7 @@ class ExpenseManager {
             
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
-            this.updateThemeToggleState();
         });
-        
-        // Слушаем изменения системной темы
-        prefersDarkScheme.addEventListener('change', (e) => {
-            if (!localStorage.getItem('theme')) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                this.updateThemeToggleState();
-            }
-        });
-    }
-
-    updateThemeToggleState() {
-        const themeToggle = document.getElementById('theme-toggle');
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        
-        if (currentTheme === 'dark') {
-            themeToggle.classList.add('dark-mode');
-        } else {
-            themeToggle.classList.remove('dark-mode');
-        }
     }
 }
 
