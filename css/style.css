@@ -1042,4 +1042,25 @@ select:focus {
 
 [data-theme="dark"] .version-info:hover {
     background-color: var(--dark-version-bg-hover, rgba(255, 255, 255, 0.15));
+}
+
+/* Анимация для удаления транзакций */
+@keyframes slideOutToRight {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.transaction-item.removing {
+    animation: slideOutToRight 0.5s ease-out forwards;
+    background: var(--transaction-remove-bg, rgba(244, 67, 54, 0.1));
+}
+
+[data-theme="dark"] .transaction-item.removing {
+    background: var(--dark-transaction-remove-bg, rgba(244, 67, 54, 0.15));
 } 

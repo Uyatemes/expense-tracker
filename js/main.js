@@ -82,11 +82,26 @@ class ExpenseManager {
     }
 
     deleteTransaction(id) {
-        this.transactions = this.transactions.filter(transaction => transaction.id !== id);
-        this.saveToLocalStorage();
-        this.renderTransactions();
-        if (typeof window.updateCharts === 'function') {
-            window.updateCharts();
+        console.log('ExpenseManager: Удаление транзакции:', id);
+        
+        const transactionElement = document.querySelector(`.transaction-item[data-id="${id}"]`);
+        if (transactionElement) {
+            // Добавляем класс для анимации
+            transactionElement.classList.add('removing');
+            
+            // Ждем окончания анимации перед удалением из DOM
+            setTimeout(() => {
+                // Удаляем из массива
+                this.transactions = this.transactions.filter(t => t.id !== id);
+                // Сохраняем в localStorage
+                this.saveToLocalStorage();
+                // Обновляем отображение
+                this.renderTransactions();
+                // Обновляем графики если они есть
+                if (typeof window.updateCharts === 'function') {
+                    window.updateCharts();
+                }
+            }, 500); // Время анимации
         }
     }
 
@@ -275,47 +290,9 @@ class ExpenseManager {
     }
 
     showConfirmDialog(id) {
-        const dialog = document.getElementById('confirmDialog');
-        if (!dialog) {
-            // Если диалог не найден, создаем его
-            const dialogHTML = `
-                <div id="confirmDialog" class="confirm-dialog">
-                    <div class="confirm-dialog-content">
-                        <h3>Подтверждение удаления</h3>
-                        <p>Вы действительно хотите удалить эту запись?</p>
-                        <div class="confirm-dialog-buttons">
-                            <button id="confirmCancel" class="btn-cancel">Отмена</button>
-                            <button id="confirmDelete" class="btn-delete">Удалить</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', dialogHTML);
-        }
-
-        const confirmDialog = document.getElementById('confirmDialog');
-        const confirmBtn = document.getElementById('confirmDelete');
-        const cancelBtn = document.getElementById('confirmCancel');
-
-        const handleDelete = () => {
+        if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
             this.deleteTransaction(id);
-            confirmDialog.classList.remove('active');
-            cleanup();
-        };
-        
-        const handleCancel = () => {
-            confirmDialog.classList.remove('active');
-            cleanup();
-        };
-        
-        const cleanup = () => {
-            confirmBtn.onclick = null;
-            cancelBtn.onclick = null;
-        };
-
-        confirmBtn.onclick = handleDelete;
-        cancelBtn.onclick = handleCancel;
-        confirmDialog.classList.add('active');
+        }
     }
 
     async exportToPDF() {
