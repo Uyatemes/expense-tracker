@@ -31,6 +31,9 @@ class ExpenseManager {
         } else {
             this.initialize();
         }
+
+        this.currentTransactionToDelete = null;
+        this.initializeModal();
     }
 
     initialize() {
@@ -89,7 +92,7 @@ class ExpenseManager {
             // Добавляем класс для анимации
             transactionElement.classList.add('removing');
             
-            // Ждем окончания анимации перед удалением из DOM
+            // Ждем окончания анимации перед удалением
             setTimeout(() => {
                 // Удаляем из массива
                 this.transactions = this.transactions.filter(t => t.id !== id);
@@ -101,7 +104,7 @@ class ExpenseManager {
                 if (typeof window.updateCharts === 'function') {
                     window.updateCharts();
                 }
-            }, 500); // Время анимации
+            }, 500);
         }
     }
 
@@ -290,9 +293,9 @@ class ExpenseManager {
     }
 
     showConfirmDialog(id) {
-        if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-            this.deleteTransaction(id);
-        }
+        const modal = document.getElementById('confirmDialog');
+        this.currentTransactionToDelete = id;
+        modal.classList.add('show');
     }
 
     async exportToPDF() {
@@ -404,6 +407,25 @@ class ExpenseManager {
         if (exportBtn) {
             exportBtn.onclick = () => this.exportToPDF();
         }
+    }
+
+    initializeModal() {
+        const modal = document.getElementById('confirmDialog');
+        const confirmBtn = document.getElementById('confirmDelete');
+        const cancelBtn = document.getElementById('cancelDelete');
+
+        confirmBtn.addEventListener('click', () => {
+            if (this.currentTransactionToDelete !== null) {
+                this.deleteTransaction(this.currentTransactionToDelete);
+                this.currentTransactionToDelete = null;
+            }
+            modal.classList.remove('show');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            this.currentTransactionToDelete = null;
+            modal.classList.remove('show');
+        });
     }
 }
 

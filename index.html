@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <div class="version-info">v1.0.5</div>
+    <div class="version-info">v1.0.6</div>
     <header class="app-header">
         <div class="logo-container">
             <svg class="app-logo" width="32" height="32" viewBox="0 0 685 321">
@@ -94,14 +94,14 @@
         </div>
     </main>
 
-    <!-- Диалог подтверждения -->
-    <div id="confirmDialog" class="confirm-dialog">
-        <div class="confirm-dialog-content">
+    <!-- Добавляем диалог подтверждения -->
+    <div id="confirmDialog" class="modal">
+        <div class="modal-content">
             <h3>Подтверждение удаления</h3>
-            <p>Вы действительно хотите удалить эту запись?</p>
-            <div class="confirm-dialog-buttons">
-                <button id="confirmCancel" class="btn-cancel">Отмена</button>
-                <button id="confirmDelete" class="btn-delete">Удалить</button>
+            <p>Вы уверены, что хотите удалить эту транзакцию?</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete" class="btn-confirm">Удалить</button>
+                <button id="cancelDelete" class="btn-cancel">Отмена</button>
             </div>
         </div>
     </div>
