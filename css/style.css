@@ -529,56 +529,6 @@ body {
     }
 }
 
-/* Добавим переключатель темы */
-.theme-toggle {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    cursor: pointer;
-    padding: 8px;
-    transition: background-color 0.3s;
-}
-
-.theme-toggle:hover {
-    background-color: var(--hover-bg, rgba(0, 0, 0, 0.1));
-}
-
-.theme-toggle .sun-icon,
-.theme-toggle .moon-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.3s, transform 0.3s;
-}
-
-.theme-toggle .sun-icon {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0);
-}
-
-.theme-toggle .moon-icon {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(-90deg);
-}
-
-.theme-toggle.dark-mode .sun-icon {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(90deg);
-}
-
-.theme-toggle.dark-mode .moon-icon {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(0);
-}
-
-[data-theme="dark"] .theme-toggle:hover {
-    background-color: var(--dark-hover-bg, rgba(255, 255, 255, 0.1));
-}
-
 /* Стили для переключателя темы */
 .header-content {
     display: flex;
