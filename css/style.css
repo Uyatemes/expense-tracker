@@ -1,6 +1,9 @@
 /* В начале файла определяем поддержку светлой и темной темы */
 :root {
     color-scheme: light dark;
+    --version-bg: rgba(0, 0, 0, 0.1);
+    --version-color: rgba(0, 0, 0, 0.6);
+    --version-bg-hover: rgba(0, 0, 0, 0.15);
 }
 
 /* Светлая тема (по умолчанию) */
@@ -72,6 +75,9 @@
         --chat-bg: var(--dark-card-bg, #2A2B2D);
         --chat-input-bg: var(--dark-input-bg, #1E1F21);
         --chat-input-bg-focus: var(--dark-input-bg-focus, #252629);
+        --version-bg: rgba(255, 255, 255, 0.1);
+        --version-color: rgba(255, 255, 255, 0.7);
+        --version-bg-hover: rgba(255, 255, 255, 0.15);
     }
 }
 
@@ -1012,8 +1018,8 @@ select:focus {
     font-size: 12px;
     padding: 4px 8px;
     border-radius: 4px;
-    background-color: var(--version-bg, rgba(0, 0, 0, 0.1));
-    color: var(--version-color, rgba(0, 0, 0, 0.6));
+    background-color: var(--version-bg);
+    color: var(--version-color);
     z-index: 1000;
     backdrop-filter: blur(4px);
 }
@@ -1027,7 +1033,7 @@ select:focus {
 
 /* Добавляем hover эффект */
 .version-info:hover {
-    background-color: var(--version-bg-hover, rgba(0, 0, 0, 0.15));
+    background-color: var(--version-bg-hover);
 }
 
 [data-theme="dark"] .version-info:hover {
