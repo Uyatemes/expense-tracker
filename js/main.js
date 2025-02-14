@@ -260,23 +260,31 @@ class ExpenseManager {
     }
 
     updateTotals(transactions) {
-        const totalIncome = document.getElementById('totalIncome');
-        const totalExpense = document.getElementById('totalExpense');
-
-        if (totalIncome && totalExpense) {
-            const income = transactions
-                .filter(t => t.type === 'income')
-                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-                
-            const expense = transactions
-                .filter(t => t.type === 'expense')
-                .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-
-            totalIncome.querySelector('.total-amount').textContent = 
-                `${income.toLocaleString('ru-RU')} ₸`;
-            totalExpense.querySelector('.total-amount').textContent = 
-                `${expense.toLocaleString('ru-RU')} ₸`;
+        console.log('ExpenseManager: Обновление итогов');
+        
+        // Считаем итоги
+        const totals = transactions.reduce((acc, t) => {
+            if (t.type === 'income') {
+                acc.income += parseFloat(t.amount);
+            } else {
+                acc.expense += parseFloat(t.amount);
+            }
+            return acc;
+        }, { income: 0, expense: 0 });
+        
+        // Обновляем отображение
+        const incomeElement = document.querySelector('.totals .income');
+        const expenseElement = document.querySelector('.totals .expense');
+        
+        if (incomeElement) {
+            incomeElement.textContent = `Доходы ${totals.income.toLocaleString('ru-RU')} ₸`;
         }
+        
+        if (expenseElement) {
+            expenseElement.textContent = `Расходы ${totals.expense.toLocaleString('ru-RU')} ₸`;
+        }
+        
+        console.log('ExpenseManager: Итоги обновлены:', totals);
     }
 
     showConfirmDialog(id) {
