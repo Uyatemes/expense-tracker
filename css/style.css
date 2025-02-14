@@ -167,18 +167,6 @@ body {
     background: var(--transaction-bg);
     border-radius: 8px;
     box-shadow: var(--card-shadow);
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .transaction-info {
@@ -856,9 +844,44 @@ select:focus {
     color: var(--md-sys-color-on-primary);
 }
 
+/* Контейнер для списка транзакций */
 #expensesTableBody {
+    margin-top: 20px;
     display: block !important;
     min-height: 50px;
     width: 100%;
-    margin-top: 20px;
+    position: relative;
+    z-index: 1;
+    background: var(--background-color);
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: var(--transaction-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    z-index: 2;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Анимация для новых транзакций */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transaction-item {
+    animation: fadeIn 0.3s ease-out;
 } 
