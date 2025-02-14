@@ -267,8 +267,8 @@ class ExpenseManager {
             const amount = parseFloat(t.amount);
             if (t.type === 'income') {
                 acc.income += amount;
-            } else {
-                acc.expense += amount;
+            } else if (t.type === 'expense') {
+                acc.expense += Math.abs(amount);
             }
             return acc;
         }, { income: 0, expense: 0 });
@@ -278,16 +278,21 @@ class ExpenseManager {
         const expenseElement = document.querySelector('#totalExpense .total-amount');
         
         if (incomeElement) {
+            incomeElement.className = 'total-amount transaction-amount income';
             incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
-            incomeElement.classList.add('income'); // Добавляем класс для стилизации
         }
         
         if (expenseElement) {
+            expenseElement.className = 'total-amount transaction-amount expense';
             expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
-            expenseElement.classList.add('expense'); // Добавляем класс для стилизации
         }
         
-        console.log('ExpenseManager: Итоги обновлены:', totals);
+        console.log('ExpenseManager: Итоги обновлены:', {
+            income: totals.income,
+            expense: totals.expense,
+            incomeElement: incomeElement?.textContent,
+            expenseElement: expenseElement?.textContent
+        });
     }
 
     showConfirmDialog(id) {
