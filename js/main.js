@@ -261,27 +261,46 @@ class ExpenseManager {
 
     updateTotals(transactions) {
         console.log('ExpenseManager: Обновление итогов');
+        console.log('Транзакции для подсчета:', transactions);
         
         // Считаем итоги
         const totals = transactions.reduce((acc, t) => {
+            const amount = parseFloat(t.amount);
+            console.log(`Обработка транзакции:`, {
+                type: t.type,
+                amount: amount,
+                currentTotals: {...acc}
+            });
+            
             if (t.type === 'income') {
-                acc.income += parseFloat(t.amount);
+                acc.income += amount;
             } else {
-                acc.expense += parseFloat(t.amount);
+                acc.expense += amount;
             }
             return acc;
         }, { income: 0, expense: 0 });
+        
+        console.log('Посчитанные итоги:', totals);
         
         // Обновляем отображение
         const incomeElement = document.querySelector('#totalIncome .total-amount');
         const expenseElement = document.querySelector('#totalExpense .total-amount');
         
+        console.log('Найденные элементы:', {
+            incomeElement,
+            expenseElement
+        });
+        
         if (incomeElement) {
             incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
+        } else {
+            console.error('Не найден элемент для отображения доходов');
         }
         
         if (expenseElement) {
             expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
+        } else {
+            console.error('Не найден элемент для отображения расходов');
         }
         
         console.log('ExpenseManager: Итоги обновлены:', totals);
