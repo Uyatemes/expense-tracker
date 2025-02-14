@@ -1015,9 +1015,21 @@ select:focus {
     background-color: var(--version-bg, rgba(0, 0, 0, 0.1));
     color: var(--version-color, rgba(0, 0, 0, 0.6));
     z-index: 1000;
+    backdrop-filter: blur(4px);
 }
 
+/* Переопределяем цвета для темной темы */
 [data-theme="dark"] .version-info {
     background-color: var(--dark-version-bg, rgba(255, 255, 255, 0.1));
-    color: var(--dark-version-color, rgba(255, 255, 255, 0.6));
+    color: var(--dark-version-color, rgba(255, 255, 255, 0.7));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Добавляем hover эффект */
+.version-info:hover {
+    background-color: var(--version-bg-hover, rgba(0, 0, 0, 0.15));
+}
+
+[data-theme="dark"] .version-info:hover {
+    background-color: var(--dark-version-bg-hover, rgba(255, 255, 255, 0.15));
 } 
