@@ -143,7 +143,7 @@ class ExpenseManager {
         const transactions = this.getTransactions();
         console.log('ExpenseManager: Транзакции для рендеринга:', transactions);
         
-        // Очищаем список ПЕРЕД созданием фрагмента
+        // Очищаем список
         transactionsList.innerHTML = '';
         
         // Создаем временный контейнер
@@ -154,9 +154,14 @@ class ExpenseManager {
             const transactionElement = document.createElement('div');
             transactionElement.className = 'transaction-item';
             
-            // Добавим data-атрибуты для отладки
+            // Добавляем data-атрибуты для отладки
             transactionElement.setAttribute('data-id', t.id);
             transactionElement.setAttribute('data-type', t.type);
+            
+            // Исправляем условие для типа транзакции
+            const isIncome = t.type === 'income';
+            const amountPrefix = isIncome ? '+' : '-';
+            const amountClass = isIncome ? 'income' : 'expense';
             
             transactionElement.innerHTML = `
                 <div class="transaction-info">
@@ -165,8 +170,8 @@ class ExpenseManager {
                     <div class="transaction-source">${t.source || ''}</div>
                 </div>
                 <div class="transaction-right">
-                    <div class="transaction-amount ${t.type}">
-                        ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
+                    <div class="transaction-amount ${amountClass}">
+                        ${amountPrefix}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
                     </div>
                     <button onclick="window.expenseManager.showConfirmDialog(${t.id})" class="delete-btn" title="Удалить">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -177,49 +182,28 @@ class ExpenseManager {
             `;
             
             tempContainer.appendChild(transactionElement);
-            console.log('Добавлен элемент:', t.description); // Отладочный лог
+            console.log('Добавлена транзакция:', {
+                id: t.id,
+                type: t.type,
+                amount: t.amount,
+                description: t.description
+            });
         });
         
         // Добавляем все транзакции одним действием
         transactionsList.appendChild(tempContainer);
         
-        console.log('ExpenseManager: Количество элементов после рендеринга:', transactionsList.children.length);
-        
-        // Принудительно вызываем перерисовку
-        requestAnimationFrame(() => {
-            // Проверяем стили
-            const computedStyle = window.getComputedStyle(transactionsList);
-            console.log('Стили списка:', {
-                display: computedStyle.display,
-                visibility: computedStyle.visibility,
-                height: computedStyle.height,
-                opacity: computedStyle.opacity
-            });
-            
-            // Принудительный reflow
-            transactionsList.style.display = 'none';
-            transactionsList.offsetHeight;
-            transactionsList.style.display = '';
-        });
-        
+        // Обновляем итоги
         this.updateTotals(transactions);
-        console.log('ExpenseManager: Рендеринг завершен');
-
-        console.log('DOM после рендеринга:', {
-            container: transactionsList,
-            firstChild: transactionsList.firstChild,
-            html: transactionsList.innerHTML,
-            childNodes: transactionsList.childNodes.length
+        
+        // Запускаем анимацию
+        requestAnimationFrame(() => {
+            const lastTransaction = transactionsList.firstChild;
+            if (lastTransaction) {
+                lastTransaction.classList.add('new-transaction');
+                setTimeout(() => lastTransaction.classList.remove('new-transaction'), 500);
+            }
         });
-
-        // Проверяем через setTimeout
-        setTimeout(() => {
-            console.log('DOM через 1 секунду:', {
-                container: transactionsList,
-                children: transactionsList.children.length,
-                visible: transactionsList.offsetHeight > 0
-            });
-        }, 1000);
     }
 
     updateSummary() {
