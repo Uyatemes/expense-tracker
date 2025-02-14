@@ -1003,4 +1003,21 @@ select:focus {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.version-info {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: var(--version-bg, rgba(0, 0, 0, 0.1));
+    color: var(--version-color, rgba(0, 0, 0, 0.6));
+    z-index: 1000;
+}
+
+[data-theme="dark"] .version-info {
+    background-color: var(--dark-version-bg, rgba(255, 255, 255, 0.1));
+    color: var(--dark-version-color, rgba(255, 255, 255, 0.6));
 } 

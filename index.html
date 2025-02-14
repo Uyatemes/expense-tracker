@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+    <div class="version-info">v1.0.1</div>
     <header class="app-header">
         <div class="logo-container">
             <svg class="app-logo" width="32" height="32" viewBox="0 0 685 321">
@@ -170,11 +171,11 @@
     </div>
 
     <!-- Сначала загружаем theme.js -->
-    <script src="js/theme.js"></script>
-    <!-- Затем остальные скрипты -->
-    <script src="js/chart.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/date-range.js"></script>
-    <script src="js/ai-assistant.js"></script>
+   <!-- В конце body -->
+<script src="js/theme.js"></script>
+<script src="js/main.js"></script>
+<script src="js/ai-assistant.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/date-range.js"></script>
 </body>
 </html> 
