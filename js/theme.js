@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(initialTheme);
     
     // Находим кнопку переключения темы
-    const themeToggleFab = document.getElementById('themeToggleFab');
+    const themeToggleFab = document.querySelector('.fab');
     
     // Обработчик клика по FAB
     if (themeToggleFab) {
