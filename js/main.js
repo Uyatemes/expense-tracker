@@ -41,6 +41,7 @@ class ExpenseManager {
         this.renderTransactions();
         this.initializeEventHandlers();
         console.log('ExpenseManager: Инициализация завершена');
+        this.updateTotals(this.transactions);
     }
 
     loadFromLocalStorage() {
@@ -81,6 +82,8 @@ class ExpenseManager {
             window.updateCharts();
         }
         
+        this.updateTotals(this.transactions);
+        
         return newTransaction;
     }
 
@@ -92,6 +95,7 @@ class ExpenseManager {
             if (typeof window.updateCharts === 'function') {
                 window.updateCharts();
             }
+            this.updateTotals(this.transactions);
         }
     }
 
@@ -104,6 +108,7 @@ class ExpenseManager {
         if (typeof window.updateCharts === 'function') {
             window.updateCharts();
         }
+        this.updateTotals(this.transactions);
     }
 
     setupDateFilter() {
@@ -260,11 +265,14 @@ class ExpenseManager {
     }
 
     updateTotals(transactions) {
-        console.log('ExpenseManager: Обновление итогов');
+        console.log('ExpenseManager: Начало updateTotals');
+        console.log('Транзакции:', transactions);
         
         // Считаем итоги
         const totals = transactions.reduce((acc, t) => {
             const amount = parseFloat(t.amount);
+            console.log('Обработка транзакции:', { type: t.type, amount: amount });
+            
             if (t.type === 'income') {
                 acc.income += amount;
             } else if (t.type === 'expense') {
@@ -273,26 +281,32 @@ class ExpenseManager {
             return acc;
         }, { income: 0, expense: 0 });
         
+        console.log('Посчитанные итоги:', totals);
+        
         // Обновляем отображение
         const incomeElement = document.querySelector('#totalIncome .total-amount');
         const expenseElement = document.querySelector('#totalExpense .total-amount');
         
+        console.log('Найденные элементы:', { 
+            incomeElement: incomeElement?.outerHTML, 
+            expenseElement: expenseElement?.outerHTML 
+        });
+        
         if (incomeElement) {
             incomeElement.className = 'total-amount transaction-amount income';
             incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
+        } else {
+            console.error('Не найден элемент для доходов #totalIncome .total-amount');
         }
         
         if (expenseElement) {
             expenseElement.className = 'total-amount transaction-amount expense';
             expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
+        } else {
+            console.error('Не найден элемент для расходов #totalExpense .total-amount');
         }
         
-        console.log('ExpenseManager: Итоги обновлены:', {
-            income: totals.income,
-            expense: totals.expense,
-            incomeElement: incomeElement?.textContent,
-            expenseElement: expenseElement?.textContent
-        });
+        console.log('ExpenseManager: Завершение updateTotals');
     }
 
     showConfirmDialog(id) {
