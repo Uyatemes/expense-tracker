@@ -34,6 +34,8 @@
     --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
     --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
     --chat-bg: #ffffff;
+    --chat-input-bg: #f2f2f2;
+    --chat-input-bg-focus: #e8e8e8;
 }
 
 /* Темная тема (автоматически при системной темной теме) */
@@ -68,6 +70,8 @@
         --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15);
         --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15);
         --chat-bg: var(--dark-card-bg, #2A2B2D);
+        --chat-input-bg: var(--dark-input-bg, #1E1F21);
+        --chat-input-bg-focus: var(--dark-input-bg-focus, #252629);
     }
 }
 
@@ -120,7 +124,7 @@ body {
     padding: 0.75rem 1rem;
     border: none;
     border-radius: 20px;
-    background-color: #f2f2f2;
+    background-color: var(--chat-input-bg);
     color: var(--md-sys-color-on-surface);
 }
 
@@ -978,4 +982,10 @@ select:focus {
     --dark-system-message-bg: #2D3748;
     --dark-input-bg: #1E1F21;
     --dark-button-bg: #2D3748;
+}
+
+/* Добавим фокус для input в темной теме */
+[data-theme="dark"] .chat-input input:focus {
+    outline: none;
+    background-color: var(--dark-input-bg-focus, #252629);
 } 
