@@ -884,4 +884,38 @@ select:focus {
 
 .transaction-item {
     animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .transaction-item {
+    background: var(--dark-card-bg, #2A2B2D);
+    color: var(--dark-text, #E8E8E8);
+    box-shadow: var(--dark-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+[data-theme="dark"] .transaction-info {
+    color: var(--dark-text, #E8E8E8);
+}
+
+[data-theme="dark"] .transaction-date,
+[data-theme="dark"] .transaction-source {
+    color: var(--dark-secondary-text, #A0A0A0);
+}
+
+[data-theme="dark"] .transaction-amount.income {
+    color: var(--dark-income-color, #4CAF50);
+}
+
+[data-theme="dark"] .transaction-amount.expense {
+    color: var(--dark-expense-color, #F44336);
+}
+
+/* Добавим переменные в :root для обеих тем */
+:root {
+    --dark-card-bg: #2A2B2D;
+    --dark-text: #E8E8E8;
+    --dark-secondary-text: #A0A0A0;
+    --dark-income-color: #4CAF50;
+    --dark-expense-color: #F44336;
+    --dark-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 } 
