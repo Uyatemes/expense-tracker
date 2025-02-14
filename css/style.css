@@ -918,4 +918,62 @@ select:focus {
     --dark-income-color: #4CAF50;
     --dark-expense-color: #F44336;
     --dark-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для чат-контейнера в темной теме */
+[data-theme="dark"] .chat-container {
+    background: var(--dark-card-bg, #2A2B2D);
+    color: var(--dark-text, #E8E8E8);
+    box-shadow: var(--dark-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+[data-theme="dark"] .chat-messages {
+    background: var(--dark-chat-bg, #1E1F21);
+    border-color: var(--dark-border, #3A3B3D);
+}
+
+[data-theme="dark"] .message {
+    background: var(--dark-message-bg, #2A2B2D);
+    color: var(--dark-text, #E8E8E8);
+    border: 1px solid var(--dark-border, #3A3B3D);
+}
+
+[data-theme="dark"] .message.user {
+    background: var(--dark-user-message-bg, #1E4D40);
+}
+
+[data-theme="dark"] .message.system {
+    background: var(--dark-system-message-bg, #2D3748);
+}
+
+[data-theme="dark"] #user-input {
+    background: var(--dark-input-bg, #1E1F21);
+    color: var(--dark-text, #E8E8E8);
+    border: 1px solid var(--dark-border, #3A3B3D);
+}
+
+[data-theme="dark"] #send-message {
+    background: var(--dark-button-bg, #2D3748);
+    color: var(--dark-text, #E8E8E8);
+    border: 1px solid var(--dark-border, #3A3B3D);
+}
+
+/* Добавляем новые переменные в :root */
+:root {
+    /* Существующие переменные */
+    --dark-card-bg: #2A2B2D;
+    --dark-text: #E8E8E8;
+    --dark-secondary-text: #A0A0A0;
+    --dark-income-color: #4CAF50;
+    --dark-expense-color: #F44336;
+    --dark-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    /* Новые переменные для чата */
+    --dark-chat-bg: #1E1F21;
+    --dark-border: #3A3B3D;
+    --dark-message-bg: #2A2B2D;
+    --dark-user-message-bg: #1E4D40;
+    --dark-system-message-bg: #2D3748;
+    --dark-input-bg: #1E1F21;
+    --dark-button-bg: #2D3748;
 } 
