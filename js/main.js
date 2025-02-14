@@ -1,6 +1,5 @@
 // Глобальная функция для добавления транзакций
 window.addTransaction = function(transaction) {
-    console.log('Global addTransaction вызван с:', transaction);
     if (window.expenseManager) {
         window.expenseManager.addTransaction(transaction);
     } else {
@@ -428,8 +427,10 @@ class ExpenseManager {
     }
 }
 
-// Создаем глобальный экземпляр менеджера
-window.expenseManager = new ExpenseManager();
+// Создаем экземпляр после загрузки DOM
+document.addEventListener('DOMContentLoaded', () => {
+    window.expenseManager = new ExpenseManager();
+});
 
 // Глобальная функция удаления
 window.deleteTransaction = function(id) {
