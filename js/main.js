@@ -137,15 +137,14 @@ class ExpenseManager {
         const transactionsList = document.getElementById('expensesTableBody');
         if (!transactionsList) {
             console.error('ExpenseManager: Не найден элемент expensesTableBody');
-            console.log('DOM элементы:', {
-                body: document.body.innerHTML,
-                expensesTableBody: document.getElementById('expensesTableBody')
-            });
             return;
         }
         
         const transactions = this.getTransactions();
         console.log('ExpenseManager: Транзакции для рендеринга:', transactions);
+        
+        // Очищаем список ПЕРЕД созданием фрагмента
+        transactionsList.innerHTML = '';
         
         // Создаем временный контейнер
         const tempContainer = document.createDocumentFragment();
@@ -154,6 +153,10 @@ class ExpenseManager {
         transactions.forEach(t => {
             const transactionElement = document.createElement('div');
             transactionElement.className = 'transaction-item';
+            
+            // Добавим data-атрибуты для отладки
+            transactionElement.setAttribute('data-id', t.id);
+            transactionElement.setAttribute('data-type', t.type);
             
             transactionElement.innerHTML = `
                 <div class="transaction-info">
@@ -174,26 +177,33 @@ class ExpenseManager {
             `;
             
             tempContainer.appendChild(transactionElement);
+            console.log('Добавлен элемент:', t.description); // Отладочный лог
         });
-        
-        // Очищаем текущий список
-        while (transactionsList.firstChild) {
-            transactionsList.removeChild(transactionsList.firstChild);
-        }
         
         // Добавляем все транзакции одним действием
         transactionsList.appendChild(tempContainer);
         
-        console.log('ExpenseManager: Рендеринг завершен');
+        console.log('ExpenseManager: Количество элементов после рендеринга:', transactionsList.children.length);
         
         // Принудительно вызываем перерисовку
         requestAnimationFrame(() => {
+            // Проверяем стили
+            const computedStyle = window.getComputedStyle(transactionsList);
+            console.log('Стили списка:', {
+                display: computedStyle.display,
+                visibility: computedStyle.visibility,
+                height: computedStyle.height,
+                opacity: computedStyle.opacity
+            });
+            
+            // Принудительный reflow
             transactionsList.style.display = 'none';
-            transactionsList.offsetHeight; // trigger reflow
+            transactionsList.offsetHeight;
             transactionsList.style.display = '';
         });
         
         this.updateTotals(transactions);
+        console.log('ExpenseManager: Рендеринг завершен');
     }
 
     updateSummary() {
