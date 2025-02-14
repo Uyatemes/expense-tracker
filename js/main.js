@@ -149,11 +149,21 @@ class ExpenseManager {
         transactionsList.innerHTML = '';
         
         // Добавляем каждую транзакцию
-        transactions.forEach(t => {
-            console.log('Рендерим транзакцию:', t);
-            
+        transactions.forEach((t, index) => {
             const transactionElement = document.createElement('div');
             transactionElement.className = 'transaction-item';
+            
+            // Если это первая транзакция и она новая (добавлена менее 1 секунды назад)
+            if (index === 0 && (Date.now() - new Date(t.date).getTime()) < 1000) {
+                transactionElement.classList.add('new');
+                // Удаляем класс через 1 секунду
+                setTimeout(() => {
+                    transactionElement.classList.remove('new');
+                    // Плавно меняем фон обратно
+                    transactionElement.style.transition = 'background-color 0.5s ease-out';
+                    transactionElement.style.background = '';
+                }, 1000);
+            }
             
             const date = new Date(t.date).toLocaleDateString('ru-RU');
             const amount = Math.abs(t.amount).toLocaleString('ru-RU');
