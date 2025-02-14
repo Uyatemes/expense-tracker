@@ -273,15 +273,15 @@ class ExpenseManager {
         }, { income: 0, expense: 0 });
         
         // Обновляем отображение
-        const incomeElement = document.querySelector('.totals .income');
-        const expenseElement = document.querySelector('.totals .expense');
+        const incomeElement = document.querySelector('#totalIncome .total-amount');
+        const expenseElement = document.querySelector('#totalExpense .total-amount');
         
         if (incomeElement) {
-            incomeElement.textContent = `Доходы ${totals.income.toLocaleString('ru-RU')} ₸`;
+            incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
         }
         
         if (expenseElement) {
-            expenseElement.textContent = `Расходы ${totals.expense.toLocaleString('ru-RU')} ₸`;
+            expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
         }
         
         console.log('ExpenseManager: Итоги обновлены:', totals);
