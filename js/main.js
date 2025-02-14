@@ -34,6 +34,7 @@ class ExpenseManager {
 
         this.currentTransactionToDelete = null;
         this.initializeModal();
+        this.initializeThemeToggle();
     }
 
     initialize() {
@@ -443,6 +444,52 @@ class ExpenseManager {
             this.currentTransactionToDelete = null;
             modal.classList.remove('show');
         });
+    }
+
+    initializeThemeToggle() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // Загружаем сохраненную тему
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } else if (prefersDarkScheme.matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        
+        // Обновляем состояние кнопки
+        this.updateThemeToggleState();
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            this.updateThemeToggleState();
+        });
+        
+        // Слушаем изменения системной темы
+        prefersDarkScheme.addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                this.updateThemeToggleState();
+            }
+        });
+    }
+
+    updateThemeToggleState() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        
+        if (currentTheme === 'dark') {
+            themeToggle.classList.add('dark-mode');
+        } else {
+            themeToggle.classList.remove('dark-mode');
+        }
     }
 }
 

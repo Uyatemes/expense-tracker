@@ -72,7 +72,7 @@
         --md-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.15);
         --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15);
         --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15);
-        --chat-bg: var(--dark-card-bg, #2A2B2D);
+        --chat-bg: var(--dark-card-bg, #1E211F);
         --chat-input-bg: var(--dark-input-bg, #1E1F21);
         --chat-input-bg-focus: var(--dark-input-bg-focus, #252629);
         --version-bg: rgba(255, 255, 255, 0.1);
@@ -234,6 +234,7 @@ body {
     cursor: pointer;
     transition: background-color 0.2s;
     font-size: 1rem;
+    margin-bottom: 8px;
 }
 
 .date-range-button:hover {
@@ -530,22 +531,52 @@ body {
 
 /* Добавим переключатель темы */
 .theme-toggle {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: transparent;
-    color: var(--md-sys-color-on-surface);
-    border: none;
-    border-radius: 50%;
+    position: relative;
     width: 40px;
     height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
     cursor: pointer;
-    box-shadow: var(--md-elevation-2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    transition: background-color 0.2s;
+    padding: 8px;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--hover-bg, rgba(0, 0, 0, 0.1));
+}
+
+.theme-toggle .sun-icon,
+.theme-toggle .moon-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.theme-toggle .sun-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0);
+}
+
+.theme-toggle .moon-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+.theme-toggle.dark-mode .sun-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.theme-toggle.dark-mode .moon-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background-color: var(--dark-hover-bg, rgba(255, 255, 255, 0.1));
 }
 
 /* Стили для переключателя темы */
@@ -556,7 +587,7 @@ body {
 }
 
 .theme-toggle:hover {
-    background: var(--md-sys-color-surface-variant);
+    background-color: var(--md-sys-color-surface-variant);
 }
 
 .theme-toggle .sun-icon,
