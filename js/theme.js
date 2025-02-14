@@ -43,10 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработчик клика по FAB
     if (themeToggleFab) {
+        // Устанавливаем начальное состояние класса
+        themeToggleFab.classList.toggle('dark', initialTheme === 'dark');
+        
         themeToggleFab.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             applyTheme(newTheme);
+            // Добавляем класс для анимации
+            themeToggleFab.classList.toggle('dark', newTheme === 'dark');
             console.log('Theme toggled to:', newTheme);
         });
     }
