@@ -654,7 +654,7 @@ body {
     align-items: center;
     justify-content: center;
     box-shadow: var(--md-elevation-2);
-    transition: all 0.2s ease;
+    transition: background-color 0.3s;
     z-index: 1000;
 }
 
@@ -669,20 +669,42 @@ body {
 }
 
 /* Иконки темы */
+.fab .light-icon,
+.fab .dark-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
 .fab .light-icon {
-    display: none;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .fab .dark-icon {
-    display: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
 }
 
-[data-theme="light"] .fab .dark-icon {
-    display: block;
+.fab.dark .light-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
 }
 
-[data-theme="dark"] .fab .light-icon {
-    display: block;
+.fab.dark .dark-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+[data-theme="dark"] .fab {
+    background-color: var(--dark-fab-bg, #444);
+    color: var(--dark-fab-color, #fff);
+}
+
+[data-theme="dark"] .fab:hover {
+    background-color: var(--dark-fab-hover-bg, #555);
 }
 
 /* Анимация при наведении */

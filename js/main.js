@@ -447,15 +447,16 @@ class ExpenseManager {
     }
 
     initializeThemeToggle() {
-        const themeToggle = document.querySelector('.fab');
+        const themeToggle = document.getElementById('themeToggleFab');
         if (!themeToggle) {
-            console.error('Не найдена кнопка переключения темы');
+            console.error('Не найдена кнопка переключения темы (FAB)');
             return;
         }
 
         // Загружаем сохраненную тему
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.classList.toggle('dark', savedTheme === 'dark');
         
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -463,6 +464,7 @@ class ExpenseManager {
             
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            themeToggle.classList.toggle('dark', newTheme === 'dark');
         });
     }
 }
