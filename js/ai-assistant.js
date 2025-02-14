@@ -56,11 +56,6 @@ class AIExpenseAssistant {
                 console.log('AI: Вызываем addTransaction');
                 window.addTransaction(transaction);
                 
-                console.log('AI: Вызываем renderTransactions напрямую');
-                if (window.expenseManager) {
-                    window.expenseManager.renderTransactions();
-                }
-                
                 this.addMessage(`Записано: ${parsedData.type === 'income' ? 'доход' : 'расход'} ${parsedData.amount} ₸`, 'system');
             } else {
                 console.error('AI: Функция addTransaction не найдена');
