@@ -85,26 +85,13 @@ class ExpenseManager {
     }
 
     deleteTransaction(id) {
-        console.log('ExpenseManager: Удаление транзакции:', id);
-        
-        const transactionElement = document.querySelector(`.transaction-item[data-id="${id}"]`);
-        if (transactionElement) {
-            // Добавляем класс для анимации
-            transactionElement.classList.add('removing');
-            
-            // Ждем окончания анимации перед удалением
-            setTimeout(() => {
-                // Удаляем из массива
-                this.transactions = this.transactions.filter(t => t.id !== id);
-                // Сохраняем в localStorage
-                this.saveToLocalStorage();
-                // Обновляем отображение
-                this.renderTransactions();
-                // Обновляем графики если они есть
-                if (typeof window.updateCharts === 'function') {
-                    window.updateCharts();
-                }
-            }, 500);
+        if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
+            this.transactions = this.transactions.filter(t => t.id !== id);
+            this.saveToLocalStorage();
+            this.renderTransactions();
+            if (typeof window.updateCharts === 'function') {
+                window.updateCharts();
+            }
         }
     }
 
@@ -197,7 +184,7 @@ class ExpenseManager {
                     <div class="transaction-amount ${t.type}">
                         ${sign}${amount} ₸
                     </div>
-                    <button onclick="window.expenseManager.showConfirmDialog(${t.id})" class="delete-btn" title="Удалить">
+                    <button onclick="window.expenseManager.deleteTransaction(${t.id})" class="delete-btn" title="Удалить">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
                         </svg>
@@ -434,7 +421,7 @@ window.expenseManager = new ExpenseManager();
 
 // Глобальная функция удаления
 window.deleteTransaction = function(id) {
-    if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+    if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
         window.expenseManager.deleteTransaction(id);
     }
 };

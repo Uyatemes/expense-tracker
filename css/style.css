@@ -1081,4 +1081,28 @@ select:focus {
 
 [data-theme="dark"] .transaction-item.removing {
     background: var(--dark-transaction-remove-bg, rgba(244, 67, 54, 0.15));
+}
+
+/* Анимация для новых транзакций */
+@keyframes slideInFromTop {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transaction-item.new {
+    animation: slideInFromTop 0.5s ease-out forwards;
+    background: var(--transaction-new-bg, rgba(76, 175, 80, 0.1));
+}
+
+[data-theme="dark"] .transaction-item.new {
+    background: var(--dark-transaction-new-bg, rgba(76, 175, 80, 0.15));
 } 
