@@ -204,6 +204,22 @@ class ExpenseManager {
         
         this.updateTotals(transactions);
         console.log('ExpenseManager: Рендеринг завершен');
+
+        console.log('DOM после рендеринга:', {
+            container: transactionsList,
+            firstChild: transactionsList.firstChild,
+            html: transactionsList.innerHTML,
+            childNodes: transactionsList.childNodes.length
+        });
+
+        // Проверяем через setTimeout
+        setTimeout(() => {
+            console.log('DOM через 1 секунду:', {
+                container: transactionsList,
+                children: transactionsList.children.length,
+                visible: transactionsList.offsetHeight > 0
+            });
+        }, 1000);
     }
 
     updateSummary() {

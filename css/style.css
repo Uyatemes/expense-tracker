@@ -160,10 +160,25 @@ body {
 /* Transactions */
 .transaction-item {
     display: flex;
-    background-color: var(--md-sys-color-surface-container);
-    border-radius: 28px;
-    padding: 16px;
-    margin: 8px 0;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: var(--transaction-bg);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .transaction-info {
@@ -839,4 +854,11 @@ select:focus {
 .send-button:hover {
     background-color: var(--md-sys-color-primary);
     color: var(--md-sys-color-on-primary);
+}
+
+#expensesTableBody {
+    display: block !important;
+    min-height: 50px;
+    width: 100%;
+    margin-top: 20px;
 } 
