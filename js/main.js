@@ -11,7 +11,10 @@ window.addTransaction = function(transaction) {
 class ExpenseManager {
     constructor() {
         console.log('ExpenseManager: Инициализация');
-        this.transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        
+        // Загружаем данные при создании
+        this.loadFromLocalStorage();
+        
         this.dateFilters = {
             from: null,
             to: null
@@ -23,37 +26,29 @@ class ExpenseManager {
         this.showConfirmDialog = this.showConfirmDialog.bind(this);
         
         // Инициализация при создании экземпляра
-        window.onload = () => {
-            this.renderTransactions();
-            this.initializeEventHandlers();
-        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initialize());
+        } else {
+            this.initialize();
+        }
     }
 
-    initializeEventHandlers() {
-        const applyFilter = document.getElementById('applyDateFilter');
-        const resetFilter = document.getElementById('resetDateFilter');
-
-        if (applyFilter) {
-            applyFilter.onclick = this.handleApplyFilter;
-        }
-
-        if (resetFilter) {
-            resetFilter.onclick = this.handleResetFilter;
-        }
-
-        const exportBtn = document.getElementById('exportPDF');
-        if (exportBtn) {
-            exportBtn.onclick = () => this.exportToPDF();
-        }
+    initialize() {
+        console.log('ExpenseManager: DOM готов, начинаем инициализацию');
+        this.renderTransactions();
+        this.initializeEventHandlers();
+        console.log('ExpenseManager: Инициализация завершена');
     }
 
     loadFromLocalStorage() {
         const saved = localStorage.getItem('transactions');
         this.transactions = saved ? JSON.parse(saved) : [];
+        console.log('ExpenseManager: Загружено транзакций:', this.transactions.length);
     }
 
     saveToLocalStorage() {
         localStorage.setItem('transactions', JSON.stringify(this.transactions));
+        console.log('ExpenseManager: Сохранено транзакций:', this.transactions.length);
     }
 
     addTransaction(transaction) {
@@ -182,8 +177,7 @@ class ExpenseManager {
                 </div>
             `;
             
-            // Добавляем в начало списка
-            transactionsList.insertBefore(transactionElement, transactionsList.firstChild);
+            transactionsList.appendChild(transactionElement);
         });
         
         console.log('ExpenseManager: Рендеринг завершен');
@@ -210,8 +204,7 @@ class ExpenseManager {
     }
 
     getTransactions() {
-        console.log('Getting transactions from:', this.transactions);
-        // Сортируем транзакции по дате (новые сверху)
+        console.log('ExpenseManager: Получение транзакций, всего:', this.transactions.length);
         return [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
@@ -407,12 +400,28 @@ class ExpenseManager {
             alert('Произошла ошибка при создании PDF');
         }
     }
+
+    initializeEventHandlers() {
+        const applyFilter = document.getElementById('applyDateFilter');
+        const resetFilter = document.getElementById('resetDateFilter');
+
+        if (applyFilter) {
+            applyFilter.onclick = this.handleApplyFilter;
+        }
+
+        if (resetFilter) {
+            resetFilter.onclick = this.handleResetFilter;
+        }
+
+        const exportBtn = document.getElementById('exportPDF');
+        if (exportBtn) {
+            exportBtn.onclick = () => this.exportToPDF();
+        }
+    }
 }
 
-// Создаем экземпляр после загрузки DOM
-document.addEventListener('DOMContentLoaded', () => {
-    window.expenseManager = new ExpenseManager();
-});
+// Создаем глобальный экземпляр
+window.expenseManager = new ExpenseManager();
 
 // Глобальная функция удаления
 window.deleteTransaction = function(id) {
@@ -478,13 +487,6 @@ function initializeApp() {
     } catch (error) {
         console.error('Ошибка при инициализации приложения:', error);
     }
-}
-
-// Ждем полной загрузки DOM
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
 }
 
 // Определяем типы платежей
