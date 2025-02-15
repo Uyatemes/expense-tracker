@@ -677,7 +677,7 @@ body {
 .fab:hover {
     box-shadow: var(--md-elevation-3);
     background-color: var(--fab-hover-bg);
-    color: var(--fab-color);
+    color: var(--fab-hover-color);
 }
 
 .fab:active {
