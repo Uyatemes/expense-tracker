@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
-    const themeToggleFab = document.getElementById('themeToggleFab');
     
     // Функция для применения темы
     function applyTheme(theme) {
@@ -18,13 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Находим кнопку переключения темы
     const themeToggleFab = document.querySelector('.fab');
+    console.log('Found FAB button:', themeToggleFab); // Проверяем, нашлась ли кнопка
     
     // Обработчик клика по FAB
     if (themeToggleFab) {
+        console.log('Adding click listener to FAB'); // Проверяем, добавляется ли обработчик
         // Устанавливаем начальное состояние класса
         themeToggleFab.classList.toggle('dark', initialTheme === 'dark');
         
         themeToggleFab.addEventListener('click', () => {
+            console.log('FAB clicked!'); // Проверяем, срабатывает ли клик
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             applyTheme(newTheme);
