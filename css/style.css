@@ -1,6 +1,12 @@
+/* Отключаем системные предпочтения темы */
+@media (prefers-color-scheme: light), (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: light;
+    }
+}
+
 /* В начале файла определяем поддержку светлой и темной темы */
 :root {
-    color-scheme: light dark;
     --version-bg: rgba(0, 0, 0, 0.1);
     --version-color: rgba(0, 0, 0, 0.6);
     --version-bg-hover: rgba(0, 0, 0, 0.15);
@@ -49,52 +55,50 @@
     --chat-input-bg-focus: #e8e8e8;
 }
 
-/* Темная тема (автоматически при системной темной теме) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --md-sys-color-surface: #191C1A;
-        --md-sys-color-surface-container: #1E211F;
-        --md-sys-color-surface-container-low: #191C1A;
-        --md-sys-color-surface-container-high: #292B29;
-        --md-sys-color-on-surface: #E1E3DF;
-        --md-sys-color-on-surface-variant: #BFC9C2;
-        
-        --md-sys-color-primary: #67DBa7;
-        --md-sys-color-on-primary: #003824;
-        --md-sys-color-primary-container: #005236;
-        --md-sys-color-on-primary-container: #85F8C3;
-        
-        --md-sys-color-secondary: #B3CCBF;
-        --md-sys-color-on-secondary: #1F352C;
-        --md-sys-color-secondary-container: #354B41;
-        --md-sys-color-on-secondary-container: #CEE9DB;
-        
-        --md-sys-color-error: #FFB95C;
-        --md-sys-color-error-container: #663D00;
-        --md-sys-color-on-error: #482900;
-        --md-sys-color-on-error-container: #FFDDB9;
-        
-        --md-sys-color-outline: #8A938C;
-        --md-sys-color-outline-variant: #404943;
-        
-        --md-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.15);
-        --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15);
-        --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15);
-        --chat-bg: var(--dark-card-bg, #1E211F);
-        --chat-input-bg: var(--dark-input-bg, #1E1F21);
-        --chat-input-bg-focus: var(--dark-input-bg-focus, #252629);
-        --version-bg: rgba(255, 255, 255, 0.1);
-        --version-color: rgba(255, 255, 255, 0.7);
-        --version-bg-hover: rgba(255, 255, 255, 0.15);
-        --bg-color: #1a1a1a;
-        --text-color: #ffffff;
-        --border-color: #404040;
-        --hover-bg: #2a2a2a;
-        --fab-bg: #333333;
-        --fab-color: #ffffff;
-        --fab-hover-bg: #444444;
-        --transaction-new-bg: rgba(76, 175, 80, 0.15);
-    }
+/* Темная тема - активируется только через data-theme */
+[data-theme="dark"] {
+    --md-sys-color-surface: #191C1A;
+    --md-sys-color-surface-container: #1E211F;
+    --md-sys-color-surface-container-low: #191C1A;
+    --md-sys-color-surface-container-high: #292B29;
+    --md-sys-color-on-surface: #E1E3DF;
+    --md-sys-color-on-surface-variant: #BFC9C2;
+    
+    --md-sys-color-primary: #67DBa7;
+    --md-sys-color-on-primary: #003824;
+    --md-sys-color-primary-container: #005236;
+    --md-sys-color-on-primary-container: #85F8C3;
+    
+    --md-sys-color-secondary: #B3CCBF;
+    --md-sys-color-on-secondary: #1F352C;
+    --md-sys-color-secondary-container: #354B41;
+    --md-sys-color-on-secondary-container: #CEE9DB;
+    
+    --md-sys-color-error: #FFB95C;
+    --md-sys-color-error-container: #663D00;
+    --md-sys-color-on-error: #482900;
+    --md-sys-color-on-error-container: #FFDDB9;
+    
+    --md-sys-color-outline: #8A938C;
+    --md-sys-color-outline-variant: #404943;
+    
+    --md-elevation-1: 0px 1px 3px 1px rgba(0,0,0,0.15);
+    --md-elevation-2: 0px 2px 6px rgba(0,0,0,0.15);
+    --md-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15);
+    --chat-bg: var(--dark-card-bg, #1E211F);
+    --chat-input-bg: var(--dark-input-bg, #1E1F21);
+    --chat-input-bg-focus: var(--dark-input-bg-focus, #252629);
+    --version-bg: rgba(255, 255, 255, 0.1);
+    --version-color: rgba(255, 255, 255, 0.7);
+    --version-bg-hover: rgba(255, 255, 255, 0.15);
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    --hover-bg: #2a2a2a;
+    --fab-bg: #333333;
+    --fab-color: #ffffff;
+    --fab-hover-bg: #444444;
+    --transaction-new-bg: rgba(76, 175, 80, 0.15);
 }
 
 body {
