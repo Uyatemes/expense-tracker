@@ -1099,7 +1099,7 @@ select:focus {
 
 .transaction-item.removing {
     animation: slideOutToRight 0.5s ease-out forwards;
-    background: var(--transaction-remove-bg, rgba(244, 67, 54, 0.1));
+    background: var(--transaction-remove-bg, #1E211F);
 }
 
 [data-theme="dark"] .transaction-item.removing {
