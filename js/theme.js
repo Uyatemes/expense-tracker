@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Функция для применения темы
     function applyTheme(theme) {
+        // Принудительно применяем тему, игнорируя системные настройки
+        document.documentElement.style.colorScheme = theme;
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
         console.log('Theme applied:', theme);
     }
     
-    // Получаем сохраненную тему или используем светлую по умолчанию
+    // Всегда начинаем со светлой темы, если нет сохраненной
     const savedTheme = localStorage.getItem('theme');
     const initialTheme = savedTheme || 'light';
     
