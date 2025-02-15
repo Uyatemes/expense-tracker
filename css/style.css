@@ -4,6 +4,14 @@
     --version-bg: rgba(0, 0, 0, 0.1);
     --version-color: rgba(0, 0, 0, 0.6);
     --version-bg-hover: rgba(0, 0, 0, 0.15);
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #e0e0e0;
+    --hover-bg: #f5f5f5;
+    --fab-bg: #ffffff;
+    --fab-color: #333333;
+    --fab-hover-bg: #f0f0f0;
+    --transaction-new-bg: rgba(76, 175, 80, 0.1);
 }
 
 /* Светлая тема (по умолчанию) */
@@ -78,6 +86,14 @@
         --version-bg: rgba(255, 255, 255, 0.1);
         --version-color: rgba(255, 255, 255, 0.7);
         --version-bg-hover: rgba(255, 255, 255, 0.15);
+        --bg-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #404040;
+        --hover-bg: #2a2a2a;
+        --fab-bg: #333333;
+        --fab-color: #ffffff;
+        --fab-hover-bg: #444444;
+        --transaction-new-bg: rgba(76, 175, 80, 0.15);
     }
 }
 
@@ -85,8 +101,8 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: var(--md-sys-color-surface);
-    color: var(--md-sys-color-on-surface);
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .container {
@@ -646,8 +662,8 @@ body {
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background-color: var(--fab-bg);
+    color: var(--fab-color);
     border: none;
     cursor: pointer;
     display: flex;
@@ -660,8 +676,8 @@ body {
 
 .fab:hover {
     box-shadow: var(--md-elevation-3);
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+    background-color: var(--fab-hover-bg);
+    color: var(--fab-color);
 }
 
 .fab:active {
