@@ -326,38 +326,63 @@ class ExpenseManager {
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all'] },
-            // Добавляем стили специально для PDF
             style: `
-                .pdf-container * {
-                    color: #000000 !important;
-                    background: #ffffff !important;
-                }
                 .pdf-container {
                     font-family: 'Roboto', sans-serif;
+                    color: #000000;
                     padding: 20px;
                 }
-                .pdf-header {
+                .pdf-title {
                     font-size: 24px;
-                    margin-bottom: 20px;
-                    color: #000000 !important;
-                }
-                .pdf-total {
-                    font-size: 18px;
-                    margin: 15px 0;
-                    color: #000000 !important;
-                }
-                .pdf-transaction {
-                    margin: 10px 0;
-                    padding: 10px;
-                    border: 1px solid #cccccc;
-                    color: #000000 !important;
-                }
-                .pdf-amount {
                     font-weight: bold;
-                    color: #000000 !important;
+                    color: #000000;
+                    margin-bottom: 10px;
+                    text-align: center;
                 }
-                .pdf-date {
-                    color: #666666 !important;
+                .pdf-period {
+                    font-size: 16px;
+                    color: #333333;
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
+                .pdf-totals {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 20px 0;
+                }
+                .pdf-income h2, .pdf-expense h2 {
+                    font-size: 18px;
+                    margin-bottom: 5px;
+                }
+                .pdf-income {
+                    color: #188038;
+                }
+                .pdf-expense {
+                    color: #d93025;
+                }
+                .pdf-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                .pdf-table th {
+                    background-color: #f8f9fa;
+                    color: #202124;
+                    font-weight: 500;
+                    text-align: left;
+                    padding: 10px;
+                    border-bottom: 2px solid #dadce0;
+                }
+                .pdf-table td {
+                    color: #202124;
+                    padding: 10px;
+                    border-bottom: 1px solid #dadce0;
+                }
+                .pdf-table .income {
+                    color: #188038;
+                }
+                .pdf-table .expense {
+                    color: #d93025;
                 }
             `
         };
@@ -371,18 +396,38 @@ class ExpenseManager {
         
         return `
             <div class="pdf-container">
-                <div class="pdf-header">Отчет по расходам и доходам</div>
-                <div class="pdf-total">Общий доход: ${this.formatAmount(totalIncome)} ₸</div>
-                <div class="pdf-total">Общий расход: ${this.formatAmount(totalExpense)} ₸</div>
-                <div class="pdf-transactions">
-                    ${transactions.map(t => `
-                        <div class="pdf-transaction">
-                            <div class="pdf-amount">${this.formatAmount(t.amount)} ₸</div>
-                            <div class="pdf-description">${t.description}</div>
-                            <div class="pdf-date">${new Date(t.date).toLocaleDateString('ru-RU')}</div>
-                        </div>
-                    `).join('')}
+                <h1 class="pdf-title">Отчет по операциям</h1>
+                <p class="pdf-period">Период: ${this.formatDateRange()}</p>
+                
+                <div class="pdf-totals">
+                    <div class="pdf-income">
+                        <h2>Доходы</h2>
+                        <span>${this.formatAmount(totalIncome)} ₸</span>
+                    </div>
+                    <div class="pdf-expense">
+                        <h2>Расходы</h2>
+                        <span>${this.formatAmount(totalExpense)} ₸</span>
+                    </div>
                 </div>
+
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Описание</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${transactions.map(t => `
+                            <tr>
+                                <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                                <td>${t.description}</td>
+                                <td class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
             </div>
         `;
     }
