@@ -932,7 +932,7 @@ select:focus {
 
 /* Стили для темной темы */
 [data-theme="dark"] .transaction-item {
-    background: var(--dark-card-bg, #2A2B2D);
+    background: var(--dark-card-bg, #1e211f);
     color: var(--dark-text, #E8E8E8);
     box-shadow: var(--dark-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
 }
@@ -987,7 +987,7 @@ select:focus {
 }
 
 [data-theme="dark"] .message.system {
-    background: var(--dark-system-message-bg, #2D3748);
+    background: var(--dark-system-message-bg, #1E1F21);
 }
 
 [data-theme="dark"] #user-input {
@@ -1005,7 +1005,7 @@ select:focus {
 /* Добавляем новые переменные в :root */
 :root {
     /* Существующие переменные */
-    --dark-card-bg: #2A2B2D;
+    /* --dark-card-bg: #2A2B2D; */
     --dark-text: #E8E8E8;
     --dark-secondary-text: #A0A0A0;
     --dark-income-color: #4CAF50;
