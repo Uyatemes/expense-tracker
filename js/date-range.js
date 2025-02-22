@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Удалим весь код управления темой из date-range.js, так как это уже есть в theme.js
+    // Проверяем инициализацию ExpenseManager
+    if (!window.expenseManager) {
+        console.error('ExpenseManager not initialized!');
+        return;
+    }
     
     const dateRangeButton = document.getElementById('dateRangeButton');
     const dateRangeModal = document.getElementById('dateRangeModal');

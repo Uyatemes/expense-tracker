@@ -133,12 +133,17 @@ class ExpenseManager {
     }
 
     getFilteredTransactions() {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
+        if (!this.dateFilters.from && !this.dateFilters.to) {
+            return this.transactions;
+        }
 
         return this.transactions.filter(t => {
-            if (startDate && t.date < startDate) return false;
-            if (endDate && t.date > endDate) return false;
+            const transactionDate = new Date(t.date).getTime();
+            const fromDate = this.dateFilters.from ? new Date(this.dateFilters.from).getTime() : null;
+            const toDate = this.dateFilters.to ? new Date(this.dateFilters.to).getTime() : null;
+
+            if (fromDate && transactionDate < fromDate) return false;
+            if (toDate && transactionDate > toDate) return false;
             return true;
         });
     }
@@ -246,22 +251,18 @@ class ExpenseManager {
         }
     }
 
-    setDateFilter(from, to) {
-        this.dateFilters.from = from || null;
-        this.dateFilters.to = to || null;
+    setDateFilter(startDate, endDate) {
+        this.dateFilters.from = startDate ? new Date(startDate) : null;
+        this.dateFilters.to = endDate ? new Date(endDate) : null;
         this.renderTransactions();
-        if (typeof window.updateCharts === 'function') {
-            window.updateCharts();
-        }
+        console.log('Date filter set:', { from: this.dateFilters.from, to: this.dateFilters.to });
     }
 
     resetDateFilter() {
         this.dateFilters.from = null;
         this.dateFilters.to = null;
         this.renderTransactions();
-        if (typeof window.updateCharts === 'function') {
-            window.updateCharts();
-        }
+        console.log('Date filter reset');
     }
 
     updateTotals(transactions) {
@@ -473,27 +474,29 @@ window.updateTotals = function(transactions) {
 
 // Функция инициализации фильтров
 function initializeFilters() {
-    const dateFrom = document.querySelector('#dateFrom');
-    const dateTo = document.querySelector('#dateTo');
+    const startDate = document.querySelector('#startDate');
+    const endDate = document.querySelector('#endDate');
     const applyFilter = document.querySelector('#applyDateFilter');
     const resetFilter = document.querySelector('#resetDateFilter');
 
-    // Проверяем наличие всех элементов
-    if (!dateFrom || !dateTo || !applyFilter || !resetFilter) {
-        console.log('Элементы фильтров не найдены');
+    if (!startDate || !endDate) {
+        console.error('Элементы календаря не найдены');
         return;
     }
 
-    // Добавляем обработчики
-    applyFilter.addEventListener('click', () => {
-        window.expenseManager.setDateFilter(dateFrom.value, dateTo.value);
-    });
+    if (applyFilter) {
+        applyFilter.addEventListener('click', () => {
+            window.expenseManager.setDateFilter(startDate.value, endDate.value);
+        });
+    }
 
-    resetFilter.addEventListener('click', () => {
-        dateFrom.value = '';
-        dateTo.value = '';
-        window.expenseManager.resetDateFilter();
-    });
+    if (resetFilter) {
+        resetFilter.addEventListener('click', () => {
+            startDate.value = '';
+            endDate.value = '';
+            window.expenseManager.resetDateFilter();
+        });
+    }
 }
 
 // Функция инициализации приложения
