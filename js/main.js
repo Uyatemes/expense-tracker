@@ -34,7 +34,6 @@ class ExpenseManager {
 
         this.currentTransactionToDelete = null;
         this.initializeModal();
-        this.initializeThemeToggle();
     }
 
     initialize() {
@@ -445,28 +444,6 @@ class ExpenseManager {
             modal.classList.remove('show');
         });
     }
-
-    initializeThemeToggle() {
-        const themeToggle = document.getElementById('themeToggleFab');
-        if (!themeToggle) {
-            console.error('Не найдена кнопка переключения темы (FAB)');
-            return;
-        }
-
-        // Загружаем сохраненную тему
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        themeToggle.classList.toggle('dark', savedTheme === 'dark');
-        
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            themeToggle.classList.toggle('dark', newTheme === 'dark');
-        });
-    }
 }
 
 // Создаем глобальный экземпляр
@@ -478,10 +455,6 @@ window.deleteTransaction = function(id) {
         window.expenseManager.deleteTransaction(id);
     }
 };
-
-// Фильтрация
-document.getElementById('typeFilter').addEventListener('change', window.expenseManager.renderTransactions);
-document.getElementById('categoryFilter').addEventListener('change', window.expenseManager.renderTransactions);
 
 // Функции рендеринга и обновления
 window.renderExpensesTable = function() {
