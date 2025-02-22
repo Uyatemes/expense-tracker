@@ -396,6 +396,27 @@ class ExpenseManager {
         await html2pdf().set(opt).from(element).save();
     }
 
+    calculateTotals(transactions) {
+        return transactions.reduce((totals, t) => {
+            if (t.type === 'income') {
+                totals.totalIncome += Math.abs(t.amount);
+            } else {
+                totals.totalExpense += Math.abs(t.amount);
+            }
+            return totals;
+        }, { totalIncome: 0, totalExpense: 0 });
+    }
+
+    formatDateRange() {
+        const startDate = this.dateFilters.from 
+            ? new Date(this.dateFilters.from).toLocaleDateString('ru-RU')
+            : 'начало';
+        const endDate = this.dateFilters.to
+            ? new Date(this.dateFilters.to).toLocaleDateString('ru-RU')
+            : 'конец';
+        return `${startDate} — ${endDate}`;
+    }
+
     generatePDFContent() {
         const transactions = this.getFilteredTransactions();
         const { totalIncome, totalExpense } = this.calculateTotals(transactions);
