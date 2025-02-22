@@ -177,7 +177,7 @@ body {
     padding: 15px;
     margin-bottom: 10px;
     background: var(--transaction-bg);
-    border-radius: 8px;
+    border-radius: 28px;
     box-shadow: var(--card-shadow);
 }
 
