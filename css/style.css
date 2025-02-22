@@ -946,13 +946,13 @@ select:focus {
     color: var(--dark-secondary-text, #A0A0A0);
 }
 
-[data-theme="dark"] .transaction-amount.income {
+/* [data-theme="dark"] .transaction-amount.income {
     color: var(--dark-income-color, #4CAF50);
-}
+} */
 
-[data-theme="dark"] .transaction-amount.expense {
+/* [data-theme="dark"] .transaction-amount.expense {
     color: var(--dark-expense-color, #F44336);
-}
+} */
 
 /* Добавим переменные в :root для обеих тем */
 :root {
@@ -986,9 +986,9 @@ select:focus {
     background: var(--dark-user-message-bg, #1E4D40);
 }
 
-[data-theme="dark"] .message.system {
+/* [data-theme="dark"] .message.system {
     background: var(--dark-system-message-bg, #1E1F21);
-}
+} */
 
 [data-theme="dark"] #user-input {
     background: var(--dark-input-bg, #1E1F21);
