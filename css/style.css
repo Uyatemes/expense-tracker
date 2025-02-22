@@ -889,13 +889,14 @@ select:focus {
 }
 
 .transaction-item {
+    background-color: var(--md-sys-color-surface-container);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px;
     margin-bottom: 10px;
     background: var(--transaction-bg);
-    border-radius: 8px;
+    border-radius: 28px;
     box-shadow: var(--card-shadow);
     position: relative;
     z-index: 2;
@@ -949,7 +950,7 @@ select:focus {
 
 /* Добавим переменные в :root для обеих тем */
 :root {
-    --dark-card-bg: #2A2B2D;
+    --dark-card-bg: #1E211F;
     --dark-text: #E8E8E8;
     --dark-secondary-text: #A0A0A0;
     --dark-income-color: #4CAF50;
