@@ -317,96 +317,74 @@ class ExpenseManager {
     }
 
     async exportToPDF() {
-        const dateFrom = document.getElementById('dateFrom')?.value;
-        const dateTo = document.getElementById('dateTo')?.value;
+        const element = document.createElement('div');
+        element.innerHTML = this.generatePDFContent();
         
-        // Создаем временный контейнер для PDF
-        const container = document.createElement('div');
-        container.className = 'pdf-container';
-        
-        // Добавляем заголовок и период
-        container.innerHTML = `
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color: #333; margin-bottom: 10px;">Отчет по операциям</h1>
-                <p style="color: #666;">
-                    Период: ${dateFrom ? new Date(dateFrom).toLocaleDateString() : 'начало'} — 
-                    ${dateTo ? new Date(dateTo).toLocaleDateString() : 'конец'}
-                </p>
-            </div>
-        `;
-
-        // Получаем отфильтрованные транзакции
-        const transactions = this.getTransactions();
-        
-        // Добавляем итоги
-        const totals = transactions.reduce((acc, t) => {
-            if (t.type === 'income') {
-                acc.income += Math.abs(t.amount);
-            } else {
-                acc.expense += Math.abs(t.amount);
-            }
-            return acc;
-        }, { income: 0, expense: 0 });
-
-        container.innerHTML += `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <div style="text-align: center; flex: 1;">
-                    <h3 style="color: #00A76D; margin-bottom: 5px;">Доходы</h3>
-                    <p style="font-size: 1.2em;">${totals.income.toLocaleString('ru-RU')} ₸</p>
-                </div>
-                <div style="text-align: center; flex: 1;">
-                    <h3 style="color: #F14635; margin-bottom: 5px;">Расходы</h3>
-                    <p style="font-size: 1.2em;">${totals.expense.toLocaleString('ru-RU')} ₸</p>
-                </div>
-            </div>
-        `;
-
-        // Добавляем таблицу транзакций
-        container.innerHTML += `
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background: #f5f5f5;">
-                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Дата</th>
-                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Описание</th>
-                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Сумма</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${transactions.map(t => `
-                        <tr>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                ${new Date(t.date).toLocaleDateString()}
-                            </td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
-                                ${t.description}
-                            </td>
-                            <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right; color: ${t.type === 'income' ? '#00A76D' : '#F14635'};">
-                                ${t.type === 'expense' ? '-' : '+'}${Math.abs(t.amount).toLocaleString('ru-RU')} ₸
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-
-        // Конфигурация PDF
         const opt = {
-            margin: 1,
-            filename: 'операции.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
+            margin: 10,
+            filename: 'expense-report.pdf',
             html2canvas: { scale: 2 },
-            jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all'] },
+            // Добавляем стили специально для PDF
+            style: `
+                .pdf-container * {
+                    color: #000000 !important;
+                    background: #ffffff !important;
+                }
+                .pdf-container {
+                    font-family: 'Roboto', sans-serif;
+                    padding: 20px;
+                }
+                .pdf-header {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    color: #000000 !important;
+                }
+                .pdf-total {
+                    font-size: 18px;
+                    margin: 15px 0;
+                    color: #000000 !important;
+                }
+                .pdf-transaction {
+                    margin: 10px 0;
+                    padding: 10px;
+                    border: 1px solid #cccccc;
+                    color: #000000 !important;
+                }
+                .pdf-amount {
+                    font-weight: bold;
+                    color: #000000 !important;
+                }
+                .pdf-date {
+                    color: #666666 !important;
+                }
+            `
         };
 
-        // Генерируем PDF
-        try {
-            document.body.appendChild(container);
-            await html2pdf().set(opt).from(container).save();
-            document.body.removeChild(container);
-        } catch (error) {
-            console.error('Ошибка при создании PDF:', error);
-            alert('Произошла ошибка при создании PDF');
-        }
+        await html2pdf().set(opt).from(element).save();
+    }
+
+    generatePDFContent() {
+        const transactions = this.getFilteredTransactions();
+        const { totalIncome, totalExpense } = this.calculateTotals(transactions);
+        
+        return `
+            <div class="pdf-container">
+                <div class="pdf-header">Отчет по расходам и доходам</div>
+                <div class="pdf-total">Общий доход: ${this.formatAmount(totalIncome)} ₸</div>
+                <div class="pdf-total">Общий расход: ${this.formatAmount(totalExpense)} ₸</div>
+                <div class="pdf-transactions">
+                    ${transactions.map(t => `
+                        <div class="pdf-transaction">
+                            <div class="pdf-amount">${this.formatAmount(t.amount)} ₸</div>
+                            <div class="pdf-description">${t.description}</div>
+                            <div class="pdf-date">${new Date(t.date).toLocaleDateString('ru-RU')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     }
 
     initializeEventHandlers() {
