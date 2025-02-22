@@ -75,13 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Обработчики событий
+    // Открытие модального окна
     dateRangeButton.addEventListener('click', () => {
         dateRangeModal.classList.add('active');
+        console.log('Modal opened');
     });
 
+    // Закрытие по кнопке отмены
     cancelButton.addEventListener('click', () => {
         dateRangeModal.classList.remove('active');
+        console.log('Modal closed by cancel');
     });
 
     applyButton.addEventListener('click', () => {
@@ -93,10 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dateRangeModal.classList.remove('active');
     });
 
-    // Закрытие по клику вне модального окна
+    // Закрытие по клику вне окна
     dateRangeModal.addEventListener('click', (e) => {
         if (e.target === dateRangeModal) {
             dateRangeModal.classList.remove('active');
+            console.log('Modal closed by outside click');
         }
     });
 }); 
