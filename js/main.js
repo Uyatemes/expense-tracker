@@ -320,9 +320,15 @@ class ExpenseManager {
         const element = document.createElement('div');
         element.innerHTML = this.generatePDFContent();
         
+        // Генерируем имя файла с датой и временем
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('ru-RU').replace(/\./g, '-');
+        const timeStr = now.toLocaleTimeString('ru-RU').replace(/:/g, '-');
+        const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
+        
         const opt = {
             margin: 10,
-            filename: 'expense-report.pdf',
+            filename: fileName, // Используем сгенерированное имя файла
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all'] },
