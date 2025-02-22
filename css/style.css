@@ -8,34 +8,36 @@
 
 /* Светлая тема (по умолчанию) */
 :root {
-    --md-sys-color-surface: #e6e6e6;
-    --md-sys-color-surface-container: #FFFFFF;
-    --md-sys-color-surface-container-low: #FBFDF9;
-    --md-sys-color-surface-container-high: #E9EAE6;
-    --md-sys-color-on-surface: #191C1A;
-    --md-sys-color-on-surface-variant: #404943;
+    /* Material Design системные цвета */
+    --md-sys-color-surface: #FFFFFF;                  /* Делаем белее */
+    --md-sys-color-surface-container: #F8F9FA;        /* Светло-серый для контейнеров */
+    --md-sys-color-surface-container-low: #FFFFFF;    /* Белый для низких контейнеров */
+    --md-sys-color-surface-container-high: #ECEFF1;   /* Серый для высоких контейнеров */
+    --md-sys-color-on-surface: #202124;               /* Почти черный для текста */
+    --md-sys-color-on-surface-variant: #5F6368;       /* Серый для вариативного текста */
     
-    --md-sys-color-primary: #006C4A;
-    --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-primary-container: #85F8C3;
-    --md-sys-color-on-primary-container: #002113;
+    --md-sys-color-primary: #1a73e8;                  /* Google Blue */
+    --md-sys-color-on-primary: #FFFFFF;               /* Белый на основном цвете */
+    --md-sys-color-primary-container: #e8f0fe;        /* Светло-синий для контейнеров */
+    --md-sys-color-on-primary-container: #1967d2;     /* Темно-синий на контейнерах */
     
-    --md-sys-color-secondary: #4C6358;
-    --md-sys-color-on-secondary: #FFFFFF;
-    --md-sys-color-secondary-container: #CEE9DB;
-    --md-sys-color-on-secondary-container: #0A1F16;
+    --md-sys-color-secondary: #188038;                /* Google Green */
+    --md-sys-color-on-secondary: #FFFFFF;             /* Белый на вторичном */
+    --md-sys-color-secondary-container: #e6f4ea;      /* Светло-зеленый для контейнеров */
+    --md-sys-color-on-secondary-container: #137333;   /* Темно-зеленый на контейнерах */
     
-    --md-sys-color-error: #B47D3C;
-    --md-sys-color-error-container: #FFDDB9;
-    --md-sys-color-on-error: #FFFFFF;
-    --md-sys-color-on-error-container: #2C1600;
+    --md-sys-color-error: #d93025;                    /* Google Red */
+    --md-sys-color-error-container: #fce8e6;          /* Светло-красный для контейнеров */
+    --md-sys-color-on-error: #FFFFFF;                 /* Белый на ошибке */
+    --md-sys-color-on-error-container: #c5221f;       /* Темно-красный на контейнерах */
     
-    --md-sys-color-outline: #707973;
-    --md-sys-color-outline-variant: #BFC9C2;
+    --md-sys-color-outline: #dadce0;                  /* Серый для обводки */
+    --md-sys-color-outline-variant: #f1f3f4;          /* Светло-серый для вариантов */
     
-    --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
-    --md-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
-    --md-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30);
+    /* Тени */
+    --md-elevation-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+    --md-elevation-2: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+    --md-elevation-3: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
     --chat-bg: #ffffff;
     --chat-input-bg: #f2f2f2;
     --chat-input-bg-focus: #e8e8e8;
