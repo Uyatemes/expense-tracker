@@ -987,6 +987,8 @@ select:focus {
     background: var(--dark-message-bg, #2A2B2D);
     color: var(--dark-text, #E8E8E8);
     border: 1px solid var(--dark-border, #3A3B3D);
+    border-radius: 16px;
+    padding: 12px;
 }
 
 [data-theme="dark"] .message.user {
