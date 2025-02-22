@@ -495,6 +495,10 @@ class ExpenseManager {
             modal.classList.remove('show');
         });
     }
+
+    formatAmount(amount) {
+        return new Intl.NumberFormat('ru-RU').format(Math.abs(amount));
+    }
 }
 
 // Создаем глобальный экземпляр
