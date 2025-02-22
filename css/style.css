@@ -9,12 +9,12 @@
 /* Светлая тема (по умолчанию) */
 :root {
     /* Material Design системные цвета */
-    --md-sys-color-surface: #FFFFFF;                  /* Делаем белее */
-    --md-sys-color-surface-container: #F8F9FA;        /* Светло-серый для контейнеров */
-    --md-sys-color-surface-container-low: #FFFFFF;    /* Белый для низких контейнеров */
-    --md-sys-color-surface-container-high: #ECEFF1;   /* Серый для высоких контейнеров */
-    --md-sys-color-on-surface: #202124;               /* Почти черный для текста */
-    --md-sys-color-on-surface-variant: #5F6368;       /* Серый для вариативного текста */
+    --md-sys-color-surface: #FFFFFF;
+    --md-sys-color-surface-container: #F8F9FA;
+    --md-sys-color-surface-container-low: #FFFFFF;
+    --md-sys-color-surface-container-high: #ECEFF1;
+    --md-sys-color-on-surface: #202124;
+    --md-sys-color-on-surface-variant: #5F6368;
     
     --md-sys-color-primary: #1a73e8;                  /* Google Blue */
     --md-sys-color-on-primary: #FFFFFF;               /* Белый на основном цвете */
