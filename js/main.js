@@ -327,47 +327,57 @@ class ExpenseManager {
         const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
         
         const opt = {
-            margin: [20, 20, 20, 20],
+            margin: [30, 30, 30, 30],
             filename: fileName,
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all'] },
+            html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                logging: true
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'portrait'
+            },
             style: `
                 .pdf-container {
                     font-family: 'Roboto', sans-serif;
                     color: #202124;
-                    padding: 20px;
+                    padding: 0;
+                    width: 100%;
                 }
                 .pdf-title {
-                    font-size: 28px;
+                    font-size: 24px;
                     font-weight: 500;
-                    margin-bottom: 8px;
+                    margin-bottom: 16px;
                     text-align: center;
                 }
                 .pdf-period {
                     font-size: 14px;
                     color: #5F6368;
-                    margin-bottom: 24px;
+                    margin-bottom: 32px;
                     text-align: center;
                 }
                 .pdf-summary {
                     display: flex;
-                    gap: 24px;
-                    margin-bottom: 32px;
+                    justify-content: space-between;
+                    gap: 32px;
+                    margin-bottom: 48px;
                 }
                 .summary-block {
                     flex: 1;
-                    padding: 16px;
-                    border-radius: 8px;
+                    padding: 24px;
+                    border-radius: 12px;
                     background: #F8F9FA;
+                    text-align: center;
                 }
                 .summary-block h2 {
-                    font-size: 16px;
+                    font-size: 18px;
                     font-weight: 500;
-                    margin-bottom: 8px;
+                    margin-bottom: 12px;
                 }
                 .summary-block .amount {
-                    font-size: 24px;
+                    font-size: 28px;
                     font-weight: 500;
                 }
                 .income-block h2, .income-block .amount {
@@ -377,36 +387,51 @@ class ExpenseManager {
                     color: #D93025;
                 }
                 .pdf-transactions {
-                    margin-top: 32px;
+                    margin-top: 48px;
+                    width: 100%;
                 }
-                .pdf-table {
+                table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 14px;
+                    font-size: 12px;
+                    margin-top: 24px;
                 }
-                .pdf-table th {
+                th {
                     background: #F8F9FA;
-                    padding: 12px;
+                    padding: 16px;
                     font-weight: 500;
                     text-align: left;
                     color: #5F6368;
                     border-bottom: 2px solid #DADCE0;
                 }
-                .pdf-table td {
-                    padding: 12px;
+                td {
+                    padding: 16px;
                     border-bottom: 1px solid #DADCE0;
+                    line-height: 1.4;
                 }
-                .pdf-table tr.even {
+                th:first-child, td:first-child {
+                    width: 20%;
+                }
+                th:nth-child(2), td:nth-child(2) {
+                    width: 50%;
+                }
+                th:last-child, td:last-child {
+                    width: 30%;
+                    text-align: right;
+                }
+                tr.even {
                     background: #FFFFFF;
                 }
-                .pdf-table tr.odd {
+                tr.odd {
                     background: #F8F9FA;
                 }
-                .pdf-table .income {
+                .income {
                     color: #188038;
+                    font-weight: 500;
                 }
-                .pdf-table .expense {
+                .expense {
                     color: #D93025;
+                    font-weight: 500;
                 }
             `
         };
@@ -456,12 +481,12 @@ class ExpenseManager {
                 </div>
 
                 <div class="pdf-transactions">
-                    <table class="pdf-table">
+                    <table cellpadding="0" cellspacing="0" border="0">
                         <thead>
                             <tr>
-                                <th style="width: 20%">Дата</th>
-                                <th style="width: 50%">Описание</th>
-                                <th style="width: 30%; text-align: right">Сумма</th>
+                                <th>Дата</th>
+                                <th>Описание</th>
+                                <th>Сумма</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -469,7 +494,7 @@ class ExpenseManager {
                                 <tr class="${index % 2 === 0 ? 'even' : 'odd'}">
                                     <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
                                     <td>${t.description}</td>
-                                    <td style="text-align: right" class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                                    <td class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
                                 </tr>
                             `).join('')}
                         </tbody>
