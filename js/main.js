@@ -381,26 +381,32 @@ class ExpenseManager {
                 .pdf-table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-top: 16px;
+                    margin-top: 24px;
                     font-size: 14px;
+                    background: white;
                 }
                 .pdf-table th {
-                    background: #F8F9FA;
-                    padding: 12px;
+                    background: var(--md-sys-color-surface-container);
+                    padding: 12px 16px;
                     font-weight: 500;
                     text-align: left;
-                    color: #5F6368;
-                    border-bottom: 2px solid #DADCE0;
+                    color: var(--md-sys-color-on-surface-variant);
+                    border-bottom: 2px solid var(--md-sys-color-outline);
                 }
                 .pdf-table td {
-                    padding: 12px;
-                    border-bottom: 1px solid #DADCE0;
+                    padding: 12px 16px;
+                    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+                }
+                .pdf-table tr:nth-child(even) {
+                    background: var(--md-sys-color-surface-container-low);
                 }
                 .pdf-table .income {
-                    color: #188038;
+                    color: var(--md-sys-color-primary);
+                    font-weight: 500;
                 }
                 .pdf-table .expense {
-                    color: #D93025;
+                    color: var(--md-sys-color-error);
+                    font-weight: 500;
                 }
             `
         };

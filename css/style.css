@@ -113,7 +113,6 @@ body {
 .chat-container {
     background-color: var(--chat-bg, #ffffff);
     border-radius: 28px;
-    box-shadow: var(--md-elevation-1);
     margin: 1rem 0;
     overflow: hidden;
 }
@@ -948,6 +947,10 @@ select:focus {
 [data-theme="dark"] .transaction-date,
 [data-theme="dark"] .transaction-source {
     color: var(--dark-secondary-text, #A0A0A0);
+}
+
+[data-theme="light"] .transaction-item {
+    background: var(--dark-card-bg, #ffffff);
 }
 
 /* [data-theme="dark"] .transaction-amount.income {
