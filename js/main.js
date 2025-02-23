@@ -334,23 +334,21 @@ class ExpenseManager {
             pagebreak: { mode: ['avoid-all'] },
             style: `
                 .pdf-container {
-                    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-                    line-height: 1.4;
+                    font-family: 'Roboto', sans-serif;
                     color: #202124;
-                    max-width: 800px;
-                    margin: 0 auto;
                     padding: 20px;
                 }
                 .pdf-title {
                     font-size: 28px;
                     font-weight: 500;
                     margin-bottom: 8px;
-                    color: #202124;
+                    text-align: center;
                 }
                 .pdf-period {
                     font-size: 14px;
                     color: #5F6368;
                     margin-bottom: 24px;
+                    text-align: center;
                 }
                 .pdf-summary {
                     display: flex;
@@ -378,35 +376,37 @@ class ExpenseManager {
                 .expense-block h2, .expense-block .amount {
                     color: #D93025;
                 }
+                .pdf-transactions {
+                    margin-top: 32px;
+                }
                 .pdf-table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-top: 24px;
                     font-size: 14px;
-                    background: white;
                 }
                 .pdf-table th {
-                    background: var(--md-sys-color-surface-container);
-                    padding: 12px 16px;
+                    background: #F8F9FA;
+                    padding: 12px;
                     font-weight: 500;
                     text-align: left;
-                    color: var(--md-sys-color-on-surface-variant);
-                    border-bottom: 2px solid var(--md-sys-color-outline);
+                    color: #5F6368;
+                    border-bottom: 2px solid #DADCE0;
                 }
                 .pdf-table td {
-                    padding: 12px 16px;
-                    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+                    padding: 12px;
+                    border-bottom: 1px solid #DADCE0;
                 }
-                .pdf-table tr:nth-child(even) {
-                    background: var(--md-sys-color-surface-container-low);
+                .pdf-table tr.even {
+                    background: #FFFFFF;
+                }
+                .pdf-table tr.odd {
+                    background: #F8F9FA;
                 }
                 .pdf-table .income {
-                    color: var(--md-sys-color-primary);
-                    font-weight: 500;
+                    color: #188038;
                 }
                 .pdf-table .expense {
-                    color: var(--md-sys-color-error);
-                    font-weight: 500;
+                    color: #D93025;
                 }
             `
         };
@@ -455,24 +455,26 @@ class ExpenseManager {
                     </div>
                 </div>
 
-                <table class="pdf-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%">Дата</th>
-                            <th style="width: 45%">Описание</th>
-                            <th style="width: 30%; text-align: right">Сумма</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${transactions.map(t => `
+                <div class="pdf-transactions">
+                    <table class="pdf-table">
+                        <thead>
                             <tr>
-                                <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                                <td>${t.description}</td>
-                                <td style="text-align: right" class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                                <th style="width: 20%">Дата</th>
+                                <th style="width: 50%">Описание</th>
+                                <th style="width: 30%; text-align: right">Сумма</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${transactions.map((t, index) => `
+                                <tr class="${index % 2 === 0 ? 'even' : 'odd'}">
+                                    <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                                    <td>${t.description}</td>
+                                    <td style="text-align: right" class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
     }
