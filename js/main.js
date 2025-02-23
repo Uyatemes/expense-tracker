@@ -327,68 +327,103 @@ class ExpenseManager {
         const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
         
         const opt = {
-            margin: 10,
-            filename: fileName, // Используем сгенерированное имя файла
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            margin: [15, 15, 15, 15], // top, right, bottom, left
+            filename: fileName,
+            html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                letterRendering: true
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'portrait'
+            },
             pagebreak: { mode: ['avoid-all'] },
             style: `
                 .pdf-container {
                     font-family: 'Roboto', sans-serif;
-                    color: #000000;
+                    color: #202124;
                     padding: 20px;
+                    max-width: 800px;
+                    margin: 0 auto;
                 }
                 .pdf-title {
                     font-size: 24px;
                     font-weight: bold;
-                    color: #000000;
-                    margin-bottom: 10px;
                     text-align: center;
+                    margin-bottom: 10px;
+                    color: #202124;
                 }
                 .pdf-period {
-                    font-size: 16px;
-                    color: #333333;
-                    margin-bottom: 20px;
+                    font-size: 14px;
+                    color: #5F6368;
                     text-align: center;
+                    margin-bottom: 30px;
                 }
                 .pdf-totals {
                     display: flex;
                     justify-content: space-between;
-                    margin: 20px 0;
+                    margin: 30px 0;
+                    padding: 20px;
+                    background: #F8F9FA;
+                    border-radius: 8px;
+                }
+                .pdf-income, .pdf-expense {
+                    text-align: center;
+                    flex: 1;
                 }
                 .pdf-income h2, .pdf-expense h2 {
-                    font-size: 18px;
-                    margin-bottom: 5px;
+                    font-size: 16px;
+                    margin-bottom: 10px;
+                    font-weight: 500;
+                }
+                .pdf-income span, .pdf-expense span {
+                    font-size: 20px;
+                    font-weight: bold;
                 }
                 .pdf-income {
                     color: #188038;
                 }
                 .pdf-expense {
-                    color: #d93025;
+                    color: #D93025;
                 }
                 .pdf-table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-top: 20px;
+                    margin-top: 30px;
+                    font-size: 12px;
                 }
                 .pdf-table th {
-                    background-color: #f8f9fa;
-                    color: #202124;
-                    font-weight: 500;
+                    background: #F8F9FA;
+                    padding: 12px;
                     text-align: left;
-                    padding: 10px;
-                    border-bottom: 2px solid #dadce0;
+                    font-weight: 500;
+                    color: #5F6368;
+                    border-bottom: 2px solid #DADCE0;
                 }
                 .pdf-table td {
+                    padding: 12px;
+                    border-bottom: 1px solid #DADCE0;
                     color: #202124;
-                    padding: 10px;
-                    border-bottom: 1px solid #dadce0;
+                }
+                .pdf-table .date-column {
+                    width: 15%;
+                }
+                .pdf-table .description-column {
+                    width: 60%;
+                }
+                .pdf-table .amount-column {
+                    width: 25%;
+                    text-align: right;
                 }
                 .pdf-table .income {
                     color: #188038;
+                    font-weight: 500;
                 }
                 .pdf-table .expense {
-                    color: #d93025;
+                    color: #D93025;
+                    font-weight: 500;
                 }
             `
         };
@@ -440,17 +475,17 @@ class ExpenseManager {
                 <table class="pdf-table">
                     <thead>
                         <tr>
-                            <th>Дата</th>
-                            <th>Описание</th>
-                            <th>Сумма</th>
+                            <th class="date-column">Дата</th>
+                            <th class="description-column">Описание</th>
+                            <th class="amount-column">Сумма</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${transactions.map(t => `
                             <tr>
-                                <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                                <td>${t.description}</td>
-                                <td class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                                <td class="date-column">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                                <td class="description-column">${t.description}</td>
+                                <td class="amount-column ${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
                             </tr>
                         `).join('')}
                     </tbody>
