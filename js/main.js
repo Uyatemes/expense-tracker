@@ -327,60 +327,66 @@ class ExpenseManager {
         const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
         
         const opt = {
-            margin: [20, 20, 20, 20],
+            margin: [30, 30, 30, 30],
             filename: fileName,
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             style: `
                 .pdf-container {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    padding: 20px;
+                    padding: 0;
                     color: #333;
                 }
-                .header {
-                    margin-bottom: 30px;
-                }
-                .header h1 {
-                    font-size: 24px;
-                    margin: 0 0 10px 0;
-                }
-                .period {
-                    font-size: 14px;
-                    color: #666;
-                    margin: 0 0 15px 0;
-                }
-                .totals {
-                    font-size: 16px;
-                    margin-bottom: 20px;
-                }
-                .totals div {
-                    margin: 5px 0;
-                }
-                .transactions-table {
+                .header-table {
                     width: 100%;
+                    margin-bottom: 30px;
+                    border-spacing: 0;
                     border-collapse: collapse;
-                    font-size: 12px;
                 }
-                .transactions-table th {
+                .title-cell {
+                    width: 30%;
+                    vertical-align: top;
+                }
+                .period-cell {
+                    width: 30%;
+                    vertical-align: top;
+                    padding-top: 10px;
+                }
+                .totals-cell {
+                    width: 40%;
+                    vertical-align: top;
+                    padding-top: 10px;
+                    text-align: right;
+                }
+                h1 {
+                    font-size: 24px;
+                    margin: 0;
+                    padding: 0;
+                }
+                .data-table {
+                    width: 100%;
+                    border-spacing: 0;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                .table-header td {
                     background: #f5f5f5;
-                    padding: 8px;
-                    text-align: left;
+                    font-weight: bold;
+                    padding: 10px;
                     border-bottom: 2px solid #ddd;
                 }
-                .transactions-table td {
-                    padding: 8px;
+                .data-table td {
+                    padding: 8px 10px;
                     border-bottom: 1px solid #eee;
+                    line-height: 1.4;
                 }
-                .transactions-table th:first-child,
-                .transactions-table td:first-child {
+                .col-date {
                     width: 20%;
                 }
-                .transactions-table th:nth-child(2),
-                .transactions-table td:nth-child(2) {
+                .col-desc {
                     width: 50%;
                 }
-                .transactions-table th:last-child,
-                .transactions-table td:last-child {
+                .col-amount {
                     width: 30%;
                     text-align: right;
                 }
@@ -389,6 +395,9 @@ class ExpenseManager {
                 }
                 .expense {
                     color: #d93025;
+                }
+                .totals-cell div {
+                    margin: 3px 0;
                 }
             `
         };
@@ -423,35 +432,36 @@ class ExpenseManager {
         
         return `
             <div class="pdf-container">
-                <div class="header">
-                    <h1>Отчет по операциям</h1>
-                    <p class="period">Период: ${this.formatDateRange()}</p>
-                    
-                    <div class="totals">
-                        <div>Доходы + ${this.formatAmount(totalIncome)} ₸</div>
-                        <div>Расходы - ${this.formatAmount(totalExpense)} ₸</div>
-                    </div>
-                </div>
+                <table class="header-table">
+                    <tr>
+                        <td class="title-cell">
+                            <h1>Отчет по операциям</h1>
+                        </td>
+                        <td class="period-cell">
+                            Период: ${this.formatDateRange()}
+                        </td>
+                        <td class="totals-cell">
+                            <div>Доходы + ${this.formatAmount(totalIncome)} ₸</div>
+                            <div>Расходы - ${this.formatAmount(totalExpense)} ₸</div>
+                        </td>
+                    </tr>
+                </table>
 
-                <table class="transactions-table">
-                    <thead>
+                <table class="data-table">
+                    <tr class="table-header">
+                        <td class="col-date">Дата</td>
+                        <td class="col-desc">Описание</td>
+                        <td class="col-amount">Сумма</td>
+                    </tr>
+                    ${transactions.map(t => `
                         <tr>
-                            <th>Дата</th>
-                            <th>Описание</th>
-                            <th>Сумма</th>
+                            <td class="col-date">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                            <td class="col-desc">${t.description}</td>
+                            <td class="col-amount ${t.type === 'income' ? 'income' : 'expense'}">
+                                ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${transactions.map(t => `
-                            <tr>
-                                <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                                <td>${t.description}</td>
-                                <td class="${t.type === 'income' ? 'income' : 'expense'}">
-                                    ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
+                    `).join('')}
                 </table>
             </div>
         `;
