@@ -327,7 +327,7 @@ class ExpenseManager {
         const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
         
         const opt = {
-            margin: [30, 30, 30, 30],
+            margin: [15, 15, 15, 15],
             filename: fileName,
             html2canvas: { 
                 scale: 2,
@@ -341,96 +341,98 @@ class ExpenseManager {
             },
             style: `
                 .pdf-container {
-                    font-family: 'Roboto', sans-serif;
-                    color: #202124;
-                    padding: 0;
-                    width: 100%;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    color: #1a1a1a;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
                 }
-                .pdf-title {
-                    font-size: 24px;
-                    font-weight: 500;
-                    margin-bottom: 16px;
+                .header {
                     text-align: center;
+                    margin-bottom: 40px;
                 }
-                .pdf-period {
-                    font-size: 14px;
-                    color: #5F6368;
-                    margin-bottom: 32px;
-                    text-align: center;
+                .header h1 {
+                    font-size: 28px;
+                    font-weight: 600;
+                    margin: 0 0 8px 0;
+                    color: #1a1a1a;
                 }
-                .pdf-summary {
+                .period {
+                    font-size: 16px;
+                    color: #666;
+                    margin: 0;
+                }
+                .summary {
                     display: flex;
                     justify-content: space-between;
-                    gap: 32px;
-                    margin-bottom: 48px;
+                    gap: 20px;
+                    margin-bottom: 40px;
                 }
-                .summary-block {
+                .summary-item {
                     flex: 1;
-                    padding: 24px;
+                    padding: 20px;
                     border-radius: 12px;
-                    background: #F8F9FA;
-                    text-align: center;
+                    background: #f8f9fa;
                 }
-                .summary-block h2 {
-                    font-size: 18px;
-                    font-weight: 500;
-                    margin-bottom: 12px;
+                .summary-item .label {
+                    display: block;
+                    font-size: 16px;
+                    margin-bottom: 8px;
+                    color: #666;
                 }
-                .summary-block .amount {
-                    font-size: 28px;
-                    font-weight: 500;
+                .summary-item .value {
+                    display: block;
+                    font-size: 24px;
+                    font-weight: 600;
                 }
-                .income-block h2, .income-block .amount {
+                .summary-item.income .value {
                     color: #188038;
                 }
-                .expense-block h2, .expense-block .amount {
-                    color: #D93025;
+                .summary-item.expense .value {
+                    color: #d93025;
                 }
-                .pdf-transactions {
-                    margin-top: 48px;
-                    width: 100%;
+                .transactions {
+                    margin-top: 40px;
                 }
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    font-size: 12px;
-                    margin-top: 24px;
+                    font-size: 14px;
                 }
                 th {
-                    background: #F8F9FA;
-                    padding: 16px;
-                    font-weight: 500;
+                    background: #f8f9fa;
+                    padding: 12px 16px;
                     text-align: left;
-                    color: #5F6368;
-                    border-bottom: 2px solid #DADCE0;
+                    font-weight: 600;
+                    color: #666;
+                    border-bottom: 2px solid #e0e0e0;
                 }
                 td {
-                    padding: 16px;
-                    border-bottom: 1px solid #DADCE0;
-                    line-height: 1.4;
+                    padding: 12px 16px;
+                    border-bottom: 1px solid #e0e0e0;
                 }
-                th:first-child, td:first-child {
+                tr.even {
+                    background: #ffffff;
+                }
+                tr.odd {
+                    background: #f8f9fa;
+                }
+                .date {
                     width: 20%;
                 }
-                th:nth-child(2), td:nth-child(2) {
+                .description {
                     width: 50%;
                 }
-                th:last-child, td:last-child {
+                .amount {
                     width: 30%;
                     text-align: right;
                 }
-                tr.even {
-                    background: #FFFFFF;
-                }
-                tr.odd {
-                    background: #F8F9FA;
-                }
-                .income {
+                td.amount.income {
                     color: #188038;
                     font-weight: 500;
                 }
-                .expense {
-                    color: #D93025;
+                td.amount.expense {
+                    color: #d93025;
                     font-weight: 500;
                 }
             `
@@ -466,35 +468,39 @@ class ExpenseManager {
         
         return `
             <div class="pdf-container">
-                <h1 class="pdf-title">Отчет по операциям</h1>
-                <p class="pdf-period">Период: ${this.formatDateRange()}</p>
-                
-                <div class="pdf-summary">
-                    <div class="summary-block income-block">
-                        <h2>Доходы</h2>
-                        <div class="amount">${this.formatAmount(totalIncome)} ₸</div>
+                <div class="header">
+                    <h1>Отчет по операциям</h1>
+                    <p class="period">Период: ${this.formatDateRange()}</p>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item income">
+                        <span class="label">Доходы</span>
+                        <span class="value">+ ${this.formatAmount(totalIncome)} ₸</span>
                     </div>
-                    <div class="summary-block expense-block">
-                        <h2>Расходы</h2>
-                        <div class="amount">${this.formatAmount(totalExpense)} ₸</div>
+                    <div class="summary-item expense">
+                        <span class="label">Расходы</span>
+                        <span class="value">- ${this.formatAmount(totalExpense)} ₸</span>
                     </div>
                 </div>
 
-                <div class="pdf-transactions">
-                    <table cellpadding="0" cellspacing="0" border="0">
+                <div class="transactions">
+                    <table>
                         <thead>
                             <tr>
-                                <th>Дата</th>
-                                <th>Описание</th>
-                                <th>Сумма</th>
+                                <th class="date">Дата</th>
+                                <th class="description">Описание</th>
+                                <th class="amount">Сумма</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${transactions.map((t, index) => `
                                 <tr class="${index % 2 === 0 ? 'even' : 'odd'}">
-                                    <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                                    <td>${t.description}</td>
-                                    <td class="${t.type === 'income' ? 'income' : 'expense'}">${this.formatAmount(t.amount)} ₸</td>
+                                    <td class="date">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                                    <td class="description">${t.description}</td>
+                                    <td class="amount ${t.type === 'income' ? 'income' : 'expense'}">
+                                        ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
