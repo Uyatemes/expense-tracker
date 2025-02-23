@@ -949,10 +949,6 @@ select:focus {
     color: var(--dark-secondary-text, #A0A0A0);
 }
 
-[data-theme="light"] .transaction-item {
-    background: var(--dark-card-bg, #ffffff);
-}
-
 /* [data-theme="dark"] .transaction-amount.income {
     color: var(--dark-income-color, #4CAF50);
 } */
@@ -1125,4 +1121,8 @@ select:focus {
 
 [data-theme="dark"] .transaction-item.new {
     background: var(--dark-transaction-new-bg, rgba(76, 175, 80, 0.15));
+}
+
+[data-theme="light"] .transaction-item {
+    background: var(--light-card-bg, #ffffff);
 } 
