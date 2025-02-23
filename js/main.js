@@ -346,15 +346,18 @@ class ExpenseManager {
                     max-width: 800px;
                     margin: 0 auto;
                     padding: 40px 20px;
+                    background: #ffffff;
                 }
                 .header {
                     text-align: center;
                     margin-bottom: 40px;
+                    padding-bottom: 20px;
+                    border-bottom: 2px solid #e0e0e0;
                 }
                 .header h1 {
-                    font-size: 28px;
+                    font-size: 32px;
                     font-weight: 600;
-                    margin: 0 0 8px 0;
+                    margin: 0 0 12px 0;
                     color: #1a1a1a;
                 }
                 .period {
@@ -365,25 +368,29 @@ class ExpenseManager {
                 .summary {
                     display: flex;
                     justify-content: space-between;
-                    gap: 20px;
-                    margin-bottom: 40px;
+                    gap: 24px;
+                    margin: 40px 0;
+                    padding: 0 20px;
                 }
                 .summary-item {
                     flex: 1;
-                    padding: 20px;
-                    border-radius: 12px;
+                    padding: 24px;
+                    border-radius: 16px;
                     background: #f8f9fa;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
                 }
                 .summary-item .label {
                     display: block;
-                    font-size: 16px;
-                    margin-bottom: 8px;
+                    font-size: 18px;
+                    margin-bottom: 12px;
                     color: #666;
+                    font-weight: 500;
                 }
                 .summary-item .value {
                     display: block;
-                    font-size: 24px;
+                    font-size: 28px;
                     font-weight: 600;
+                    letter-spacing: -0.5px;
                 }
                 .summary-item.income .value {
                     color: #188038;
@@ -393,23 +400,34 @@ class ExpenseManager {
                 }
                 .transactions {
                     margin-top: 40px;
+                    padding: 0 20px;
                 }
                 table {
                     width: 100%;
-                    border-collapse: collapse;
+                    border-collapse: separate;
+                    border-spacing: 0;
                     font-size: 14px;
+                    background: white;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 }
                 th {
                     background: #f8f9fa;
-                    padding: 12px 16px;
+                    padding: 16px;
                     text-align: left;
                     font-weight: 600;
                     color: #666;
                     border-bottom: 2px solid #e0e0e0;
+                    white-space: nowrap;
                 }
                 td {
-                    padding: 12px 16px;
+                    padding: 16px;
                     border-bottom: 1px solid #e0e0e0;
+                    vertical-align: middle;
+                }
+                tr:last-child td {
+                    border-bottom: none;
                 }
                 tr.even {
                     background: #ffffff;
@@ -419,6 +437,7 @@ class ExpenseManager {
                 }
                 .date {
                     width: 20%;
+                    white-space: nowrap;
                 }
                 .description {
                     width: 50%;
@@ -426,6 +445,8 @@ class ExpenseManager {
                 .amount {
                     width: 30%;
                     text-align: right;
+                    font-family: 'SF Mono', 'Roboto Mono', monospace;
+                    white-space: nowrap;
                 }
                 td.amount.income {
                     color: #188038;
@@ -434,6 +455,9 @@ class ExpenseManager {
                 td.amount.expense {
                     color: #d93025;
                     font-weight: 500;
+                }
+                tr:hover {
+                    background: #f5f5f5;
                 }
             `
         };
