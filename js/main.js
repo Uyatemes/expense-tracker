@@ -334,68 +334,27 @@ class ExpenseManager {
             style: `
                 .pdf-container {
                     font-family: Arial, sans-serif;
-                    line-height: 1.4;
-                    color: #333;
+                    padding: 20px;
                 }
-                .report-header {
-                    margin-bottom: 30px;
-                }
-                .report-title {
+                h1 {
                     font-size: 24px;
-                    font-weight: bold;
-                    margin-bottom: 15px;
+                    margin: 0 0 10px 0;
                 }
-                .report-info {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 20px;
+                p {
+                    margin: 5px 0;
                 }
-                .report-period {
-                    font-size: 14px;
-                }
-                .report-totals {
-                    text-align: right;
-                }
-                .total-income {
-                    color: #188038;
-                    margin-bottom: 5px;
-                }
-                .total-expense {
-                    color: #d93025;
-                }
-                .report-table {
+                table {
                     width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
                 }
-                .table-header {
-                    display: flex;
-                    background: #f5f5f5;
-                    padding: 10px 0;
+                td {
+                    padding: 8px;
+                    border-bottom: 1px solid #ddd;
+                }
+                tr:first-child td {
                     font-weight: bold;
-                    border-bottom: 2px solid #ddd;
-                }
-                .table-row {
-                    display: flex;
-                    padding: 8px 0;
-                    border-bottom: 1px solid #eee;
-                }
-                .col-date {
-                    width: 20%;
-                    padding: 0 10px;
-                }
-                .col-desc {
-                    width: 50%;
-                    padding: 0 10px;
-                }
-                .col-amount {
-                    width: 30%;
-                    padding: 0 10px;
-                    text-align: right;
-                }
-                .income {
-                    color: #188038;
-                }
-                .expense {
-                    color: #d93025;
+                    background: #f5f5f5;
                 }
             `
         };
@@ -430,33 +389,25 @@ class ExpenseManager {
         
         return `
             <div class="pdf-container">
-                <div class="report-header">
-                    <div class="report-title">Отчет по операциям</div>
-                    <div class="report-info">
-                        <div class="report-period">Период: ${this.formatDateRange()}</div>
-                        <div class="report-totals">
-                            <div class="total-income">Доходы + ${this.formatAmount(totalIncome)} ₸</div>
-                            <div class="total-expense">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
-                        </div>
-                    </div>
-                </div>
+                <h1>Отчет по операциям</h1>
+                <p>Период: ${this.formatDateRange()}</p>
+                <p>Доходы + ${this.formatAmount(totalIncome)} ₸</p>
+                <p>Расходы - ${this.formatAmount(totalExpense)} ₸</p>
 
-                <div class="report-table">
-                    <div class="table-header">
-                        <div class="col-date">Дата</div>
-                        <div class="col-desc">Описание</div>
-                        <div class="col-amount">Сумма</div>
-                    </div>
+                <table>
+                    <tr>
+                        <td>Дата</td>
+                        <td>Описание</td>
+                        <td>Сумма</td>
+                    </tr>
                     ${transactions.map(t => `
-                        <div class="table-row">
-                            <div class="col-date">${new Date(t.date).toLocaleDateString('ru-RU')}</div>
-                            <div class="col-desc">${t.description}</div>
-                            <div class="col-amount ${t.type === 'income' ? 'income' : 'expense'}">
-                                ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
-                            </div>
-                        </div>
+                        <tr>
+                            <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                            <td>${t.description}</td>
+                            <td>${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
+                        </tr>
                     `).join('')}
-                </div>
+                </table>
             </div>
         `;
     }
