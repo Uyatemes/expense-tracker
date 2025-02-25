@@ -327,34 +327,65 @@ class ExpenseManager {
         const fileName = `expense-report_${dateStr}_${timeStr}.pdf`;
         
         const opt = {
-            margin: [20, 20, 20, 20],
+            margin: [15, 15, 15, 15],
             filename: fileName,
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             style: `
                 .pdf-container {
                     font-family: Arial, sans-serif;
+                    color: #000;
                     padding: 20px;
+                    line-height: 1.5;
                 }
                 h1 {
                     font-size: 24px;
-                    margin: 0 0 10px 0;
+                    font-weight: bold;
+                    margin: 0 0 15px 0;
+                    color: #000;
                 }
-                p {
-                    margin: 5px 0;
+                .period {
+                    font-size: 14px;
+                    margin-bottom: 20px;
+                    color: #000;
+                }
+                .totals {
+                    margin-bottom: 30px;
+                    font-size: 16px;
+                    font-weight: bold;
+                }
+                .income {
+                    color: #188038;
+                    margin-bottom: 5px;
+                }
+                .expense {
+                    color: #d93025;
                 }
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-top: 20px;
+                    font-size: 14px;
                 }
-                td {
-                    padding: 8px;
+                tr {
                     border-bottom: 1px solid #ddd;
                 }
-                tr:first-child td {
+                td {
+                    padding: 10px 5px;
+                    color: #000;
+                }
+                .header td {
                     font-weight: bold;
                     background: #f5f5f5;
+                    border-bottom: 2px solid #ddd;
+                }
+                td:last-child {
+                    text-align: right;
+                }
+                tr td.income {
+                    color: #188038;
+                }
+                tr td.expense {
+                    color: #d93025;
                 }
             `
         };
@@ -390,21 +421,24 @@ class ExpenseManager {
         return `
             <div class="pdf-container">
                 <h1>Отчет по операциям</h1>
-                <p>Период: ${this.formatDateRange()}</p>
-                <p>Доходы + ${this.formatAmount(totalIncome)} ₸</p>
-                <p>Расходы - ${this.formatAmount(totalExpense)} ₸</p>
+                <div class="period">Период: ${this.formatDateRange()}</div>
+                
+                <div class="totals">
+                    <div class="income">Доходы + ${this.formatAmount(totalIncome)} ₸</div>
+                    <div class="expense">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
+                </div>
 
                 <table>
-                    <tr>
-                        <td>Дата</td>
-                        <td>Описание</td>
-                        <td>Сумма</td>
+                    <tr class="header">
+                        <td width="20%">Дата</td>
+                        <td width="50%">Описание</td>
+                        <td width="30%">Сумма</td>
                     </tr>
                     ${transactions.map(t => `
                         <tr>
                             <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
                             <td>${t.description}</td>
-                            <td>${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
+                            <td class="${t.type}">${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
                         </tr>
                     `).join('')}
                 </table>
