@@ -699,6 +699,12 @@ class ExpenseManager {
 
     async migrateLocalDataToFirebase() {
         try {
+            // Проверяем, была ли уже выполнена миграция
+            if (localStorage.getItem('transactions_migrated')) {
+                console.log('Миграция уже была выполнена ранее');
+                return;
+            }
+
             // Получаем данные из localStorage
             const localData = localStorage.getItem('transactions');
             if (!localData) {
@@ -727,6 +733,18 @@ class ExpenseManager {
             // Сохраняем каждую транзакцию в Firebase
             for (const transaction of transactions) {
                 try {
+                    // Проверяем, существует ли уже такая транзакция
+                    const existingDocs = await db.collection('users')
+                        .doc(firebase.auth().currentUser.uid)
+                        .collection('transactions')
+                        .where('id', '==', transaction.id)
+                        .get();
+
+                    if (!existingDocs.empty) {
+                        console.log(`Транзакция ${transaction.id} уже существует, пропускаем`);
+                        continue;
+                    }
+
                     const newTransaction = {
                         ...transaction,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -746,13 +764,13 @@ class ExpenseManager {
                 }
             }
 
-            if (migratedCount === transactions.length) {
+            if (migratedCount > 0) {
                 console.log('Миграция данных завершена успешно');
-                // Переименовываем старые данные вместо удаления
-                localStorage.setItem('transactions_migrated', localData);
+                // Помечаем, что миграция выполнена
+                localStorage.setItem('transactions_migrated', 'true');
                 localStorage.removeItem('transactions');
             } else {
-                console.warn(`Мигрировано только ${migratedCount} из ${transactions.length} транзакций`);
+                console.warn('Нет новых транзакций для миграции');
             }
             
             // Перезагружаем данные из Firebase
