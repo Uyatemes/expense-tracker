@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "raul-2024"
+  },
+  "ignore": [
+    "**/.*",
+    "**/node_modules/**",
+    "**/*.exe",
+    "**/*.dll",
+    "**/*.so",
+    "**/*.dylib"
+  ]
+}
