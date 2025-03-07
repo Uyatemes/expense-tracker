@@ -684,4 +684,36 @@ function getPaymentTypeIcon(type) {
         </svg>`
     };
     return icons[type] || '';
+}
+
+function categorizeDescription(description) {
+    description = description.toLowerCase();
+    
+    // Основные категории
+    const categories = {
+        'Поставка': ['ип', 'тоо', 'co', 'group', 'fruitata', 'coffee man', 'qazaq barista', 
+                     'brand', 'yans', 'юзаев', 'мухамеджанова', 'суртубаева', 'fika people',
+                     'daily food', 'rockcity', 'bar kz', 'grand market', 'sandi', 'абадан',
+                     'пекарили', 'joly'],
+        'Сотрудники': ['ержан', 'сека', 'ига', 'альфия'],
+        'Долг': ['долг', 'в долг', 'займ', 'вернул', 'вернули', 'отдал', 'отдали', 'одолжил', 'одолжили'],
+        'Транспорт': ['такси', 'яндекс', 'такси ержан', 'убер'],
+        'Зарплата': ['зарплата', 'аванс', 'начлиные', 'зп'],
+        'Банки': ['каспий', 'халык', 'kaspi', 'halyk', 'каспи', 'народный'],
+        'Магазины': ['магазин', 'бутик', 'бутики', 'базар', 'market', 'shop'],
+        'Кафе и рестораны': ['coffee', 'кофе', 'bar', 'бар', 'food', 'cafe', 'кафе', 'ресторан']
+    };
+
+    // Специальная обработка для "такси ержан"
+    if (description.includes('такси ержан')) {
+        return 'Транспорт';
+    }
+
+    for (const [category, keywords] of Object.entries(categories)) {
+        if (keywords.some(keyword => description.includes(keyword))) {
+            return category;
+        }
+    }
+    
+    return 'Прочее';
 } 
