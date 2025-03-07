@@ -2,21 +2,21 @@
 const firebaseConfig = {
     dev: {
         // Конфигурация для тестовой версии
-        apiKey: "ваш_dev_ключ",
-        authDomain: "expense-tracker-dev.firebaseapp.com",
-        projectId: "expense-tracker-dev",
-        storageBucket: "expense-tracker-dev.appspot.com",
-        messagingSenderId: "ваш_dev_messagingSenderId",
-        appId: "ваш_dev_appId"
+        apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
+        authDomain: "raul-2024.firebaseapp.com",
+        projectId: "raul-2024",
+        storageBucket: "raul-2024.firebasestorage.app",
+        messagingSenderId: "96759916961",
+        appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
     },
     prod: {
-        // Конфигурация для боевой версии
-        apiKey: "ваш_prod_ключ",
-        authDomain: "expense-tracker-prod.firebaseapp.com",
-        projectId: "expense-tracker-prod",
-        storageBucket: "expense-tracker-prod.appspot.com",
-        messagingSenderId: "ваш_prod_messagingSenderId",
-        appId: "ваш_prod_appId"
+        // Такая же конфигурация для продакшена
+        apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
+        authDomain: "raul-2024.firebaseapp.com",
+        projectId: "raul-2024",
+        storageBucket: "raul-2024.firebasestorage.app",
+        messagingSenderId: "96759916961",
+        appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
     }
 };
 
