@@ -418,77 +418,136 @@ class ExpenseManager {
         const transactions = this.getFilteredTransactions();
         const { totalIncome, totalExpense } = this.calculateTotals(transactions);
         
-        // Группируем транзакции по описанию
-        const summary = transactions.reduce((acc, t) => {
-            const key = t.description.toLowerCase();
-            if (!acc[key]) {
-                acc[key] = { income: 0, expense: 0 };
+        // Получаем текущую дату и время
+        const now = new Date();
+        const exportDateTime = now.toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        
+        // Описания категорий
+        const categoryDescriptions = {
+            'Счет на оплату': 'Fika People, Fruitata, Абадан Пэй, RockCity, Coffee Man, Shygie.kz, ИП и ТОО, базары, магазины',
+            'Зарплата': 'Зарплаты, авансы и выплаты сотрудникам',
+            'Руководство': 'Ига, Ержан, Альфия, Сека',
+            'Долг': 'Долги, кредиты, займы',
+            'Прочее': 'Остальные операции'
+        };
+        
+        // Группируем транзакции по категориям
+        const summary = {};
+        
+        // Сначала собираем все транзакции по категориям
+        transactions.forEach(t => {
+            const category = this.categorizeDescription(t.description);
+            if (!summary[category]) {
+                summary[category] = { income: 0, expense: 0 };
             }
             if (t.type === 'income') {
-                acc[key].income += t.amount;
+                summary[category].income += Math.abs(t.amount);
             } else {
-                acc[key].expense += t.amount;
+                summary[category].expense += Math.abs(t.amount);
             }
-            return acc;
-        }, {});
+        });
 
         return `
             <div class="pdf-container" style="color: #000000 !important;">
-                <h1 style="color: #000000 !important;">Отчет по операциям</h1>
+                <style>
+                    @media print {
+                        table { page-break-inside: avoid; }
+                        tr { page-break-inside: avoid; }
+                        thead { display: table-header-group; }
+                        tfoot { display: table-footer-group; }
+                        .page-break { page-break-before: always; }
+                        h2 { page-break-before: always; }
+                    }
+                </style>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h1 style="color: #000000 !important; margin: 0;">Отчет по операциям</h1>
+                    <svg width="80" height="80" viewBox="0 0 685 321" style="color: #DDDDDD !important; fill: #DDDDDD !important;">
+                        <g>
+                            <path class="cls-1" d="m342.5,0C153.35,0,0,71.86,0,160.5s153.35,160.5,342.5,160.5,342.5-71.86,342.5-160.5S531.66,0,342.5,0Zm212.11,100.57c22.28,4.46,42.22,9.62,59.16,15.29,7.63,14.56,11.48,29.68,11.48,45.11,0,13.74-3.05,27.24-9.1,40.31-16.91,5.79-36.94,11.08-59.4,15.64,8.09-17.42,12.5-36.27,12.5-55.95,0-21.37-5.2-41.76-14.64-60.4Zm69.46,18.93c6.89,2.58,13.18,5.26,18.81,8.01,20.87,10.2,32.37,21.37,32.37,31.46s-11.11,20.88-31.28,30.93c-5.27,2.62-11.15,5.19-17.59,7.66,4.49-11.75,6.87-24,6.87-36.59,0-14.6-3.39-28.52-9.18-41.47Zm-34.58-64.91c27.59,14.24,49.16,30.71,64.13,48.98,9.59,11.7,16.16,23.81,19.66,36.18-10.18-10.71-28.68-20.63-53.73-29.33-10.13-18.41-24.95-34.55-41.26-47.45-20.26-16.03-43.24-27.36-66.88-37.44,26.5,4.6,54.21,16.74,78.08,29.06Zm-118.87-33.76c30.56,7.89,57.95,19.15,81.43,33.48,23.2,14.15,41.35,30.55,53.96,48.74.86,1.24,1.69,2.49,2.49,3.74-17.04-5.29-36.61-10.06-58.26-14.19-18.62-31.69-49.79-57.7-88.37-73.9,2.93.68,5.85,1.38,8.75,2.13Zm-135.58,159.33l-28.81-24.49h67.41c34.17,0,51.27-12.19,51.27-36.58s-17.1-35.14-51.27-35.14h-77.49v174.27h-42.06V56.58h119.55c31.1,0,54.77,5.29,71,15.85,16.23,10.56,24.34,25.83,24.34,45.8s-7.3,33.99-21.89,44.36c-14.6,10.37-36.01,16.13-64.24,17.28l92.47,78.35h-48.4l-91.88-78.06Zm126.83,123.08c40.38-16.96,72.65-44.66,90.9-78.38,21.93-4.28,41.67-9.2,58.75-14.67-1.68,2.93-3.52,5.83-5.51,8.7-12.61,18.19-30.76,34.59-53.96,48.74-23.48,14.33-50.87,25.59-81.43,33.48-2.9.75-5.82,1.45-8.75,2.13Zm191.75-84.87c-14.97,18.27-36.54,34.74-64.13,48.98-23.32,12.04-49.89,21.91-79.17,29.47,53.46-20.57,93.93-52.56,112.2-90.36,24.66-8.83,42.63-18.89,52.1-29.74-2.97,14.28-10,28.23-21,41.65Z"/>
+                        </g>
+                    </svg>
+                </div>
                 <div class="period" style="color: #000000 !important;">Период: ${this.formatDateRange()}</div>
                 
-                <div class="totals">
+                <div class="totals" style="page-break-inside: avoid;">
                     <div class="income" style="color: #188038 !important;">Доходы + ${this.formatAmount(totalIncome)} ₸</div>
                     <div class="expense" style="color: #d93025 !important;">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
                 </div>
 
-                <h2 style="color: #000000 !important; margin-top: 20px;">Сводка по категориям</h2>
-                <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important; margin-bottom: 30px;">
-                    <thead>
-                        <tr style="background: none !important; border-bottom: 2px solid #000000;">
-                            <th style="width: 50%; text-align: left; padding: 8px;">Категория</th>
-                            <th style="width: 25%; text-align: right; padding: 8px;">Доходы</th>
-                            <th style="width: 25%; text-align: right; padding: 8px;">Расходы</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Object.entries(summary)
-                            .sort(([a], [b]) => a.localeCompare(b))
-                            .map(([category, amounts]) => `
-                                <tr>
-                                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${category}</td>
-                                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #188038 !important;">
-                                        ${amounts.income > 0 ? '+ ' + this.formatAmount(amounts.income) + ' ₸' : ''}
-                                    </td>
-                                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #d93025 !important;">
-                                        ${amounts.expense > 0 ? '- ' + this.formatAmount(amounts.expense) + ' ₸' : ''}
-                                    </td>
-                                </tr>
-                            `).join('')}
-                    </tbody>
-                </table>
-
-                <h2 style="color: #000000 !important;">Детализация операций</h2>
-                <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important;">
-                    <thead>
-                        <tr class="header" style="background: none !important; border-bottom: 2px solid #000000;">
-                            <th style="width: 25%; text-align: left; padding: 8px;">Дата</th>
-                            <th style="width: 50%; text-align: left; padding: 8px;">Описание</th>
-                            <th style="width: 25%; text-align: right; padding: 8px;">Сумма</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${transactions.map(t => `
-                            <tr>
-                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${t.description}</td>
-                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: ${t.type === 'income' ? '#188038' : '#d93025'} !important;">
-                                    ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
-                                </td>
+                <div style="page-break-inside: avoid;">
+                    <h2 style="margin-top: 20px; color: #000000 !important;">Сводка по категориям</h2>
+                    <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important;">
+                        <thead>
+                            <tr style="background: none !important; border-bottom: 2px solid #000000;">
+                                <th style="width: 40%; text-align: left; padding: 8px;">Категория</th>
+                                <th style="width: 30%; text-align: right; padding: 8px;">Доходы</th>
+                                <th style="width: 30%; text-align: right; padding: 8px;">Расходы</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(summary)
+                                .sort(([a], [b]) => a.localeCompare(b))
+                                .map(([category, amounts]) => `
+                                    <tr style="page-break-inside: avoid;">
+                                        <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+                                            <div style="font-weight: bold;">${category}</div>
+                                            <div style="font-size: 12px; color: #666666; margin-top: 4px;">
+                                                ${categoryDescriptions[category] || ''}
+                                            </div>
+                                        </td>
+                                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #188038 !important;">
+                                            ${amounts.income > 0 ? '+ ' + this.formatAmount(amounts.income) + ' ₸' : ''}
+                                        </td>
+                                        <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #d93025 !important;">
+                                            ${amounts.expense > 0 ? '- ' + this.formatAmount(amounts.expense) + ' ₸' : ''}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="page-break-inside: avoid;">
+                    <h2 style="margin-top: 30px; color: #000000 !important;">Детализация операций</h2>
+                    <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important;">
+                        <thead>
+                            <tr style="background: none !important; border-bottom: 2px solid #000000;">
+                                <th style="width: 20%; text-align: left; padding: 8px;">Дата</th>
+                                <th style="width: 50%; text-align: left; padding: 8px;">Описание</th>
+                                <th style="width: 30%; text-align: right; padding: 8px;">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactions
+                                .map(t => {
+                                    const date = new Date(t.date).toLocaleDateString('ru-RU');
+                                    const amount = this.formatAmount(t.amount);
+                                    const sign = t.type === 'income' ? '+' : '-';
+                                    const color = t.type === 'income' ? '#188038' : '#d93025';
+                                    return `
+                                        <tr style="page-break-inside: avoid;">
+                                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${date}</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${t.description}</td>
+                                            <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: ${color} !important;">
+                                                ${sign} ${amount} ₸
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 30px; text-align: right; font-size: 12px; color: #666666; page-break-inside: avoid;">
+                    Отчет сформирован: ${exportDateTime}
+                </div>
             </div>
         `;
     }
@@ -532,6 +591,66 @@ class ExpenseManager {
 
     formatAmount(amount) {
         return new Intl.NumberFormat('ru-RU').format(Math.abs(amount));
+    }
+
+    categorizeDescription(description) {
+        description = description.toLowerCase();
+        
+        // Правила категоризации с приоритетами
+        const rules = [
+            {
+                category: 'Счет на оплату',
+                test: (desc) => {
+                    const suppliers = [
+                        'fika people', 'fruitata', 'абадан пэй', 'ип абадан',
+                        'rockcity', 'coffee man', 'shygie.kz', 'юзаев талгат',
+                        'илахунов', 'дана пэй', 'базар', 'магазин', 'доставка',
+                        'полиграфия'
+                    ];
+                    return suppliers.some(s => desc.includes(s.toLowerCase())) ||
+                           (desc.startsWith('ип') && !desc.includes('налог')) ||
+                           desc.startsWith('тоо');
+                }
+            },
+            {
+                category: 'Зарплата',
+                test: (desc) => {
+                    return desc.includes('зарплата') || 
+                           desc.includes('на зарплату') || 
+                           desc.includes('аванс');
+                }
+            },
+            {
+                category: 'Руководство',
+                test: (desc) => {
+                    const management = ['ига', 'ержан', 'альфия', 'сека'];
+                    return management.some(name => {
+                        const isManagement = desc.includes(name);
+                        const isNotSupplier = !desc.startsWith('ип');
+                        const isNotTransport = !desc.includes('такси');
+                        return isManagement && isNotSupplier && isNotTransport;
+                    });
+                }
+            },
+            {
+                category: 'Долг',
+                test: (desc) => {
+                    return desc.includes('долг') || 
+                           desc.includes('кредо') || 
+                           desc.includes('займ') ||
+                           desc.includes('в долг');
+                }
+            }
+        ];
+
+        // Проверяем каждое правило по порядку
+        for (const rule of rules) {
+            if (rule.test(description)) {
+                return rule.category;
+            }
+        }
+        
+        return 'Прочее';
     }
 }
 
@@ -686,85 +805,38 @@ function getPaymentTypeIcon(type) {
     return icons[type] || '';
 }
 
-function categorizeDescription(description) {
-    description = description.toLowerCase();
+const testDescriptions = [
+    // Счет на оплату
+    'ип абадан за кофе',
+    'fika people поставка',
+    'базар продукты',
+    'доставка товара',
+    'тоо рога и копыта',
     
-    // Правила категоризации с приоритетами
-    const rules = [
-        {
-            category: 'Поставщики',
-            test: (desc) => {
-                const suppliers = [
-                    'fika people', 'fruitata', 'абадан пэй', 'ип абадан',
-                    'rockcity', 'coffee man', 'shygie.kz', 'юзаев талгат',
-                    'илахунов', 'дана пэй'
-                ];
-                return suppliers.some(s => desc.includes(s.toLowerCase())) ||
-                       (desc.startsWith('ип') && !desc.includes('налог')) ||
-                       desc.startsWith('тоо');
-            }
-        },
-        {
-            category: 'Зарплата',
-            test: (desc) => {
-                return desc === 'зарплата' || 
-                       desc.endsWith('на зарплату') || 
-                       desc.includes('аванс');
-            }
-        },
-        {
-            category: 'Сотрудники',
-            test: (desc) => {
-                const employees = ['ержан', 'сека', 'ига', 'альфия', 'айкын', 'микко'];
-                // Проверяем, что это не часть другого слова/фразы
-                return employees.some(name => {
-                    const isEmployee = desc.includes(name);
-                    const isNotSupplier = !desc.startsWith('ип');
-                    const isNotTransport = !desc.includes('такси');
-                    return isEmployee && isNotSupplier && isNotTransport;
-                });
-            }
-        },
-        {
-            category: 'Долг',
-            test: (desc) => {
-                return desc.includes('долг') || 
-                       desc.includes('кредо') || 
-                       desc.endsWith('займ');
-            }
-        },
-        {
-            category: 'Наличные',
-            test: (desc) => {
-                return desc.includes('наличные') || 
-                       desc.includes('наличие') ||
-                       desc.includes('электрик');
-            }
-        },
-        {
-            category: 'Налоги',
-            test: (desc) => {
-                return desc.includes('налог') || 
-                       (desc.includes('пэй') && !desc.includes('абадан'));
-            }
-        },
-        {
-            category: 'Разное',
-            test: (desc) => {
-                return desc.includes('базар') || 
-                       desc.includes('квест') ||
-                       desc.includes('доставка') ||
-                       desc.includes('полиграфия');
-            }
-        }
-    ];
+    // Зарплата
+    'зарплата за июнь',
+    'аванс сотрудникам',
+    'на зарплату персоналу',
+    
+    // Руководство
+    'ига премия',
+    'ержан командировка',
+    'альфия отчет',
+    'сека расходы',
+    
+    // Долг
+    'возврат долга',
+    'кредо банк',
+    'займ на оборудование',
+    'в долг на месяц',
+    
+    // Должны попасть в Прочее
+    'канцтовары',
+    'ремонт техники',
+    'такси'
+];
 
-    // Проверяем каждое правило по порядку
-    for (const rule of rules) {
-        if (rule.test(description)) {
-            return rule.category;
-        }
-    }
-    
-    return 'Прочее';
-} 
+console.log('Тестирование категоризации:');
+testDescriptions.forEach(desc => {
+    console.log(`"${desc}" -> ${window.expenseManager.categorizeDescription(desc)}`);
+}); 
