@@ -430,9 +430,9 @@ class ExpenseManager {
 
                 <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important;">
                     <tr class="header">
-                        <th style="width: 20%; color: #000000 !important; border-bottom: 2px solid #000;">Дата</th>
-                        <th style="width: 50%; color: #000000 !important; border-bottom: 2px solid #000;">Описание</th>
-                        <th style="width: 30%; color: #000000 !important; border-bottom: 2px solid #000;">Сумма</th>
+                        <th style="width: 20%; color: #000000 !important; border-bottom: 2px solid #000; background: none;">Дата</th>
+                        <th style="width: 50%; color: #000000 !important; border-bottom: 2px solid #000; background: none;">Описание</th>
+                        <th style="width: 30%; color: #000000 !important; border-bottom: 2px solid #000; background: none;">Сумма</th>
                     </tr>
                     ${transactions.map(t => `
                         <tr>
