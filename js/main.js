@@ -428,11 +428,11 @@ class ExpenseManager {
                     <div class="expense" style="color: #d93025 !important;">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
                 </div>
 
-                <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important;">
+                <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important; border-collapse: collapse;">
                     <tr class="header" style="background: none !important;">
-                        <th style="width: 25%; color: #000000 !important; border-bottom: 2px solid #000;">Дата</th>
-                        <th style="width: 45%; color: #000000 !important; border-bottom: 2px solid #000;">Описание</th>
-                        <th style="width: 30%; color: #000000 !important; border-bottom: 2px solid #000;">Сумма</th>
+                        <th style="width: 25%; color: #000000 !important; border-bottom: 2px solid #000; text-align: left; padding: 12px 8px;">Дата</th>
+                        <th style="width: 45%; color: #000000 !important; border-bottom: 2px solid #000; text-align: left; padding: 12px 8px;">Описание</th>
+                        <th style="width: 30%; color: #000000 !important; border-bottom: 2px solid #000; text-align: right; padding: 12px 8px;">Сумма</th>
                     </tr>
                     ${transactions.map(t => `
                         <tr>
