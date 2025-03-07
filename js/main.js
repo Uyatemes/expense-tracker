@@ -430,20 +430,18 @@ class ExpenseManager {
 
                 <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important;">
                     <tr class="header" style="background: none !important;">
-                        <th style="width: 25%; color: #000000 !important; text-align: left; padding-right: 20px;">Дата</th>
-                        <th style="width: 45%; color: #000000 !important; text-align: left; padding-right: 20px;">Описание</th>
-                        <th style="width: 30%; color: #000000 !important; text-align: right;">Сумма</th>
+                        <th style="width: 25%; color: #000000 !important; text-align: left; padding: 8px 20px 8px 0;">Дата</th>
+                        <th style="width: 45%; color: #000000 !important; text-align: left; padding: 8px 20px 8px 0;">Описание</th>
+                        <th style="width: 30%; color: #000000 !important; text-align: right; padding: 8px 0;">Сумма</th>
                     </tr>
                     <tr>
-                        <td colspan="3" style="padding: 0; height: 2px; background: #000000; margin-top: 8px;"></td>
+                        <td colspan="3" style="padding: 0; height: 2px; background: #000000;"></td>
                     </tr>
                     ${transactions.map(t => `
                         <tr>
-                            <td style="color: #000000 !important; border-bottom: 1px solid #ddd;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                            <td style="color: #000000 !important; border-bottom: 1px solid #ddd;">${t.description}</td>
-                            <td style="color: ${t.type === 'income' ? '#188038' : '#d93025'} !important; border-bottom: 1px solid #ddd; text-align: right;">
-                                ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
-                            </td>
+                            <td style="padding: 8px 20px 8px 0;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                            <td style="padding: 8px 20px 8px 0;">${t.description}</td>
+                            <td style="text-align: right; padding: 8px 0;" class="${t.type}">${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
                         </tr>
                     `).join('')}
                 </table>
