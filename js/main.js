@@ -437,13 +437,13 @@ class ExpenseManager {
                     <tr>
                         <td colspan="3" style="padding: 0; height: 2px; background: #000000;"></td>
                     </tr>
-                    ${transactions.map(t => `
+                    ${transactions.map(t => 
                         <tr>
                             <td style="padding: 8px 20px 8px 0;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
                             <td style="padding: 8px 20px 8px 0;">${t.description}</td>
                             <td style="text-align: right; padding: 8px 0;" class="${t.type}">${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
                         </tr>
-                    `).join('')}
+                    ).join('')}
                 </table>
             </div>
         `;
