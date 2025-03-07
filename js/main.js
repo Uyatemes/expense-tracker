@@ -689,28 +689,42 @@ function getPaymentTypeIcon(type) {
 function categorizeDescription(description) {
     description = description.toLowerCase();
     
-    // Основные категории
-    const categories = {
-        'Поставка': ['ип', 'тоо', 'co', 'group', 'fruitata', 'coffee man', 'qazaq barista', 
-                     'brand', 'yans', 'юзаев', 'мухамеджанова', 'суртубаева', 'fika people',
-                     'daily food', 'rockcity', 'bar kz', 'grand market', 'sandi', 'абадан',
-                     'пекарили', 'joly'],
-        'Сотрудники': ['ержан', 'сека', 'ига', 'альфия'],
-        'Долг': ['долг', 'в долг', 'займ', 'вернул', 'вернули', 'отдал', 'отдали', 'одолжил', 'одолжили'],
-        'Транспорт': ['такси', 'яндекс', 'такси ержан', 'убер'],
-        'Зарплата': ['зарплата', 'аванс', 'начлиные', 'зп'],
-        'Банки': ['каспий', 'халык', 'kaspi', 'halyk', 'каспи', 'народный'],
-        'Магазины': ['магазин', 'бутик', 'бутики', 'базар', 'market', 'shop'],
-        'Кафе и рестораны': ['coffee', 'кофе', 'bar', 'бар', 'food', 'cafe', 'кафе', 'ресторан']
+    // Правила категоризации
+    const rules = {
+        'Зарплата': (desc) => {
+            return desc.includes('зарплата') || desc.includes('аванс') || 
+                   desc.includes('начлиные') || desc.endsWith('на зарплату');
+        },
+        'Поставщики': (desc) => {
+            return desc.startsWith('ип') || desc.startsWith('тоо') || 
+                   ['fruitata', 'coffee man', 'rockcity', 'абадан пэй'].some(k => desc.includes(k));
+        },
+        'Сотрудники': (desc) => {
+            const employees = ['ержан', 'сека', 'ига', 'альфия', 'айкын'];
+            // Исключаем случаи, когда имя сотрудника является частью другого контекста
+            return employees.some(name => desc.includes(name)) && 
+                   !desc.includes('такси') && !desc.startsWith('ип');
+        },
+        'Долг': (desc) => {
+            return desc.includes('долг') || desc.includes('кредо') || 
+                   desc.includes('в долг') || desc.includes('займ');
+        },
+        'Транспорт': (desc) => {
+            return desc.includes('такси') || desc.includes('яндекс') || 
+                   desc.includes('убер');
+        },
+        'Наличные': (desc) => {
+            return desc.includes('наличные') || desc.includes('наличие') || 
+                   desc.includes('нал');
+        },
+        'Налоги': (desc) => {
+            return desc.includes('налог') || desc.includes('пэй');
+        }
     };
 
-    // Специальная обработка для "такси ержан"
-    if (description.includes('такси ержан')) {
-        return 'Транспорт';
-    }
-
-    for (const [category, keywords] of Object.entries(categories)) {
-        if (keywords.some(keyword => description.includes(keyword))) {
+    // Проверяем каждое правило
+    for (const [category, rule] of Object.entries(rules)) {
+        if (rule(description)) {
             return category;
         }
     }
