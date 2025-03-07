@@ -707,7 +707,7 @@ class ExpenseManager {
             }
 
             const transactions = JSON.parse(localData);
-            console.log(`Найдено ${transactions.length} локальных транзакций`);
+            console.log(`Найдено ${transactions.length} локальных транзакций для миграции`);
 
             // Проверяем авторизацию
             const user = firebase.auth().currentUser;
@@ -716,30 +716,56 @@ class ExpenseManager {
                 await signInWithGoogle();
             }
 
-            // Сохраняем каждую транзакцию в Firebase
-            for (const transaction of transactions) {
-                const newTransaction = {
-                    ...transaction,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    userId: firebase.auth().currentUser.uid
-                };
-                
-                await db.collection('users')
-                    .doc(firebase.auth().currentUser.uid)
-                    .collection('transactions')
-                    .add(newTransaction);
+            // Создаем копию данных перед миграцией
+            const backupData = localStorage.getItem('transactions_backup');
+            if (!backupData) {
+                localStorage.setItem('transactions_backup', localData);
+                console.log('Создана резервная копия данных');
             }
 
-            console.log('Миграция данных завершена успешно');
-            
-            // Очищаем localStorage после успешной миграции
-            localStorage.removeItem('transactions');
+            let migratedCount = 0;
+            // Сохраняем каждую транзакцию в Firebase
+            for (const transaction of transactions) {
+                try {
+                    const newTransaction = {
+                        ...transaction,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        userId: firebase.auth().currentUser.uid,
+                        migratedFromLocal: true
+                    };
+                    
+                    await db.collection('users')
+                        .doc(firebase.auth().currentUser.uid)
+                        .collection('transactions')
+                        .add(newTransaction);
+                    
+                    migratedCount++;
+                    console.log(`Мигрировано ${migratedCount} из ${transactions.length} транзакций`);
+                } catch (error) {
+                    console.error('Ошибка при миграции транзакции:', error);
+                }
+            }
+
+            if (migratedCount === transactions.length) {
+                console.log('Миграция данных завершена успешно');
+                // Переименовываем старые данные вместо удаления
+                localStorage.setItem('transactions_migrated', localData);
+                localStorage.removeItem('transactions');
+            } else {
+                console.warn(`Мигрировано только ${migratedCount} из ${transactions.length} транзакций`);
+            }
             
             // Перезагружаем данные из Firebase
-            await loadTransactionsFromFirebase();
+            await this.loadFromFirebase();
             
         } catch (error) {
             console.error('Ошибка при миграции данных:', error);
+            // Восстанавливаем данные из бэкапа если что-то пошло не так
+            const backupData = localStorage.getItem('transactions_backup');
+            if (backupData) {
+                localStorage.setItem('transactions', backupData);
+                console.log('Данные восстановлены из резервной копии');
+            }
         }
     }
 }
