@@ -31,6 +31,15 @@ firebase.initializeApp(currentConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Устанавливаем persistence для сохранения состояния авторизации
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+        console.log('Persistence установлен на LOCAL');
+    })
+    .catch((error) => {
+        console.error('Ошибка при установке persistence:', error);
+    });
+
 // Функция для сохранения транзакции в Firebase
 async function saveTransactionToFirebase(transaction) {
     try {
