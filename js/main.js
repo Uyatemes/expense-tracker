@@ -428,22 +428,25 @@ class ExpenseManager {
                     <div class="expense" style="color: #d93025 !important;">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
                 </div>
 
-                <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important;">
-                    <tr class="header" style="background: none !important;">
-                        <th style="width: 25%; color: #000000 !important; text-align: left; padding: 8px 20px 8px 0;">Дата</th>
-                        <th style="width: 45%; color: #000000 !important; text-align: left; padding: 8px 20px 8px 0;">Описание</th>
-                        <th style="width: 30%; color: #000000 !important; text-align: right; padding: 8px 0;">Сумма</th>
-                    </tr>
-                    <tr>
-                        <td colspan="3" style="padding: 0; height: 2px; background: #000000;"></td>
-                    </tr>
-                    ${transactions.map(t => 
-                        <tr>
-                            <td style="padding: 8px 20px 8px 0;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                            <td style="padding: 8px 20px 8px 0;">${t.description}</td>
-                            <td style="text-align: right; padding: 8px 0;" class="${t.type}">${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
+                <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important;">
+                    <thead>
+                        <tr class="header" style="background: none !important; border-bottom: 2px solid #000000;">
+                            <th style="width: 25%; text-align: left; padding: 8px;">Дата</th>
+                            <th style="width: 50%; text-align: left; padding: 8px;">Описание</th>
+                            <th style="width: 25%; text-align: right; padding: 8px;">Сумма</th>
                         </tr>
-                    ).join('')}
+                    </thead>
+                    <tbody>
+                        ${transactions.map(t => `
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${t.description}</td>
+                                <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: ${t.type === 'income' ? '#188038' : '#d93025'} !important;">
+                                    ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
                 </table>
             </div>
         `;
