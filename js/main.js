@@ -653,7 +653,7 @@ class ExpenseManager {
                     ];
                     return suppliers.some(s => desc.includes(s.toLowerCase())) ||
                            (desc.startsWith('ип') && !desc.includes('налог')) ||
-                           desc.startsWith('тоо'));
+                           desc.startsWith('тоо');
                 }
             },
             {
