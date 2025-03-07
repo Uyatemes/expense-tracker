@@ -419,26 +419,28 @@ class ExpenseManager {
         const { totalIncome, totalExpense } = this.calculateTotals(transactions);
         
         return `
-            <div class="pdf-container">
-                <h1>Отчет по операциям</h1>
-                <div class="period">Период: ${this.formatDateRange()}</div>
+            <div class="pdf-container" style="color: #000000 !important;">
+                <h1 style="color: #000000 !important;">Отчет по операциям</h1>
+                <div class="period" style="color: #000000 !important;">Период: ${this.formatDateRange()}</div>
                 
                 <div class="totals">
-                    <div class="income">Доходы + ${this.formatAmount(totalIncome)} ₸</div>
-                    <div class="expense">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
+                    <div class="income" style="color: #188038 !important;">Доходы + ${this.formatAmount(totalIncome)} ₸</div>
+                    <div class="expense" style="color: #d93025 !important;">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
                 </div>
 
-                <table>
+                <table cellspacing="0" cellpadding="8" style="width: 100%; color: #000000 !important;">
                     <tr class="header">
-                        <td width="20%">Дата</td>
-                        <td width="50%">Описание</td>
-                        <td width="30%">Сумма</td>
+                        <th style="width: 20%; color: #000000 !important; border-bottom: 2px solid #000;">Дата</th>
+                        <th style="width: 50%; color: #000000 !important; border-bottom: 2px solid #000;">Описание</th>
+                        <th style="width: 30%; color: #000000 !important; border-bottom: 2px solid #000;">Сумма</th>
                     </tr>
                     ${transactions.map(t => `
                         <tr>
-                            <td>${new Date(t.date).toLocaleDateString('ru-RU')}</td>
-                            <td>${t.description}</td>
-                            <td class="${t.type}">${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸</td>
+                            <td style="color: #000000 !important; border-bottom: 1px solid #ddd;">${new Date(t.date).toLocaleDateString('ru-RU')}</td>
+                            <td style="color: #000000 !important; border-bottom: 1px solid #ddd;">${t.description}</td>
+                            <td style="color: ${t.type === 'income' ? '#188038' : '#d93025'} !important; border-bottom: 1px solid #ddd; text-align: right;">
+                                ${t.type === 'income' ? '+' : '-'} ${this.formatAmount(t.amount)} ₸
+                            </td>
                         </tr>
                     `).join('')}
                 </table>
