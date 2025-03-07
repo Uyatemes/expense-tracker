@@ -69,27 +69,43 @@ async function saveTransactionToFirebase(transaction) {
     }
 }
 
-// Функция для загрузки транзакций из Firebase
-async function loadTransactionsFromFirebase() {
+// Функция для загрузки транзакций из Firebase с пагинацией
+async function loadTransactionsFromFirebase(limit = 50, lastDoc = null) {
     try {
         const user = auth.currentUser;
         if (!user) {
             console.log('Пользователь не авторизован');
-            return [];
+            return { transactions: [], lastDoc: null };
         }
 
-        const snapshot = await db.collection('users').doc(user.uid)
+        let query = db.collection('users').doc(user.uid)
             .collection('transactions')
             .orderBy('timestamp', 'desc')
-            .get();
+            .limit(limit);
 
-        return snapshot.docs.map(doc => ({
+        if (lastDoc) {
+            query = query.startAfter(lastDoc);
+        }
+
+        const snapshot = await query.get();
+        
+        const transactions = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
+        const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+        
+        console.log(`Загружено ${transactions.length} транзакций`);
+        
+        return {
+            transactions,
+            lastDoc: lastVisible,
+            hasMore: snapshot.docs.length === limit
+        };
     } catch (error) {
         console.error('Ошибка при загрузке:', error);
-        return [];
+        return { transactions: [], lastDoc: null, hasMore: false };
     }
 }
 
