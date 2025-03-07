@@ -689,43 +689,80 @@ function getPaymentTypeIcon(type) {
 function categorizeDescription(description) {
     description = description.toLowerCase();
     
-    // Правила категоризации
-    const rules = {
-        'Зарплата': (desc) => {
-            return desc.includes('зарплата') || desc.includes('аванс') || 
-                   desc.includes('начлиные') || desc.endsWith('на зарплату');
+    // Правила категоризации с приоритетами
+    const rules = [
+        {
+            category: 'Поставщики',
+            test: (desc) => {
+                const suppliers = [
+                    'fika people', 'fruitata', 'абадан пэй', 'ип абадан',
+                    'rockcity', 'coffee man', 'shygie.kz', 'юзаев талгат',
+                    'илахунов', 'дана пэй'
+                ];
+                return suppliers.some(s => desc.includes(s.toLowerCase())) ||
+                       (desc.startsWith('ип') && !desc.includes('налог')) ||
+                       desc.startsWith('тоо');
+            }
         },
-        'Поставщики': (desc) => {
-            return desc.startsWith('ип') || desc.startsWith('тоо') || 
-                   ['fruitata', 'coffee man', 'rockcity', 'абадан пэй'].some(k => desc.includes(k));
+        {
+            category: 'Зарплата',
+            test: (desc) => {
+                return desc === 'зарплата' || 
+                       desc.endsWith('на зарплату') || 
+                       desc.includes('аванс');
+            }
         },
-        'Сотрудники': (desc) => {
-            const employees = ['ержан', 'сека', 'ига', 'альфия', 'айкын'];
-            // Исключаем случаи, когда имя сотрудника является частью другого контекста
-            return employees.some(name => desc.includes(name)) && 
-                   !desc.includes('такси') && !desc.startsWith('ип');
+        {
+            category: 'Сотрудники',
+            test: (desc) => {
+                const employees = ['ержан', 'сека', 'ига', 'альфия', 'айкын', 'микко'];
+                // Проверяем, что это не часть другого слова/фразы
+                return employees.some(name => {
+                    const isEmployee = desc.includes(name);
+                    const isNotSupplier = !desc.startsWith('ип');
+                    const isNotTransport = !desc.includes('такси');
+                    return isEmployee && isNotSupplier && isNotTransport;
+                });
+            }
         },
-        'Долг': (desc) => {
-            return desc.includes('долг') || desc.includes('кредо') || 
-                   desc.includes('в долг') || desc.includes('займ');
+        {
+            category: 'Долг',
+            test: (desc) => {
+                return desc.includes('долг') || 
+                       desc.includes('кредо') || 
+                       desc.endsWith('займ');
+            }
         },
-        'Транспорт': (desc) => {
-            return desc.includes('такси') || desc.includes('яндекс') || 
-                   desc.includes('убер');
+        {
+            category: 'Наличные',
+            test: (desc) => {
+                return desc.includes('наличные') || 
+                       desc.includes('наличие') ||
+                       desc.includes('электрик');
+            }
         },
-        'Наличные': (desc) => {
-            return desc.includes('наличные') || desc.includes('наличие') || 
-                   desc.includes('нал');
+        {
+            category: 'Налоги',
+            test: (desc) => {
+                return desc.includes('налог') || 
+                       (desc.includes('пэй') && !desc.includes('абадан'));
+            }
         },
-        'Налоги': (desc) => {
-            return desc.includes('налог') || desc.includes('пэй');
+        {
+            category: 'Разное',
+            test: (desc) => {
+                return desc.includes('базар') || 
+                       desc.includes('квест') ||
+                       desc.includes('доставка') ||
+                       desc.includes('полиграфия');
+            }
         }
-    };
+    ];
 
-    // Проверяем каждое правило
-    for (const [category, rule] of Object.entries(rules)) {
-        if (rule(description)) {
-            return category;
+    // Проверяем каждое правило по порядку
+    for (const rule of rules) {
+        if (rule.test(description)) {
+            return rule.category;
         }
     }
     
