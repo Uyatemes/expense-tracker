@@ -25,9 +25,7 @@ const isProd = window.location.hostname === 'uyatemes.github.io';
 const currentConfig = isProd ? firebaseConfig.prod : firebaseConfig.dev;
 
 // Инициализируем Firebase
-firebase.initializeApp(currentConfig);
-
-// Получаем ссылки на сервисы
+const app = firebase.initializeApp(currentConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -35,6 +33,14 @@ const db = firebase.firestore();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
         console.log('Persistence установлен на LOCAL');
+        // После установки persistence, проверяем текущего пользователя
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('Пользователь авторизован:', user.email);
+            } else {
+                console.log('Пользователь не авторизован');
+            }
+        });
     })
     .catch((error) => {
         console.error('Ошибка при установке persistence:', error);
@@ -49,15 +55,17 @@ async function saveTransactionToFirebase(transaction) {
             return;
         }
 
-        await db.collection('users').doc(user.uid)
+        const docRef = await db.collection('users').doc(user.uid)
             .collection('transactions').add({
                 ...transaction,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         
-        console.log('Транзакция сохранена в Firebase');
+        console.log('Транзакция сохранена в Firebase с ID:', docRef.id);
+        return docRef.id;
     } catch (error) {
         console.error('Ошибка при сохранении:', error);
+        return null;
     }
 }
 
@@ -91,15 +99,19 @@ async function deleteTransactionFromFirebase(transactionId) {
         const user = auth.currentUser;
         if (!user) {
             console.log('Пользователь не авторизован');
-            return;
+            return false;
         }
 
-        await db.collection('users').doc(user.uid)
-            .collection('transactions').doc(transactionId).delete();
+        console.log('Удаление транзакции с ID:', transactionId);
         
-        console.log('Транзакция удалена из Firebase');
+        await db.collection('users').doc(user.uid)
+            .collection('transactions').doc(String(transactionId)).delete();
+        
+        console.log('Транзакция успешно удалена из Firebase');
+        return true;
     } catch (error) {
         console.error('Ошибка при удалении:', error);
+        return false;
     }
 }
 
@@ -107,8 +119,8 @@ async function deleteTransactionFromFirebase(transactionId) {
 async function signInWithGoogle() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithPopup(provider);
-        console.log('Успешная авторизация');
+        const result = await auth.signInWithPopup(provider);
+        console.log('Успешная авторизация:', result.user.email);
         return true;
     } catch (error) {
         console.error('Ошибка авторизации:', error);
