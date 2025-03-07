@@ -418,6 +418,20 @@ class ExpenseManager {
         const transactions = this.getFilteredTransactions();
         const { totalIncome, totalExpense } = this.calculateTotals(transactions);
         
+        // Группируем транзакции по описанию
+        const summary = transactions.reduce((acc, t) => {
+            const key = t.description.toLowerCase();
+            if (!acc[key]) {
+                acc[key] = { income: 0, expense: 0 };
+            }
+            if (t.type === 'income') {
+                acc[key].income += t.amount;
+            } else {
+                acc[key].expense += t.amount;
+            }
+            return acc;
+        }, {});
+
         return `
             <div class="pdf-container" style="color: #000000 !important;">
                 <h1 style="color: #000000 !important;">Отчет по операциям</h1>
@@ -428,6 +442,33 @@ class ExpenseManager {
                     <div class="expense" style="color: #d93025 !important;">Расходы - ${this.formatAmount(totalExpense)} ₸</div>
                 </div>
 
+                <h2 style="color: #000000 !important; margin-top: 20px;">Сводка по категориям</h2>
+                <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important; margin-bottom: 30px;">
+                    <thead>
+                        <tr style="background: none !important; border-bottom: 2px solid #000000;">
+                            <th style="width: 50%; text-align: left; padding: 8px;">Категория</th>
+                            <th style="width: 25%; text-align: right; padding: 8px;">Доходы</th>
+                            <th style="width: 25%; text-align: right; padding: 8px;">Расходы</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(summary)
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([category, amounts]) => `
+                                <tr>
+                                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${category}</td>
+                                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #188038 !important;">
+                                        ${amounts.income > 0 ? '+ ' + this.formatAmount(amounts.income) + ' ₸' : ''}
+                                    </td>
+                                    <td style="text-align: right; padding: 8px; border-bottom: 1px solid #ddd; color: #d93025 !important;">
+                                        ${amounts.expense > 0 ? '- ' + this.formatAmount(amounts.expense) + ' ₸' : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                    </tbody>
+                </table>
+
+                <h2 style="color: #000000 !important;">Детализация операций</h2>
                 <table cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse; color: #000000 !important;">
                     <thead>
                         <tr class="header" style="background: none !important; border-bottom: 2px solid #000000;">
