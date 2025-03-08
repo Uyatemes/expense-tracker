@@ -1001,7 +1001,7 @@ class ExpenseManager {
 
                 // Определяем способ оплаты
                 if (!paymentType) {
-                    if (word.includes('касп')) {
+                    if (word.includes('каспи') || word.includes('kaspi')) {
                         paymentType = 'kaspi-gold';
                         continue;
                     }
