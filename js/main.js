@@ -314,62 +314,44 @@ class ExpenseManager {
     }
 
     renderTransactions() {
-        console.log('ExpenseManager: Начало renderTransactions');
-        
-        const transactionsList = document.getElementById('expensesTableBody');
-        if (!transactionsList) {
-            console.error('ExpenseManager: Не найден элемент expensesTableBody');
+        const container = document.getElementById('expensesTableBody');
+        container.innerHTML = '';
+
+        const transactions = this.getFilteredTransactions();
+        if (transactions.length === 0) {
+            container.innerHTML = '<div class="no-transactions">Нет транзакций за выбранный период</div>';
             return;
         }
-        
-        const transactions = this.getTransactions();
-        console.log('ExpenseManager: Транзакции для рендеринга:', transactions);
-        
-        // Очищаем список
-        transactionsList.innerHTML = '';
-        
-        // Добавляем каждую транзакцию
-        transactions.forEach((t, index) => {
-            const transactionElement = document.createElement('div');
-            transactionElement.className = 'transaction-item';
-            
-            // Если это первая транзакция и она новая (добавлена менее 1 секунды назад)
-            if (index === 0 && (Date.now() - new Date(t.date).getTime()) < 1000) {
-                transactionElement.classList.add('new');
-                setTimeout(() => {
-                    transactionElement.classList.remove('new');
-                    transactionElement.style.transition = 'background-color 0.5s ease-out';
-                    transactionElement.style.background = '';
-                }, 1000);
-            }
-            
-            const date = new Date(t.date).toLocaleDateString('ru-RU');
-            const amount = Math.abs(t.amount).toLocaleString('ru-RU');
-            const sign = t.amount >= 0 ? '+' : '-';
-            const paymentTypeText = t.paymentType === 'halyk' ? 'Халык' : 'Каспи';
-            
-            transactionElement.innerHTML = `
-                <div class="transaction-info">
-                    <div class="transaction-date">${date}</div>
-                    <div class="transaction-description">${t.description}</div>
-                    <div class="transaction-payment-type">${paymentTypeText}</div>
+
+        transactions.forEach(transaction => {
+            const card = document.createElement('div');
+            card.className = `transaction-card ${transaction.amount < 0 ? 'expense' : 'income'}`;
+
+            const paymentTypeDisplay = transaction.paymentType === 'kaspi-gold' ? 'Каспи Голд' :
+                                     transaction.paymentType === 'kaspi-pay' ? 'Каспи Пэй' :
+                                     transaction.paymentType === 'halyk' ? 'Халык' : 'Не указан';
+
+            card.innerHTML = `
+                <div class="transaction-header">
+                    <span class="transaction-date">${this.formatDate(transaction.date)}</span>
+                    <span class="transaction-payment-type">
+                        ${getPaymentTypeIcon(transaction.paymentType)}
+                        ${paymentTypeDisplay}
+                    </span>
                 </div>
-                <div class="transaction-right">
-                    <div class="transaction-amount ${t.amount >= 0 ? 'income' : 'expense'}">
-                        ${sign}${amount} ₸
-                    </div>
-                    <button onclick="window.expenseManager.showConfirmDialog('${t.docId}')" class="delete-btn" title="Удалить">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
-                        </svg>
-                    </button>
+                <div class="transaction-body">
+                    <span class="transaction-description">${transaction.description}</span>
+                    <span class="transaction-amount">${this.formatAmount(transaction.amount)} ₸</span>
                 </div>
+                <button class="delete-transaction" data-id="${transaction.id}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </button>
             `;
             
-            transactionsList.appendChild(transactionElement);
+            container.appendChild(card);
         });
-        
-        console.log('ExpenseManager: Рендеринг завершен');
     }
 
     updateSummary() {
