@@ -343,12 +343,22 @@ class ExpenseManager {
                     <span class="transaction-description">${transaction.description}</span>
                     <span class="transaction-amount">${this.formatAmount(transaction.amount)} ₸</span>
                 </div>
-                <button class="delete-transaction" data-id="${transaction.id}">
+                <button class="delete-transaction" data-id="${transaction.docId || transaction.id}">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                     </svg>
                 </button>
             `;
+
+            // Добавляем обработчик для кнопки удаления
+            const deleteButton = card.querySelector('.delete-transaction');
+            deleteButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = e.currentTarget.getAttribute('data-id');
+                if (id) {
+                    this.showConfirmDialog(id);
+                }
+            });
             
             container.appendChild(card);
         });
@@ -423,16 +433,13 @@ class ExpenseManager {
 
     updateTotals(transactions) {
         console.log('ExpenseManager: Начало updateTotals');
-        console.log('Транзакции:', transactions);
         
         // Считаем итоги
         const totals = transactions.reduce((acc, t) => {
             const amount = parseFloat(t.amount);
-            console.log('Обработка транзакции:', { type: t.type, amount: amount });
-            
-            if (t.type === 'income') {
+            if (amount > 0) {
                 acc.income += amount;
-            } else if (t.type === 'expense') {
+            } else {
                 acc.expense += Math.abs(amount);
             }
             return acc;
@@ -444,26 +451,13 @@ class ExpenseManager {
         const incomeElement = document.querySelector('#totalIncome .total-amount');
         const expenseElement = document.querySelector('#totalExpense .total-amount');
         
-        console.log('Найденные элементы:', { 
-            incomeElement: incomeElement?.outerHTML, 
-            expenseElement: expenseElement?.outerHTML 
-        });
-        
         if (incomeElement) {
-            incomeElement.className = 'total-amount transaction-amount income';
             incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
-        } else {
-            console.error('Не найден элемент для доходов #totalIncome .total-amount');
         }
         
         if (expenseElement) {
-            expenseElement.className = 'total-amount transaction-amount expense';
             expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
-        } else {
-            console.error('Не найден элемент для расходов #totalExpense .total-amount');
         }
-        
-        console.log('ExpenseManager: Завершение updateTotals');
     }
 
     showConfirmDialog(id) {
@@ -998,7 +992,7 @@ class ExpenseManager {
                     }
                 }
 
-                // Определяем тип операции
+                // Определяем тип операции если еще не определен
                 if (!type) {
                     if (word.includes('расход') || word.includes('трат') || 
                         word.includes('минус') || word === '-') {
@@ -1020,15 +1014,17 @@ class ExpenseManager {
                 }
             }
 
+            // По умолчанию считаем операцию расходом, если тип не определен
+            if (!type) {
+                type = 'expense';
+            }
+
             // Формируем описание
             const cleanDescription = description.join(' ').trim();
 
             // Проверяем обязательные поля
             if (!amount) {
                 throw new Error('Не указана сумма. Укажите число, например: 5000');
-            }
-            if (!type) {
-                throw new Error('Не указан тип операции. Используйте слова "расход"/"приход" или знаки +/-');
             }
             if (!cleanDescription) {
                 throw new Error('Не указано описание операции');
@@ -1037,9 +1033,8 @@ class ExpenseManager {
             // Создаем транзакцию
             const transaction = {
                 amount: type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
-                type: type,
                 description: cleanDescription,
-                paymentType: paymentType || 'kaspi-gold', // По умолчанию Kaspi Gold
+                paymentType: paymentType || 'kaspi-gold',
                 date: new Date().toISOString()
             };
 
