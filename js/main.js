@@ -50,6 +50,24 @@ class ExpenseManager {
             // Для локальной версии: загружаем данные из localStorage
             this.loadFromLocalStorage();
         }
+
+        this.lastDoc = null;
+        this.hasMore = false;
+        this.isLoading = false;
+
+        // Привязываем обработчики событий
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleUserInput();
+        });
+        
+        document.getElementById('send-message').addEventListener('click', () => {
+            this.handleUserInput();
+        });
+
+        // Добавляем обработчик для кнопки "Загрузить еще"
+        document.getElementById('loadMoreButton').addEventListener('click', () => {
+            this.loadMoreTransactions();
+        });
     }
 
     async initialize() {
@@ -653,7 +671,7 @@ class ExpenseManager {
                     ];
                     return suppliers.some(s => desc.includes(s.toLowerCase())) ||
                            (desc.startsWith('ип') && !desc.includes('налог')) ||
-                           desc.startsWith('тоо');
+                           desc.startsWith('тоо'));
                 }
             },
             {
@@ -785,6 +803,44 @@ class ExpenseManager {
                 console.log('Данные восстановлены из резервной копии');
             }
         }
+    }
+
+    async loadTransactions() {
+        if (this.isLoading) return;
+        
+        try {
+            this.isLoading = true;
+            console.log('ExpenseManager: Загрузка транзакций...');
+            
+            const result = await loadTransactionsFromFirebase(50, this.lastDoc);
+            
+            if (result.transactions.length > 0) {
+                this.transactions = this.lastDoc ? [...this.transactions, ...result.transactions] : result.transactions;
+                this.lastDoc = result.lastDoc;
+                this.hasMore = result.hasMore;
+                
+                // Показываем или скрываем кнопку "Загрузить еще"
+                const loadMoreButton = document.getElementById('loadMoreButton');
+                loadMoreButton.style.display = this.hasMore ? 'inline-block' : 'none';
+            }
+
+            this.renderTransactions();
+            
+        } catch (error) {
+            console.error('Ошибка при загрузке транзакций:', error);
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    async loadMoreTransactions() {
+        if (this.hasMore && !this.isLoading) {
+            await this.loadTransactions();
+        }
+    }
+
+    handleUserInput() {
+        // Implementation of handleUserInput method
     }
 }
 
