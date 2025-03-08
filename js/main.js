@@ -214,9 +214,33 @@ class ExpenseManager {
 
     async deleteTransaction(id) {
         try {
-            await deleteTransactionFromFirebase(id);
-            // После успешного удаления обновляем список транзакций
-            await this.loadFromFirebase();
+            console.log('Удаление транзакции:', id);
+            
+            // Проверяем авторизацию
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                throw new Error('Необходима авторизация');
+            }
+
+            // Удаляем из Firebase
+            await firebase.firestore()
+                .collection('users')
+                .doc(user.uid)
+                .collection('transactions')
+                .doc(id)
+                .delete();
+
+            console.log('Транзакция удалена из Firebase');
+
+            // Удаляем из локального массива
+            this.transactions = this.transactions.filter(t => t.docId !== id);
+            
+            // Обновляем отображение
+            this.renderTransactions();
+            this.updateTotals(this.transactions);
+            
+            console.log('Интерфейс обновлен');
+            
         } catch (error) {
             console.error('Ошибка при удалении транзакции:', error);
             alert('Не удалось удалить транзакцию. Попробуйте еще раз.');
