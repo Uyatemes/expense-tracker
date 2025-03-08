@@ -933,17 +933,32 @@ class ExpenseManager {
                 date: new Date().toISOString()
             };
 
+            // Проверяем авторизацию перед сохранением
+            if (this.isProduction && !firebase.auth().currentUser) {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message system error';
+                errorMessage.textContent = 'Для добавления транзакций необходимо авторизоваться';
+                chatMessages.appendChild(errorMessage);
+                return;
+            }
+
             // Сохраняем транзакцию
-            this.addTransaction(transaction);
+            this.addTransaction(transaction).then(() => {
+                // Добавляем ответное сообщение об успехе
+                const responseMessage = document.createElement('div');
+                responseMessage.className = 'message system';
+                responseMessage.textContent = `Добавлена ${type === 'expense' ? 'расходная' : 'приходная'} операция на сумму ${Math.abs(amount)} ₸`;
+                chatMessages.appendChild(responseMessage);
 
-            // Добавляем ответное сообщение
-            const responseMessage = document.createElement('div');
-            responseMessage.className = 'message system';
-            responseMessage.textContent = `Добавлена ${type === 'expense' ? 'расходная' : 'приходная'} операция на сумму ${Math.abs(amount)} ₸`;
-            chatMessages.appendChild(responseMessage);
-
-            // Очищаем поле ввода
-            input.value = '';
+                // Очищаем поле ввода
+                input.value = '';
+            }).catch(error => {
+                // Добавляем сообщение об ошибке
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message system error';
+                errorMessage.textContent = 'Ошибка при сохранении транзакции: ' + error.message;
+                chatMessages.appendChild(errorMessage);
+            });
 
             // Прокручиваем чат вниз
             chatMessages.scrollTop = chatMessages.scrollHeight;
