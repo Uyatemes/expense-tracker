@@ -117,6 +117,9 @@ class ExpenseManager {
                 return;
             }
 
+            // Очищаем массив транзакций перед загрузкой
+            this.transactions = [];
+
             // Получаем транзакции из Firestore
             const snapshot = await firebase.firestore()
                 .collection('users')
@@ -342,16 +345,17 @@ class ExpenseManager {
             
             const date = new Date(t.date).toLocaleDateString('ru-RU');
             const amount = Math.abs(t.amount).toLocaleString('ru-RU');
-            const sign = t.type === 'income' ? '+' : '-';
+            const sign = t.amount >= 0 ? '+' : '-';
+            const paymentTypeText = t.paymentType === 'halyk' ? 'Халык' : 'Каспи';
             
             transactionElement.innerHTML = `
                 <div class="transaction-info">
                     <div class="transaction-date">${date}</div>
                     <div class="transaction-description">${t.description}</div>
-                    <div class="transaction-source">${t.source || ''}</div>
+                    <div class="transaction-payment-type">${paymentTypeText}</div>
                 </div>
                 <div class="transaction-right">
-                    <div class="transaction-amount ${t.type}">
+                    <div class="transaction-amount ${t.amount >= 0 ? 'income' : 'expense'}">
                         ${sign}${amount} ₸
                     </div>
                     <button onclick="window.expenseManager.showConfirmDialog('${t.docId}')" class="delete-btn" title="Удалить">
@@ -1071,7 +1075,8 @@ class ExpenseManager {
                 if (result) {
                     const responseMessage = document.createElement('div');
                     responseMessage.className = 'message system';
-                    responseMessage.textContent = `✅ ${type === 'expense' ? 'Расход' : 'Доход'} на сумму ${Math.abs(amount)} ₸ через ${paymentType === 'halyk' ? 'Халык' : 'Каспи'} успешно добавлен`;
+                    const paymentTypeText = transaction.paymentType === 'halyk' ? 'Халык' : 'Каспи';
+                    responseMessage.textContent = `✅ ${type === 'expense' ? 'Расход' : 'Доход'} на сумму ${Math.abs(amount)} ₸ через ${paymentTypeText} успешно добавлен`;
                     chatMessages.appendChild(responseMessage);
                     input.value = '';
                 }
