@@ -175,6 +175,19 @@ class ExpenseManager {
                     date: new Date().toISOString()
                 };
 
+                // Проверяем на дубликаты (в течение последних 5 секунд)
+                const fiveSecondsAgo = new Date(Date.now() - 5000);
+                const duplicates = this.transactions.filter(t => 
+                    t.amount === transaction.amount &&
+                    t.description === transaction.description &&
+                    new Date(t.date) > fiveSecondsAgo
+                );
+
+                if (duplicates.length > 0) {
+                    console.log('Обнаружен дубликат транзакции, пропускаем');
+                    return null;
+                }
+
                 // Сохраняем в Firebase
                 const docRef = await firebase.firestore()
                     .collection('users')
@@ -954,7 +967,7 @@ class ExpenseManager {
 
         try {
             // Разбиваем ввод на слова и приводим к нижнему регистру
-            const words = text.toLowerCase().split(' ');
+            const words = text.toLowerCase().split(' ').filter(word => word.length > 0);
             let amount = null;
             let type = null;
             let paymentType = null;
@@ -963,18 +976,32 @@ class ExpenseManager {
             // Проверяем первый символ на наличие + или -
             if (text.startsWith('+')) {
                 type = 'income';
-                // Удаляем + из первого слова
                 words[0] = words[0].substring(1);
             } else if (text.startsWith('-')) {
                 type = 'expense';
-                // Удаляем - из первого слова
                 words[0] = words[0].substring(1);
             }
 
-            // Ищем сумму и другие параметры
-            for (let i = 0; i < words.length; i++) {
-                const word = words[i];
+            // Определяем способ оплаты до обработки остальных слов
+            const paymentKeywords = {
+                'каспи': 'kaspi-gold',
+                'kaspi': 'kaspi-gold',
+                'каспий': 'kaspi-gold',
+                'халык': 'halyk',
+                'halyk': 'halyk',
+                'халик': 'halyk'
+            };
 
+            // Ищем ключевые слова способа оплаты
+            for (const word of words) {
+                if (paymentKeywords[word]) {
+                    paymentType = paymentKeywords[word];
+                    break;
+                }
+            }
+
+            // Ищем сумму и другие параметры
+            for (const word of words) {
                 // Проверяем на сумму (может быть в любом месте)
                 const numStr = word.replace(/[^0-9.]/g, '');
                 if (numStr && !amount) {
@@ -999,38 +1026,16 @@ class ExpenseManager {
                     }
                 }
 
-                // Определяем способ оплаты
-                if (!paymentType) {
-                    if (word.includes('каспи') || word.includes('kaspi')) {
-                        paymentType = 'kaspi-gold';
-                        continue;
-                    }
-                    if (word.includes('халык') || word.includes('halyk')) {
-                        paymentType = 'halyk';
-                        continue;
-                    }
+                // Если слово не является служебным, добавляем его к описанию
+                if (!paymentKeywords[word] && 
+                    !word.match(/^[+-]?\d+$/) &&
+                    !['расход', 'приход', 'доход', 'трата', 'плюс', 'минус', '+', '-'].includes(word)) {
+                    description.push(word);
                 }
-
-                // Добавляем слово к описанию
-                description.push(word);
             }
 
-            // Очищаем описание от служебных слов
-            const cleanDescription = description
-                .filter(word => 
-                    !word.includes('расход') && 
-                    !word.includes('приход') && 
-                    !word.includes('каспи') && 
-                    !word.includes('халык') &&
-                    !word.includes('kaspi') &&
-                    !word.includes('halyk') &&
-                    !word.includes('плюс') &&
-                    !word.includes('минус') &&
-                    word !== '+' &&
-                    word !== '-'
-                )
-                .join(' ')
-                .trim();
+            // Формируем описание
+            const cleanDescription = description.join(' ').trim();
 
             // Проверяем обязательные поля
             if (!amount) {
@@ -1045,10 +1050,10 @@ class ExpenseManager {
 
             // Создаем транзакцию
             const transaction = {
-                amount: type === 'expense' ? -amount : amount,
+                amount: type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
                 type: type,
                 description: cleanDescription,
-                paymentType: paymentType || 'unknown',
+                paymentType: paymentType || 'kaspi-gold', // По умолчанию Kaspi Gold
                 date: new Date().toISOString()
             };
 
@@ -1062,12 +1067,14 @@ class ExpenseManager {
             }
 
             // Сохраняем транзакцию
-            this.addTransaction(transaction).then(() => {
-                const responseMessage = document.createElement('div');
-                responseMessage.className = 'message system';
-                responseMessage.textContent = `✅ ${type === 'expense' ? 'Расход' : 'Доход'} на сумму ${Math.abs(amount)} ₸ успешно добавлен`;
-                chatMessages.appendChild(responseMessage);
-                input.value = '';
+            this.addTransaction(transaction).then((result) => {
+                if (result) {
+                    const responseMessage = document.createElement('div');
+                    responseMessage.className = 'message system';
+                    responseMessage.textContent = `✅ ${type === 'expense' ? 'Расход' : 'Доход'} на сумму ${Math.abs(amount)} ₸ через ${paymentType === 'halyk' ? 'Халык' : 'Каспи'} успешно добавлен`;
+                    chatMessages.appendChild(responseMessage);
+                    input.value = '';
+                }
             }).catch(error => {
                 const errorMessage = document.createElement('div');
                 errorMessage.className = 'message system error';
@@ -1081,8 +1088,8 @@ class ExpenseManager {
             errorMessage.innerHTML = `❌ ${error.message}<br><br>Примеры:<br>` +
                 '"5000 расход каспи такси"<br>' +
                 '"приход 10000 халык зарплата"<br>' +
-                '"-5000 такси"<br>' +
-                '"+10000 зарплата"';
+                '"-5000 халык такси"<br>' +
+                '"+10000 каспи зарплата"';
             chatMessages.appendChild(errorMessage);
         }
 
