@@ -29,46 +29,71 @@ const app = firebase.initializeApp(currentConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Проверяем сохраненную сессию
+// Проверяем сохраненную сессию и токен
 const savedEmail = localStorage.getItem('lastSignedInUser');
-if (savedEmail) {
-    console.log('Найдена сохраненная сессия для:', savedEmail);
+const savedToken = localStorage.getItem('authToken');
+
+// Функция для проверки валидности токена
+async function checkToken() {
+    const token = localStorage.getItem('authToken');
+    if (!token) return false;
+    
+    try {
+        const user = auth.currentUser;
+        if (user) {
+            const newToken = await user.getIdToken();
+            localStorage.setItem('authToken', newToken);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Ошибка при проверке токена:', error);
+        return false;
+    }
 }
 
-// Устанавливаем persistence до любых операций с авторизацией
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => {
+// Устанавливаем persistence и проверяем авторизацию
+async function initializeAuth() {
+    try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         console.log('Firebase Auth persistence установлен на LOCAL');
-        
-        // Проверяем текущего пользователя после установки persistence
+
         const currentUser = auth.currentUser;
         if (currentUser) {
             console.log('Текущий пользователь:', currentUser.email);
-        } else if (savedEmail) {
+            await checkToken();
+        } else if (savedEmail && savedToken) {
             console.log('Пытаемся восстановить сессию для:', savedEmail);
-            // Если есть сохраненная сессия, но пользователь не авторизован,
-            // показываем окно авторизации
-            signInWithGoogle().then(success => {
-                if (success) {
-                    console.log('Сессия успешно восстановлена');
-                    window.location.reload(); // Перезагружаем страницу после успешной авторизации
-                }
-            });
+            const isValid = await checkToken();
+            if (!isValid) {
+                await signInWithGoogle();
+            }
         }
-    })
-    .catch((error) => {
-        console.error('Ошибка при установке persistence:', error);
-    });
+    } catch (error) {
+        console.error('Ошибка при инициализации авторизации:', error);
+    }
+}
+
+// Инициализируем авторизацию
+initializeAuth();
 
 // Слушатель изменения состояния авторизации
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
     if (user) {
         console.log('Пользователь авторизован:', user.email);
         localStorage.setItem('lastSignedInUser', user.email);
-        // Сохраняем токен в localStorage
-        user.getIdToken().then(token => {
-            localStorage.setItem('authToken', token);
-        });
+        const token = await user.getIdToken();
+        localStorage.setItem('authToken', token);
+        
+        // Обновляем токен каждые 30 минут
+        setInterval(async () => {
+            try {
+                const newToken = await user.getIdToken(true);
+                localStorage.setItem('authToken', newToken);
+            } catch (error) {
+                console.error('Ошибка при обновлении токена:', error);
+            }
+        }, 1800000);
     } else {
         console.log('Пользователь не авторизован');
         localStorage.removeItem('authToken');
@@ -84,11 +109,10 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             return { transactions: [] };
         }
 
-        // Получаем все транзакции, отсортированные по timestamp по убыванию
+        // Получаем все транзакции
         const snapshot = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
-            .orderBy('timestamp', 'desc')
             .get();
 
         const seenIds = new Set();
@@ -99,37 +123,19 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             if (!seenIds.has(data.id)) {
                 seenIds.add(data.id);
                 
-                // Сохраняем оригинальную дату транзакции
-                let transactionDate;
-                if (data.originalDate) {
-                    // Если есть оригинальная дата
-                    transactionDate = new Date(data.originalDate);
-                } else if (data.timestamp && data.timestamp.toDate) {
-                    // Если есть timestamp из Firestore
-                    transactionDate = data.timestamp.toDate();
-                } else if (data.date) {
-                    // Если есть строка с датой
-                    transactionDate = new Date(data.date);
-                } else {
-                    // Если нет ни одной даты
-                    transactionDate = new Date();
-                }
-
+                // Используем существующую дату из данных
+                const transactionDate = data.date ? new Date(data.date) : new Date();
+                
                 transactions.push({
                     ...data,
                     docId: doc.id,
-                    date: transactionDate,
-                    timestamp: data.timestamp || firebase.firestore.Timestamp.fromDate(transactionDate)
+                    date: transactionDate
                 });
             }
         });
 
         // Сортируем транзакции по дате (новые сверху)
-        transactions.sort((a, b) => {
-            const dateA = a.timestamp ? a.timestamp.toDate() : new Date(a.date);
-            const dateB = b.timestamp ? b.timestamp.toDate() : new Date(b.date);
-            return dateB - dateA;
-        });
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         console.log(`Загружено ${transactions.length} уникальных транзакций`);
         return { transactions };
@@ -159,18 +165,12 @@ async function saveTransactionToFirebase(transaction) {
             return existingDocs.docs[0].id;
         }
 
-        // Сохраняем оригинальную дату транзакции
-        const originalDate = transaction.date || new Date().toISOString();
-        const timestamp = firebase.firestore.Timestamp.fromDate(new Date(originalDate));
-
+        // Сохраняем транзакцию с оригинальной датой
         const docRef = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .add({
                 ...transaction,
-                timestamp: timestamp,
-                originalDate: originalDate,
-                date: originalDate,
                 userId: user.uid,
                 created: firebase.firestore.FieldValue.serverTimestamp()
             });
