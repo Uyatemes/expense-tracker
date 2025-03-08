@@ -1163,4 +1163,40 @@ select:focus {
 
 [data-theme="light"] .transaction-item {
     background: var(--light-card-bg, #ffffff);
+}
+
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 20px;
+    background: var(--accent-color);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.auth-button:hover {
+    background: var(--accent-hover-color);
+}
+
+.auth-icon {
+    width: 20px;
+    height: 20px;
+}
+
+#authButtonText {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 } 

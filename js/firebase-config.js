@@ -45,6 +45,9 @@ const authInitializedPromise = new Promise((resolve) => {
                 const token = await user.getIdToken();
                 localStorage.setItem('authToken', token);
                 
+                // Обновляем UI
+                updateAuthButtonState(true, user.email);
+                
                 // Обновляем токен каждые 30 минут
                 setInterval(async () => {
                     try {
@@ -61,10 +64,43 @@ const authInitializedPromise = new Promise((resolve) => {
                 console.log('Пользователь не авторизован');
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('lastSignedInUser');
+                updateAuthButtonState(false);
             }
             resolve(user);
         }
     });
+});
+
+// Функция для обновления состояния кнопки авторизации
+function updateAuthButtonState(isAuthenticated, email = '') {
+    const authButton = document.getElementById('authButton');
+    const authButtonText = document.getElementById('authButtonText');
+    
+    if (isAuthenticated) {
+        authButtonText.textContent = email;
+        authButton.title = 'Нажмите для выхода';
+    } else {
+        authButtonText.textContent = 'Войти';
+        authButton.title = 'Нажмите для входа';
+    }
+}
+
+// Обработчик клика по кнопке авторизации
+document.getElementById('authButton').addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (user) {
+        // Если пользователь авторизован - выходим
+        try {
+            await auth.signOut();
+            console.log('Пользователь вышел из системы');
+            updateAuthButtonState(false);
+        } catch (error) {
+            console.error('Ошибка при выходе:', error);
+        }
+    } else {
+        // Если пользователь не авторизован - входим
+        await signInWithGoogle();
+    }
 });
 
 // Обновляем функцию инициализации авторизации
@@ -95,16 +131,12 @@ async function loadTransactionsFromFirebase(limit = 1000) {
         
         const user = auth.currentUser;
         if (!user) {
-            // Если пользователь не авторизован, предлагаем войти
             console.log('Для просмотра транзакций необходима авторизация');
-            const signedIn = await signInWithGoogle();
-            if (!signedIn) {
-                return { transactions: [] };
-            }
+            return { transactions: [] };
         }
 
         const snapshot = await db.collection('users')
-            .doc(auth.currentUser.uid)
+            .doc(user.uid)
             .collection('transactions')
             .orderBy('date', 'desc')
             .get();
@@ -139,17 +171,13 @@ async function saveTransactionToFirebase(transaction) {
         
         const user = auth.currentUser;
         if (!user) {
-            // Если пользователь не авторизован, предлагаем войти
             console.log('Для сохранения транзакции необходима авторизация');
-            const signedIn = await signInWithGoogle();
-            if (!signedIn) {
-                throw new Error('Не удалось авторизоваться');
-            }
+            return null;
         }
 
         // Проверяем, существует ли уже такая транзакция
         const existingDocs = await db.collection('users')
-            .doc(auth.currentUser.uid)
+            .doc(user.uid)
             .collection('transactions')
             .where('id', '==', transaction.id)
             .get();
@@ -161,11 +189,11 @@ async function saveTransactionToFirebase(transaction) {
 
         // Сохраняем транзакцию
         const docRef = await db.collection('users')
-            .doc(auth.currentUser.uid)
+            .doc(user.uid)
             .collection('transactions')
             .add({
                 ...transaction,
-                userId: auth.currentUser.uid,
+                userId: user.uid,
                 created: firebase.firestore.FieldValue.serverTimestamp()
             });
 
@@ -184,17 +212,13 @@ async function deleteTransactionFromFirebase(docId) {
         
         const user = auth.currentUser;
         if (!user) {
-            // Если пользователь не авторизован, предлагаем войти
             console.log('Для удаления транзакции необходима авторизация');
-            const signedIn = await signInWithGoogle();
-            if (!signedIn) {
-                throw new Error('Не удалось авторизоваться');
-            }
+            return false;
         }
 
         console.log('Удаление транзакции с ID:', docId);
         await db.collection('users')
-            .doc(auth.currentUser.uid)
+            .doc(user.uid)
             .collection('transactions')
             .doc(docId)
             .delete();
