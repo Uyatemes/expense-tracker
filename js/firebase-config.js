@@ -96,16 +96,35 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             const data = doc.data();
             if (!seenIds.has(data.id)) {
                 seenIds.add(data.id);
+                
+                // Правильная обработка даты
+                let transactionDate;
+                if (data.timestamp) {
+                    // Если есть timestamp из Firestore
+                    transactionDate = data.timestamp.toDate();
+                } else if (data.date) {
+                    // Если есть строка с датой
+                    transactionDate = new Date(data.date);
+                } else {
+                    // Если нет ни timestamp, ни даты
+                    transactionDate = new Date();
+                }
+
                 transactions.push({
                     ...data,
                     docId: doc.id,
-                    date: data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date()
+                    date: transactionDate,
+                    timestamp: data.timestamp || firebase.firestore.Timestamp.fromDate(transactionDate)
                 });
             }
         });
 
         // Сортируем транзакции по дате (новые сверху)
-        transactions.sort((a, b) => b.date - a.date);
+        transactions.sort((a, b) => {
+            const dateA = a.timestamp ? a.timestamp.toDate() : new Date(a.date);
+            const dateB = b.timestamp ? b.timestamp.toDate() : new Date(b.date);
+            return dateB - dateA;
+        });
 
         console.log(`Загружено ${transactions.length} уникальных транзакций`);
         return { transactions };
@@ -135,12 +154,17 @@ async function saveTransactionToFirebase(transaction) {
             return existingDocs.docs[0].id;
         }
 
+        // Создаем timestamp из текущей даты
+        const now = new Date();
+        const timestamp = firebase.firestore.Timestamp.fromDate(now);
+
         const docRef = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .add({
                 ...transaction,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                timestamp: timestamp,
+                date: now.toISOString(),
                 userId: user.uid
             });
 
