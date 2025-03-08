@@ -104,22 +104,41 @@ class ExpenseManager {
 
     async loadFromFirebase() {
         try {
-            console.log('ExpenseManager: Загрузка всех транзакций из Firebase');
-            const result = await loadTransactionsFromFirebase(1000); // Загружаем большее количество транзакций
-            this.transactions = result.transactions || [];
+            console.log('ExpenseManager: Загрузка транзакций из Firebase');
             
-            // Скрываем кнопку "Загрузить еще", так как загружаем все сразу
-            const loadMoreButton = document.getElementById('loadMoreButton');
-            if (loadMoreButton) {
-                loadMoreButton.style.display = 'none';
+            // Проверяем авторизацию
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                console.log('Пользователь не авторизован');
+                this.transactions = [];
+                this.renderTransactions();
+                return;
             }
+
+            // Получаем транзакции из Firestore
+            const snapshot = await firebase.firestore()
+                .collection('users')
+                .doc(user.uid)
+                .collection('transactions')
+                .orderBy('date', 'desc')
+                .get();
+
+            // Преобразуем документы в массив транзакций
+            this.transactions = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                docId: doc.id
+            }));
             
+            console.log(`ExpenseManager: Загружено ${this.transactions.length} транзакций`);
+            
+            // Обновляем отображение
             this.renderTransactions();
             this.updateTotals(this.transactions);
-            console.log(`ExpenseManager: Загружено ${this.transactions.length} транзакций`);
+            
         } catch (error) {
             console.error('Ошибка при загрузке из Firebase:', error);
             this.transactions = [];
+            this.renderTransactions();
         }
     }
 
@@ -138,20 +157,48 @@ class ExpenseManager {
     async addTransaction(transaction) {
         console.log('ExpenseManager: Добавление транзакции:', transaction);
         
-        const newTransaction = {
-            ...transaction,
-            id: Date.now(),
-            date: new Date().toISOString(),
-            amount: transaction.type === 'expense' ? 
-                -Math.abs(parseFloat(transaction.amount)) : 
-                Math.abs(parseFloat(transaction.amount))
-        };
-        
         if (this.isProduction) {
-            // В продакшене сохраняем в Firebase
-            await saveTransactionToFirebase(newTransaction);
+            try {
+                // Проверяем авторизацию
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    throw new Error('Необходима авторизация');
+                }
+
+                // Подготавливаем данные транзакции
+                const newTransaction = {
+                    ...transaction,
+                    userId: user.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    date: new Date().toISOString()
+                };
+
+                // Сохраняем в Firebase
+                const docRef = await firebase.firestore()
+                    .collection('users')
+                    .doc(user.uid)
+                    .collection('transactions')
+                    .add(newTransaction);
+
+                // Добавляем в локальный массив с ID документа
+                const savedTransaction = {
+                    ...newTransaction,
+                    docId: docRef.id
+                };
+                
+                this.transactions.unshift(savedTransaction);
+                
+            } catch (error) {
+                console.error('Ошибка при сохранении в Firebase:', error);
+                throw error;
+            }
         } else {
             // В локальной версии сохраняем в localStorage
+            const newTransaction = {
+                ...transaction,
+                id: Date.now(),
+                date: new Date().toISOString()
+            };
             this.transactions.unshift(newTransaction);
             this.saveToLocalStorage();
         }
@@ -162,7 +209,7 @@ class ExpenseManager {
         }
         this.updateTotals(this.transactions);
         
-        return newTransaction;
+        return transaction;
     }
 
     async deleteTransaction(id) {
