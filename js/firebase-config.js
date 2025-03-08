@@ -55,20 +55,52 @@ async function checkToken() {
 // Устанавливаем persistence и проверяем авторизацию
 async function initializeAuth() {
     try {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        // Устанавливаем persistence перед любыми операциями с auth
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         console.log('Firebase Auth persistence установлен на LOCAL');
 
+        // Проверяем текущего пользователя
         const currentUser = auth.currentUser;
+        
         if (currentUser) {
             console.log('Текущий пользователь:', currentUser.email);
-            await checkToken();
+            const token = await currentUser.getIdToken();
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('lastSignedInUser', currentUser.email);
         } else if (savedEmail && savedToken) {
             console.log('Пытаемся восстановить сессию для:', savedEmail);
-            const isValid = await checkToken();
-            if (!isValid) {
-                await signInWithGoogle();
-            }
+            // Если есть сохраненные данные, но нет текущего пользователя,
+            // пробуем переавторизоваться
+            await signInWithGoogle();
         }
+
+        // Устанавливаем слушатель изменения состояния авторизации
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                console.log('Пользователь авторизован:', user.email);
+                localStorage.setItem('lastSignedInUser', user.email);
+                const token = await user.getIdToken();
+                localStorage.setItem('authToken', token);
+                
+                // Обновляем токен каждые 30 минут
+                setInterval(async () => {
+                    try {
+                        if (auth.currentUser) {
+                            const newToken = await auth.currentUser.getIdToken(true);
+                            localStorage.setItem('authToken', newToken);
+                            console.log('Токен успешно обновлен');
+                        }
+                    } catch (error) {
+                        console.error('Ошибка при обновлении токена:', error);
+                    }
+                }, 1800000);
+            } else {
+                console.log('Пользователь не авторизован');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('lastSignedInUser');
+            }
+        });
+
     } catch (error) {
         console.error('Ошибка при инициализации авторизации:', error);
     }
@@ -76,29 +108,6 @@ async function initializeAuth() {
 
 // Инициализируем авторизацию
 initializeAuth();
-
-// Слушатель изменения состояния авторизации
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        console.log('Пользователь авторизован:', user.email);
-        localStorage.setItem('lastSignedInUser', user.email);
-        const token = await user.getIdToken();
-        localStorage.setItem('authToken', token);
-        
-        // Обновляем токен каждые 30 минут
-        setInterval(async () => {
-            try {
-                const newToken = await user.getIdToken(true);
-                localStorage.setItem('authToken', newToken);
-            } catch (error) {
-                console.error('Ошибка при обновлении токена:', error);
-            }
-        }, 1800000);
-    } else {
-        console.log('Пользователь не авторизован');
-        localStorage.removeItem('authToken');
-    }
-});
 
 // Функция для загрузки транзакций
 async function loadTransactionsFromFirebase(limit = 1000) {
@@ -109,10 +118,11 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             return { transactions: [] };
         }
 
-        // Получаем все транзакции
+        // Получаем все транзакции и сортируем по дате на уровне Firestore
         const snapshot = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
+            .orderBy('date', 'desc')
             .get();
 
         const seenIds = new Set();
@@ -122,20 +132,13 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             const data = doc.data();
             if (!seenIds.has(data.id)) {
                 seenIds.add(data.id);
-                
-                // Используем существующую дату из данных
-                const transactionDate = data.date ? new Date(data.date) : new Date();
-                
                 transactions.push({
                     ...data,
                     docId: doc.id,
-                    date: transactionDate
+                    date: data.date
                 });
             }
         });
-
-        // Сортируем транзакции по дате (новые сверху)
-        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         console.log(`Загружено ${transactions.length} уникальных транзакций`);
         return { transactions };
