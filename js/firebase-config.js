@@ -29,14 +29,30 @@ const app = firebase.initializeApp(currentConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Устанавливаем persistence сразу после инициализации
+// Проверяем сохраненную сессию
+const savedEmail = localStorage.getItem('lastSignedInUser');
+if (savedEmail) {
+    console.log('Найдена сохраненная сессия для:', savedEmail);
+}
+
+// Устанавливаем persistence до любых операций с авторизацией
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
         console.log('Firebase Auth persistence установлен на LOCAL');
+        
         // Проверяем текущего пользователя после установки persistence
         const currentUser = auth.currentUser;
         if (currentUser) {
             console.log('Текущий пользователь:', currentUser.email);
+        } else if (savedEmail) {
+            console.log('Пытаемся восстановить сессию для:', savedEmail);
+            // Если есть сохраненная сессия, но пользователь не авторизован,
+            // показываем окно авторизации
+            signInWithGoogle().then(success => {
+                if (success) {
+                    console.log('Сессия успешно восстановлена');
+                }
+            });
         }
     })
     .catch((error) => {
@@ -45,9 +61,15 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 
 // Слушатель изменения состояния авторизации
 auth.onAuthStateChanged((user) => {
-    console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
     if (user) {
+        console.log('Пользователь авторизован:', user.email);
         localStorage.setItem('lastSignedInUser', user.email);
+        // Обновляем токен каждый час
+        setInterval(() => {
+            user.getIdToken(true);
+        }, 3600000);
+    } else {
+        console.log('Пользователь не авторизован');
     }
 });
 
@@ -60,28 +82,30 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             return { transactions: [] };
         }
 
-        // Получаем все транзакции, отсортированные по timestamp
+        // Получаем все транзакции, отсортированные по timestamp по убыванию
         const snapshot = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .orderBy('timestamp', 'desc')
             .get();
 
-        // Создаем Set для отслеживания уникальных ID
         const seenIds = new Set();
         const transactions = [];
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            // Проверяем, не видели ли мы уже эту транзакцию
             if (!seenIds.has(data.id)) {
                 seenIds.add(data.id);
                 transactions.push({
                     ...data,
-                    docId: doc.id
+                    docId: doc.id,
+                    date: data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date()
                 });
             }
         });
+
+        // Сортируем транзакции по дате (новые сверху)
+        transactions.sort((a, b) => b.date - a.date);
 
         console.log(`Загружено ${transactions.length} уникальных транзакций`);
         return { transactions };
@@ -155,6 +179,9 @@ async function deleteTransactionFromFirebase(docId) {
 async function signInWithGoogle() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
         const result = await auth.signInWithPopup(provider);
         console.log('Успешная авторизация:', result.user.email);
         return true;
