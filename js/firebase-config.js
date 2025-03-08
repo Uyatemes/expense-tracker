@@ -155,44 +155,58 @@ async function loadTransactionsFromFirebase(limit = 1000) {
     }
 }
 
+// Функция для тестового сохранения транзакции
+async function testSaveTransaction() {
+    const testTransaction = {
+        amount: 1000,
+        type: 'expense',
+        description: 'test',
+        paymentType: 'kaspi-gold',
+        date: new Date().toISOString()
+    };
+    try {
+        const result = await saveTransactionToFirebase(testTransaction);
+        console.log('Тестовая транзакция сохранена:', result);
+        return result;
+    } catch (error) {
+        console.error('Ошибка при тестовом сохранении:', error);
+        return null;
+    }
+}
+
 // Обновляем функцию сохранения транзакции
 async function saveTransactionToFirebase(transaction) {
+    console.log('Начало сохранения транзакции:', transaction);
+    
     try {
         const user = auth.currentUser;
         if (!user) {
-            console.log('Для сохранения транзакции необходима авторизация');
+            console.error('Нет авторизованного пользователя');
             return null;
         }
 
-        // Генерируем уникальный ID для транзакции, если его нет
-        if (!transaction.id) {
-            transaction.id = Date.now().toString();
+        // Проверяем обязательные поля
+        if (!transaction.amount || !transaction.type || !transaction.description) {
+            console.error('Отсутствуют обязательные поля транзакции');
+            return null;
         }
 
-        // Убедимся, что у транзакции есть дата
-        if (!transaction.date) {
-            transaction.date = new Date().toISOString();
-        }
+        // Генерируем ID для новой транзакции
+        const transactionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-        // Проверяем, существует ли уже такая транзакция
-        const existingDocs = await db.collection('users')
-            .doc(user.uid)
-            .collection('transactions')
-            .where('id', '==', transaction.id)
-            .get();
-
-        if (!existingDocs.empty) {
-            console.log('Транзакция уже существует, пропускаем');
-            return existingDocs.docs[0].id;
-        }
-
-        // Подготавливаем данные для сохранения
+        // Подготавливаем данные транзакции
         const transactionData = {
-            ...transaction,
+            id: transactionId,
+            amount: Number(transaction.amount),
+            type: transaction.type,
+            description: transaction.description,
+            paymentType: transaction.paymentType || 'unknown',
+            date: transaction.date || new Date().toISOString(),
             userId: user.uid,
-            created: firebase.firestore.FieldValue.serverTimestamp(),
-            date: transaction.date // Сохраняем оригинальную дату
+            created: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        console.log('Подготовленные данные транзакции:', transactionData);
 
         // Сохраняем транзакцию
         const docRef = await db.collection('users')
@@ -202,11 +216,16 @@ async function saveTransactionToFirebase(transaction) {
 
         console.log('Транзакция успешно сохранена с ID:', docRef.id);
         return docRef.id;
+
     } catch (error) {
         console.error('Ошибка при сохранении транзакции:', error);
         throw error;
     }
 }
+
+// Экспортируем функции для тестирования
+window.testSaveTransaction = testSaveTransaction;
+window.saveTransactionToFirebase = saveTransactionToFirebase;
 
 // Обновляем функцию удаления транзакции
 async function deleteTransactionFromFirebase(docId) {

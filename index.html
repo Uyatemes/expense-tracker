@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <div class="version-info">v1.1.6.3</div>
+    <div class="version-info">v1.1.6.4</div>
     <header class="app-header">
         <div class="logo-container">
             <svg class="app-logo" width="32" height="32" viewBox="0 0 685 321">
@@ -173,6 +173,17 @@
             </form>
         </div>
     </div>
+
+    <!-- Добавляем тестовую кнопку перед закрывающим тегом body -->
+    <button id="testSaveButton" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Тест сохранения
+    </button>
+    <script>
+        document.getElementById('testSaveButton').addEventListener('click', async () => {
+            console.log('Запуск тестового сохранения...');
+            await window.testSaveTransaction();
+        });
+    </script>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
