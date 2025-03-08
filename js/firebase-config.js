@@ -99,29 +99,27 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             if (!seenIds.has(data.id)) {
                 seenIds.add(data.id);
                 
-                // Правильная обработка даты
+                // Сохраняем оригинальную дату транзакции
                 let transactionDate;
-                if (data.timestamp && data.timestamp.toDate) {
+                if (data.originalDate) {
+                    // Если есть оригинальная дата
+                    transactionDate = new Date(data.originalDate);
+                } else if (data.timestamp && data.timestamp.toDate) {
                     // Если есть timestamp из Firestore
                     transactionDate = data.timestamp.toDate();
                 } else if (data.date) {
                     // Если есть строка с датой
                     transactionDate = new Date(data.date);
                 } else {
-                    // Если нет ни timestamp, ни даты, используем текущую дату
+                    // Если нет ни одной даты
                     transactionDate = new Date();
-                }
-
-                // Проверяем валидность даты
-                if (transactionDate > new Date()) {
-                    transactionDate = new Date(); // Если дата в будущем, используем текущую
                 }
 
                 transactions.push({
                     ...data,
                     docId: doc.id,
                     date: transactionDate,
-                    timestamp: firebase.firestore.Timestamp.fromDate(transactionDate)
+                    timestamp: data.timestamp || firebase.firestore.Timestamp.fromDate(transactionDate)
                 });
             }
         });
@@ -161,9 +159,9 @@ async function saveTransactionToFirebase(transaction) {
             return existingDocs.docs[0].id;
         }
 
-        // Создаем timestamp из текущей даты
-        const now = new Date();
-        const timestamp = firebase.firestore.Timestamp.fromDate(now);
+        // Сохраняем оригинальную дату транзакции
+        const originalDate = transaction.date || new Date().toISOString();
+        const timestamp = firebase.firestore.Timestamp.fromDate(new Date(originalDate));
 
         const docRef = await db.collection('users')
             .doc(user.uid)
@@ -171,9 +169,10 @@ async function saveTransactionToFirebase(transaction) {
             .add({
                 ...transaction,
                 timestamp: timestamp,
-                date: now.toISOString(),
+                originalDate: originalDate,
+                date: originalDate,
                 userId: user.uid,
-                created: timestamp
+                created: firebase.firestore.FieldValue.serverTimestamp()
             });
 
         console.log('Транзакция сохранена с ID:', docRef.id);
