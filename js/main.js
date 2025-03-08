@@ -951,55 +951,84 @@ class ExpenseManager {
         // Парсим ввод пользователя
         try {
             const words = text.toLowerCase().split(' ');
-            let amount, type, paymentType, description;
+            let amount = null;
+            let type = null;
+            let paymentType = null;
+            let description = [];
 
-            // Ищем сумму и тип операции
-            for (let i = 0; i < words.length; i++) {
-                // Проверяем, является ли слово числом
-                const num = parseFloat(words[i].replace(/[^0-9.]/g, ''));
+            // Ищем сумму, тип операции и способ оплаты в любом порядке
+            for (const word of words) {
+                // Проверяем на сумму (может быть в любом месте)
+                const num = parseFloat(word.replace(/[^0-9.]/g, ''));
                 if (!isNaN(num) && num > 0) {
                     amount = num;
                     continue;
                 }
 
                 // Определяем тип операции
-                if (words[i].includes('расход') || words[i].includes('трат')) {
+                if (word.includes('расход') || word.includes('трат') || word.includes('минус') || word === '-') {
                     type = 'expense';
                     continue;
                 }
-                if (words[i].includes('приход') || words[i].includes('доход')) {
+                if (word.includes('приход') || word.includes('доход') || word.includes('плюс') || word === '+') {
                     type = 'income';
                     continue;
                 }
 
                 // Определяем способ оплаты
-                if (words[i].includes('каспи') || words[i].includes('kaspi')) {
+                if (word.includes('каспи') || word.includes('kaspi')) {
                     paymentType = 'kaspi-gold';
                     continue;
                 }
-                if (words[i].includes('халык') || words[i].includes('halyk')) {
+                if (word.includes('халык') || word.includes('halyk')) {
                     paymentType = 'halyk';
                     continue;
                 }
+
+                // Если слово не является ни суммой, ни типом операции, ни способом оплаты,
+                // добавляем его к описанию
+                description.push(word);
             }
 
-            // Получаем описание (все слова после суммы и типа)
-            description = words
-                .filter(w => !w.includes('расход') && !w.includes('приход') && 
-                           !w.includes('каспи') && !w.includes('kaspi') &&
-                           !w.includes('халык') && !w.includes('halyk') &&
-                           isNaN(parseFloat(w)))
-                .join(' ');
+            // Если тип не указан явно, определяем по знаку
+            if (!type && text.includes('-')) {
+                type = 'expense';
+            } else if (!type && text.includes('+')) {
+                type = 'income';
+            }
 
-            if (!amount || !type || !description) {
-                throw new Error('Не удалось распознать все необходимые данные');
+            // Собираем описание, удаляя лишние пробелы
+            const cleanDescription = description
+                .filter(word => 
+                    !word.includes('расход') && 
+                    !word.includes('приход') && 
+                    !word.includes('каспи') && 
+                    !word.includes('халык') &&
+                    !word.includes('kaspi') &&
+                    !word.includes('halyk') &&
+                    word !== '+' &&
+                    word !== '-' &&
+                    !word.includes('плюс') &&
+                    !word.includes('минус')
+                )
+                .join(' ')
+                .trim();
+
+            if (!amount) {
+                throw new Error('Не указана сумма');
+            }
+            if (!type) {
+                throw new Error('Не указан тип операции (расход/приход)');
+            }
+            if (!cleanDescription) {
+                throw new Error('Не указано описание');
             }
 
             // Создаем транзакцию
             const transaction = {
                 amount: type === 'expense' ? -amount : amount,
                 type: type,
-                description: description,
+                description: cleanDescription,
                 paymentType: paymentType || 'unknown',
                 date: new Date().toISOString()
             };
@@ -1038,7 +1067,11 @@ class ExpenseManager {
             // В случае ошибки показываем сообщение об ошибке
             const errorMessage = document.createElement('div');
             errorMessage.className = 'message system error';
-            errorMessage.textContent = 'Не удалось распознать операцию. Используйте формат: "5000 расход каспи такси" или "приход 10000 халык зарплата"';
+            errorMessage.textContent = 'Не удалось распознать операцию. Примеры:' +
+                '\n"5000 расход каспий такси"' +
+                '\n"приход 10000 халык зарплата"' +
+                '\n"-5000 такси"' +
+                '\n"+10000 зарплата"';
             chatMessages.appendChild(errorMessage);
         }
     }
