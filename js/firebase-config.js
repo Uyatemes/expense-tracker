@@ -33,7 +33,7 @@ const db = firebase.firestore();
 const savedEmail = localStorage.getItem('lastSignedInUser');
 const savedToken = localStorage.getItem('authToken');
 
-// Добавляем Promise для отслеживания состояния авторизации
+// Обновляем Promise для отслеживания состояния авторизации
 let authInitialized = false;
 const authInitializedPromise = new Promise((resolve) => {
     auth.onAuthStateChanged(async (user) => {
@@ -44,22 +44,7 @@ const authInitializedPromise = new Promise((resolve) => {
                 localStorage.setItem('lastSignedInUser', user.email);
                 const token = await user.getIdToken();
                 localStorage.setItem('authToken', token);
-                
-                // Обновляем UI
                 updateAuthButtonState(true, user.email);
-                
-                // Обновляем токен каждые 30 минут
-                setInterval(async () => {
-                    try {
-                        if (auth.currentUser) {
-                            const newToken = await auth.currentUser.getIdToken(true);
-                            localStorage.setItem('authToken', newToken);
-                            console.log('Токен успешно обновлен');
-                        }
-                    } catch (error) {
-                        console.error('Ошибка при обновлении токена:', error);
-                    }
-                }, 1800000);
             } else {
                 console.log('Пользователь не авторизован');
                 localStorage.removeItem('authToken');
@@ -94,6 +79,9 @@ document.getElementById('authButton').addEventListener('click', async () => {
             await auth.signOut();
             console.log('Пользователь вышел из системы');
             updateAuthButtonState(false);
+            // Очищаем локальное хранилище
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('lastSignedInUser');
         } catch (error) {
             console.error('Ошибка при выходе:', error);
         }
@@ -112,9 +100,12 @@ async function initializeAuth() {
         // Ждем инициализации авторизации
         const user = await authInitializedPromise;
         
-        // Не пытаемся автоматически авторизоваться
+        // Просто обновляем состояние кнопки, без попытки автоматической авторизации
         if (user) {
             console.log('Пользователь уже авторизован:', user.email);
+            updateAuthButtonState(true, user.email);
+        } else {
+            updateAuthButtonState(false);
         }
     } catch (error) {
         console.error('Ошибка при инициализации авторизации:', error);
@@ -235,7 +226,9 @@ async function deleteTransactionFromFirebase(docId) {
 async function signInWithGoogle() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        // Убираем принудительный выбор аккаунта
+        provider.setCustomParameters({
+            prompt: 'select_account'
+        });
         const result = await auth.signInWithPopup(provider);
         console.log('Успешная авторизация:', result.user.email);
         
