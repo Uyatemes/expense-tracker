@@ -37,23 +37,20 @@ class ExpenseManager {
         this.initializeModal();
 
         if (this.isProduction) {
-            // Проверяем текущего пользователя
-            const currentUser = firebase.auth().currentUser;
-            if (currentUser) {
-                console.log('Пользователь уже авторизован:', currentUser.email);
-                this.loadFromFirebase();
-            } else {
-                // Слушаем изменения авторизации
-                firebase.auth().onAuthStateChanged(async user => {
-                    console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
-                    if (user) {
-                        await this.migrateLocalDataToFirebase();
-                        this.loadFromFirebase();
-                    } else {
+            // Слушаем изменения авторизации
+            firebase.auth().onAuthStateChanged(async user => {
+                console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
+                if (user) {
+                    await this.migrateLocalDataToFirebase();
+                    this.loadFromFirebase();
+                } else {
+                    // Проверяем, есть ли сохраненная сессия
+                    const lastSession = localStorage.getItem('lastAuthSession');
+                    if (!lastSession) {
                         this.showSignInPrompt();
                     }
-                });
-            }
+                }
+            });
         } else {
             this.loadFromLocalStorage();
         }
@@ -81,9 +78,10 @@ class ExpenseManager {
         console.log('ExpenseManager: DOM готов, начинаем инициализацию');
         
         if (this.isProduction) {
-            // Проверяем авторизацию только в продакшене
+            // Проверяем авторизацию только если нет сохраненной сессии
             const user = firebase.auth().currentUser;
-            if (!user) {
+            const lastSession = localStorage.getItem('lastAuthSession');
+            if (!user && !lastSession) {
                 await this.showSignInPrompt();
             }
         }
@@ -96,6 +94,8 @@ class ExpenseManager {
     async showSignInPrompt() {
         const result = await signInWithGoogle();
         if (result) {
+            // Сохраняем информацию о сессии
+            localStorage.setItem('lastAuthSession', new Date().toISOString());
             this.loadFromFirebase();
         } else {
             console.error('Не удалось авторизоваться');
