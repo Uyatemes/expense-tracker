@@ -51,6 +51,7 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             signInWithGoogle().then(success => {
                 if (success) {
                     console.log('Сессия успешно восстановлена');
+                    window.location.reload(); // Перезагружаем страницу после успешной авторизации
                 }
             });
         }
@@ -64,12 +65,13 @@ auth.onAuthStateChanged((user) => {
     if (user) {
         console.log('Пользователь авторизован:', user.email);
         localStorage.setItem('lastSignedInUser', user.email);
-        // Обновляем токен каждый час
-        setInterval(() => {
-            user.getIdToken(true);
-        }, 3600000);
+        // Сохраняем токен в localStorage
+        user.getIdToken().then(token => {
+            localStorage.setItem('authToken', token);
+        });
     } else {
         console.log('Пользователь не авторизован');
+        localStorage.removeItem('authToken');
     }
 });
 
@@ -99,22 +101,27 @@ async function loadTransactionsFromFirebase(limit = 1000) {
                 
                 // Правильная обработка даты
                 let transactionDate;
-                if (data.timestamp) {
+                if (data.timestamp && data.timestamp.toDate) {
                     // Если есть timestamp из Firestore
                     transactionDate = data.timestamp.toDate();
                 } else if (data.date) {
                     // Если есть строка с датой
                     transactionDate = new Date(data.date);
                 } else {
-                    // Если нет ни timestamp, ни даты
+                    // Если нет ни timestamp, ни даты, используем текущую дату
                     transactionDate = new Date();
+                }
+
+                // Проверяем валидность даты
+                if (transactionDate > new Date()) {
+                    transactionDate = new Date(); // Если дата в будущем, используем текущую
                 }
 
                 transactions.push({
                     ...data,
                     docId: doc.id,
                     date: transactionDate,
-                    timestamp: data.timestamp || firebase.firestore.Timestamp.fromDate(transactionDate)
+                    timestamp: firebase.firestore.Timestamp.fromDate(transactionDate)
                 });
             }
         });
@@ -165,7 +172,8 @@ async function saveTransactionToFirebase(transaction) {
                 ...transaction,
                 timestamp: timestamp,
                 date: now.toISOString(),
-                userId: user.uid
+                userId: user.uid,
+                created: timestamp
             });
 
         console.log('Транзакция сохранена с ID:', docRef.id);
@@ -208,6 +216,12 @@ async function signInWithGoogle() {
         });
         const result = await auth.signInWithPopup(provider);
         console.log('Успешная авторизация:', result.user.email);
+        
+        // Сохраняем токен сразу после авторизации
+        const token = await result.user.getIdToken();
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('lastSignedInUser', result.user.email);
+        
         return true;
     } catch (error) {
         console.error('Ошибка авторизации:', error);
