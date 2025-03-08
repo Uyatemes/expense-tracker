@@ -864,7 +864,97 @@ class ExpenseManager {
     }
 
     handleUserInput() {
-        // Implementation of handleUserInput method
+        const input = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+        if (!input || !chatMessages) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        // Добавляем сообщение пользователя
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.textContent = text;
+        chatMessages.appendChild(userMessage);
+
+        // Парсим ввод пользователя
+        try {
+            const words = text.toLowerCase().split(' ');
+            let amount, type, paymentType, description;
+
+            // Ищем сумму и тип операции
+            for (let i = 0; i < words.length; i++) {
+                // Проверяем, является ли слово числом
+                const num = parseFloat(words[i].replace(/[^0-9.]/g, ''));
+                if (!isNaN(num) && num > 0) {
+                    amount = num;
+                    continue;
+                }
+
+                // Определяем тип операции
+                if (words[i].includes('расход') || words[i].includes('трат')) {
+                    type = 'expense';
+                    continue;
+                }
+                if (words[i].includes('приход') || words[i].includes('доход')) {
+                    type = 'income';
+                    continue;
+                }
+
+                // Определяем способ оплаты
+                if (words[i].includes('каспи') || words[i].includes('kaspi')) {
+                    paymentType = 'kaspi-gold';
+                    continue;
+                }
+                if (words[i].includes('халык') || words[i].includes('halyk')) {
+                    paymentType = 'halyk';
+                    continue;
+                }
+            }
+
+            // Получаем описание (все слова после суммы и типа)
+            description = words
+                .filter(w => !w.includes('расход') && !w.includes('приход') && 
+                           !w.includes('каспи') && !w.includes('kaspi') &&
+                           !w.includes('халык') && !w.includes('halyk') &&
+                           isNaN(parseFloat(w)))
+                .join(' ');
+
+            if (!amount || !type || !description) {
+                throw new Error('Не удалось распознать все необходимые данные');
+            }
+
+            // Создаем транзакцию
+            const transaction = {
+                amount: type === 'expense' ? -amount : amount,
+                type: type,
+                description: description,
+                paymentType: paymentType || 'unknown',
+                date: new Date().toISOString()
+            };
+
+            // Сохраняем транзакцию
+            this.addTransaction(transaction);
+
+            // Добавляем ответное сообщение
+            const responseMessage = document.createElement('div');
+            responseMessage.className = 'message system';
+            responseMessage.textContent = `Добавлена ${type === 'expense' ? 'расходная' : 'приходная'} операция на сумму ${Math.abs(amount)} ₸`;
+            chatMessages.appendChild(responseMessage);
+
+            // Очищаем поле ввода
+            input.value = '';
+
+            // Прокручиваем чат вниз
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        } catch (error) {
+            // В случае ошибки показываем сообщение об ошибке
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'message system error';
+            errorMessage.textContent = 'Не удалось распознать операцию. Используйте формат: "5000 расход каспи такси" или "приход 10000 халык зарплата"';
+            chatMessages.appendChild(errorMessage);
+        }
     }
 }
 
