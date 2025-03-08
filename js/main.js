@@ -37,15 +37,24 @@ class ExpenseManager {
         this.initializeModal();
 
         if (this.isProduction) {
-            // Только для продакшена: слушаем изменения авторизации
-            firebase.auth().onAuthStateChanged(async user => {
-                if (user) {
-                    await this.migrateLocalDataToFirebase();
-                    this.loadFromFirebase();
-                } else {
-                    this.showSignInPrompt();
-                }
-            });
+            // Устанавливаем persistence перед слушателем авторизации
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    console.log('Firebase Auth persistence установлен на LOCAL');
+                    // Только для продакшена: слушаем изменения авторизации
+                    firebase.auth().onAuthStateChanged(async user => {
+                        console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
+                        if (user) {
+                            await this.migrateLocalDataToFirebase();
+                            this.loadFromFirebase();
+                        } else {
+                            this.showSignInPrompt();
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка при установке persistence:', error);
+                });
         } else {
             // Для локальной версии: загружаем данные из localStorage
             this.loadFromLocalStorage();
@@ -56,11 +65,11 @@ class ExpenseManager {
         this.isLoading = false;
 
         // Привязываем обработчики событий
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
+        document.getElementById('user-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.handleUserInput();
         });
         
-        document.getElementById('send-message').addEventListener('click', () => {
+        document.getElementById('send-message')?.addEventListener('click', () => {
             this.handleUserInput();
         });
 
@@ -97,19 +106,19 @@ class ExpenseManager {
 
     async loadFromFirebase() {
         try {
-            const result = await loadTransactionsFromFirebase(50);
+            console.log('ExpenseManager: Загрузка всех транзакций из Firebase');
+            const result = await loadTransactionsFromFirebase(1000); // Загружаем большее количество транзакций
             this.transactions = result.transactions || [];
-            this.lastDoc = result.lastDoc;
-            this.hasMore = result.hasMore;
             
-            // Показываем или скрываем кнопку "Загрузить еще"
+            // Скрываем кнопку "Загрузить еще", так как загружаем все сразу
             const loadMoreButton = document.getElementById('loadMoreButton');
             if (loadMoreButton) {
-                loadMoreButton.style.display = this.hasMore ? 'inline-block' : 'none';
+                loadMoreButton.style.display = 'none';
             }
             
             this.renderTransactions();
             this.updateTotals(this.transactions);
+            console.log(`ExpenseManager: Загружено ${this.transactions.length} транзакций`);
         } catch (error) {
             console.error('Ошибка при загрузке из Firebase:', error);
             this.transactions = [];
