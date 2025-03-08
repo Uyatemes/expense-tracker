@@ -33,10 +33,23 @@ const db = firebase.firestore();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
         console.log('Firebase Auth persistence установлен на LOCAL');
+        // Проверяем текущего пользователя после установки persistence
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            console.log('Текущий пользователь:', currentUser.email);
+        }
     })
     .catch((error) => {
         console.error('Ошибка при установке persistence:', error);
     });
+
+// Слушатель изменения состояния авторизации
+auth.onAuthStateChanged((user) => {
+    console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
+    if (user) {
+        localStorage.setItem('lastSignedInUser', user.email);
+    }
+});
 
 // Функция для загрузки транзакций
 async function loadTransactionsFromFirebase(limit = 1000) {
@@ -47,22 +60,30 @@ async function loadTransactionsFromFirebase(limit = 1000) {
             return { transactions: [] };
         }
 
+        // Получаем все транзакции, отсортированные по timestamp
         const snapshot = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .orderBy('timestamp', 'desc')
-            .limit(limit)
             .get();
 
+        // Создаем Set для отслеживания уникальных ID
+        const seenIds = new Set();
         const transactions = [];
+
         snapshot.forEach(doc => {
-            transactions.push({
-                ...doc.data(),
-                docId: doc.id // Сохраняем ID документа для удаления
-            });
+            const data = doc.data();
+            // Проверяем, не видели ли мы уже эту транзакцию
+            if (!seenIds.has(data.id)) {
+                seenIds.add(data.id);
+                transactions.push({
+                    ...data,
+                    docId: doc.id
+                });
+            }
         });
 
-        console.log(`Загружено ${transactions.length} транзакций`);
+        console.log(`Загружено ${transactions.length} уникальных транзакций`);
         return { transactions };
     } catch (error) {
         console.error('Ошибка при загрузке транзакций:', error);
@@ -76,6 +97,18 @@ async function saveTransactionToFirebase(transaction) {
         const user = auth.currentUser;
         if (!user) {
             throw new Error('Пользователь не авторизован');
+        }
+
+        // Проверяем, существует ли уже такая транзакция
+        const existingDocs = await db.collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .where('id', '==', transaction.id)
+            .get();
+
+        if (!existingDocs.empty) {
+            console.log('Транзакция уже существует, пропускаем');
+            return existingDocs.docs[0].id;
         }
 
         const docRef = await db.collection('users')
