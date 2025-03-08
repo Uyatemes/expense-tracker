@@ -96,9 +96,24 @@ class ExpenseManager {
     }
 
     async loadFromFirebase() {
-        this.transactions = await loadTransactionsFromFirebase();
-        this.renderTransactions();
-        this.updateTotals(this.transactions);
+        try {
+            const result = await loadTransactionsFromFirebase(50);
+            this.transactions = result.transactions || [];
+            this.lastDoc = result.lastDoc;
+            this.hasMore = result.hasMore;
+            
+            // Показываем или скрываем кнопку "Загрузить еще"
+            const loadMoreButton = document.getElementById('loadMoreButton');
+            if (loadMoreButton) {
+                loadMoreButton.style.display = this.hasMore ? 'inline-block' : 'none';
+            }
+            
+            this.renderTransactions();
+            this.updateTotals(this.transactions);
+        } catch (error) {
+            console.error('Ошибка при загрузке из Firebase:', error);
+            this.transactions = [];
+        }
     }
 
     loadFromLocalStorage() {
@@ -291,8 +306,16 @@ class ExpenseManager {
     }
 
     getTransactions() {
-        console.log('ExpenseManager: Получение транзакций, всего:', this.transactions.length);
-        return [...this.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        console.log('ExpenseManager: Получение транзакций, всего:', this.transactions?.length);
+        if (!Array.isArray(this.transactions)) {
+            console.warn('ExpenseManager: transactions не является массивом, возвращаем пустой массив');
+            return [];
+        }
+        return [...this.transactions].sort((a, b) => {
+            const dateA = a.timestamp?.seconds || new Date(a.date).getTime() / 1000;
+            const dateB = b.timestamp?.seconds || new Date(b.date).getTime() / 1000;
+            return dateB - dateA;
+        });
     }
 
     handleApplyFilter() {
@@ -814,14 +837,18 @@ class ExpenseManager {
             
             const result = await loadTransactionsFromFirebase(50, this.lastDoc);
             
-            if (result.transactions.length > 0) {
-                this.transactions = this.lastDoc ? [...this.transactions, ...result.transactions] : result.transactions;
+            if (result.transactions && result.transactions.length > 0) {
+                this.transactions = this.lastDoc ? 
+                    [...(this.transactions || []), ...result.transactions] : 
+                    result.transactions;
                 this.lastDoc = result.lastDoc;
                 this.hasMore = result.hasMore;
                 
                 // Показываем или скрываем кнопку "Загрузить еще"
                 const loadMoreButton = document.getElementById('loadMoreButton');
-                loadMoreButton.style.display = this.hasMore ? 'inline-block' : 'none';
+                if (loadMoreButton) {
+                    loadMoreButton.style.display = this.hasMore ? 'inline-block' : 'none';
+                }
             }
 
             this.renderTransactions();
