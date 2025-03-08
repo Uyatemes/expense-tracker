@@ -158,12 +158,20 @@ async function loadTransactionsFromFirebase(limit = 1000) {
 // Обновляем функцию сохранения транзакции
 async function saveTransactionToFirebase(transaction) {
     try {
-        await authInitializedPromise;
-        
         const user = auth.currentUser;
         if (!user) {
             console.log('Для сохранения транзакции необходима авторизация');
-            return null; // Возвращаем null без вызова авторизации
+            return null;
+        }
+
+        // Генерируем уникальный ID для транзакции, если его нет
+        if (!transaction.id) {
+            transaction.id = Date.now().toString();
+        }
+
+        // Убедимся, что у транзакции есть дата
+        if (!transaction.date) {
+            transaction.date = new Date().toISOString();
         }
 
         // Проверяем, существует ли уже такая транзакция
@@ -178,17 +186,21 @@ async function saveTransactionToFirebase(transaction) {
             return existingDocs.docs[0].id;
         }
 
+        // Подготавливаем данные для сохранения
+        const transactionData = {
+            ...transaction,
+            userId: user.uid,
+            created: firebase.firestore.FieldValue.serverTimestamp(),
+            date: transaction.date // Сохраняем оригинальную дату
+        };
+
         // Сохраняем транзакцию
         const docRef = await db.collection('users')
             .doc(user.uid)
             .collection('transactions')
-            .add({
-                ...transaction,
-                userId: user.uid,
-                created: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            .add(transactionData);
 
-        console.log('Транзакция сохранена с ID:', docRef.id);
+        console.log('Транзакция успешно сохранена с ID:', docRef.id);
         return docRef.id;
     } catch (error) {
         console.error('Ошибка при сохранении транзакции:', error);
