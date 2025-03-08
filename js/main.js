@@ -37,26 +37,24 @@ class ExpenseManager {
         this.initializeModal();
 
         if (this.isProduction) {
-            // Устанавливаем persistence перед слушателем авторизации
-            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .then(() => {
-                    console.log('Firebase Auth persistence установлен на LOCAL');
-                    // Только для продакшена: слушаем изменения авторизации
-                    firebase.auth().onAuthStateChanged(async user => {
-                        console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
-                        if (user) {
-                            await this.migrateLocalDataToFirebase();
-                            this.loadFromFirebase();
-                        } else {
-                            this.showSignInPrompt();
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Ошибка при установке persistence:', error);
+            // Проверяем текущего пользователя
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser) {
+                console.log('Пользователь уже авторизован:', currentUser.email);
+                this.loadFromFirebase();
+            } else {
+                // Слушаем изменения авторизации
+                firebase.auth().onAuthStateChanged(async user => {
+                    console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
+                    if (user) {
+                        await this.migrateLocalDataToFirebase();
+                        this.loadFromFirebase();
+                    } else {
+                        this.showSignInPrompt();
+                    }
                 });
+            }
         } else {
-            // Для локальной версии: загружаем данные из localStorage
             this.loadFromLocalStorage();
         }
 
@@ -168,21 +166,13 @@ class ExpenseManager {
     }
 
     async deleteTransaction(id) {
-        if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-            if (this.isProduction) {
-                // В продакшене удаляем из Firebase
-                await deleteTransactionFromFirebase(id);
-            } else {
-                // В локальной версии удаляем из localStorage
-                this.transactions = this.transactions.filter(t => t.id !== id);
-                this.saveToLocalStorage();
-            }
-            
-            this.renderTransactions();
-            if (typeof window.updateCharts === 'function') {
-                window.updateCharts();
-            }
-            this.updateTotals(this.transactions);
+        try {
+            await deleteTransactionFromFirebase(id);
+            // После успешного удаления обновляем список транзакций
+            await this.loadFromFirebase();
+        } catch (error) {
+            console.error('Ошибка при удалении транзакции:', error);
+            alert('Не удалось удалить транзакцию. Попробуйте еще раз.');
         }
     }
 
@@ -257,10 +247,8 @@ class ExpenseManager {
             // Если это первая транзакция и она новая (добавлена менее 1 секунды назад)
             if (index === 0 && (Date.now() - new Date(t.date).getTime()) < 1000) {
                 transactionElement.classList.add('new');
-                // Удаляем класс через 1 секунду
                 setTimeout(() => {
                     transactionElement.classList.remove('new');
-                    // Плавно меняем фон обратно
                     transactionElement.style.transition = 'background-color 0.5s ease-out';
                     transactionElement.style.background = '';
                 }, 1000);
@@ -280,7 +268,7 @@ class ExpenseManager {
                     <div class="transaction-amount ${t.type}">
                         ${sign}${amount} ₸
                     </div>
-                    <button onclick="window.expenseManager.deleteTransaction(${t.id})" class="delete-btn" title="Удалить">
+                    <button onclick="window.expenseManager.showConfirmDialog('${t.docId}')" class="delete-btn" title="Удалить">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
                         </svg>

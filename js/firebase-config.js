@@ -29,109 +29,96 @@ const app = firebase.initializeApp(currentConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Устанавливаем persistence для сохранения состояния авторизации
+// Устанавливаем persistence сразу после инициализации
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
-        console.log('Persistence установлен на LOCAL');
-        // После установки persistence, проверяем текущего пользователя
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('Пользователь авторизован:', user.email);
-            } else {
-                console.log('Пользователь не авторизован');
-            }
-        });
+        console.log('Firebase Auth persistence установлен на LOCAL');
     })
     .catch((error) => {
         console.error('Ошибка при установке persistence:', error);
     });
 
-// Функция для сохранения транзакции в Firebase
+// Функция для загрузки транзакций
+async function loadTransactionsFromFirebase(limit = 1000) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.error('Пользователь не авторизован');
+            return { transactions: [] };
+        }
+
+        const snapshot = await db.collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .orderBy('timestamp', 'desc')
+            .limit(limit)
+            .get();
+
+        const transactions = [];
+        snapshot.forEach(doc => {
+            transactions.push({
+                ...doc.data(),
+                docId: doc.id // Сохраняем ID документа для удаления
+            });
+        });
+
+        console.log(`Загружено ${transactions.length} транзакций`);
+        return { transactions };
+    } catch (error) {
+        console.error('Ошибка при загрузке транзакций:', error);
+        return { transactions: [] };
+    }
+}
+
+// Функция для сохранения транзакции
 async function saveTransactionToFirebase(transaction) {
     try {
         const user = auth.currentUser;
         if (!user) {
-            console.log('Пользователь не авторизован');
-            return;
+            throw new Error('Пользователь не авторизован');
         }
 
-        const docRef = await db.collection('users').doc(user.uid)
-            .collection('transactions').add({
+        const docRef = await db.collection('users')
+            .doc(user.uid)
+            .collection('transactions')
+            .add({
                 ...transaction,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                userId: user.uid
             });
-        
-        console.log('Транзакция сохранена в Firebase с ID:', docRef.id);
+
+        console.log('Транзакция сохранена с ID:', docRef.id);
         return docRef.id;
     } catch (error) {
-        console.error('Ошибка при сохранении:', error);
-        return null;
+        console.error('Ошибка при сохранении транзакции:', error);
+        throw error;
     }
 }
 
-// Функция для загрузки транзакций из Firebase с пагинацией
-async function loadTransactionsFromFirebase(limit = 50, lastDoc = null) {
+// Функция для удаления транзакции
+async function deleteTransactionFromFirebase(docId) {
     try {
         const user = auth.currentUser;
         if (!user) {
-            console.log('Пользователь не авторизован');
-            return { transactions: [], lastDoc: null };
+            throw new Error('Пользователь не авторизован');
         }
 
-        let query = db.collection('users').doc(user.uid)
+        console.log('Удаление транзакции с ID:', docId);
+        await db.collection('users')
+            .doc(user.uid)
             .collection('transactions')
-            .orderBy('timestamp', 'desc')
-            .limit(limit);
+            .doc(docId)
+            .delete();
 
-        if (lastDoc) {
-            query = query.startAfter(lastDoc);
-        }
-
-        const snapshot = await query.get();
-        
-        const transactions = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-        
-        console.log(`Загружено ${transactions.length} транзакций`);
-        
-        return {
-            transactions,
-            lastDoc: lastVisible,
-            hasMore: snapshot.docs.length === limit
-        };
-    } catch (error) {
-        console.error('Ошибка при загрузке:', error);
-        return { transactions: [], lastDoc: null, hasMore: false };
-    }
-}
-
-// Функция для удаления транзакции из Firebase
-async function deleteTransactionFromFirebase(transactionId) {
-    try {
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('Пользователь не авторизован');
-            return false;
-        }
-
-        console.log('Удаление транзакции с ID:', transactionId);
-        
-        await db.collection('users').doc(user.uid)
-            .collection('transactions').doc(String(transactionId)).delete();
-        
-        console.log('Транзакция успешно удалена из Firebase');
+        console.log('Транзакция успешно удалена');
         return true;
     } catch (error) {
-        console.error('Ошибка при удалении:', error);
-        return false;
+        console.error('Ошибка при удалении транзакции:', error);
+        throw error;
     }
 }
 
-// Функция для авторизации пользователя
+// Функция для авторизации через Google
 async function signInWithGoogle() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
