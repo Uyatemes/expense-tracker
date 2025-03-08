@@ -132,7 +132,7 @@ async function loadTransactionsFromFirebase(limit = 1000) {
         const user = auth.currentUser;
         if (!user) {
             console.log('Для просмотра транзакций необходима авторизация');
-            return { transactions: [] };
+            return { transactions: [] }; // Просто возвращаем пустой массив без вызова авторизации
         }
 
         const snapshot = await db.collection('users')
@@ -172,7 +172,7 @@ async function saveTransactionToFirebase(transaction) {
         const user = auth.currentUser;
         if (!user) {
             console.log('Для сохранения транзакции необходима авторизация');
-            return null;
+            return null; // Возвращаем null без вызова авторизации
         }
 
         // Проверяем, существует ли уже такая транзакция
