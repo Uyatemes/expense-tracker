@@ -33,49 +33,12 @@ const db = firebase.firestore();
 const savedEmail = localStorage.getItem('lastSignedInUser');
 const savedToken = localStorage.getItem('authToken');
 
-// Функция для проверки валидности токена
-async function checkToken() {
-    const token = localStorage.getItem('authToken');
-    if (!token) return false;
-    
-    try {
-        const user = auth.currentUser;
-        if (user) {
-            const newToken = await user.getIdToken();
-            localStorage.setItem('authToken', newToken);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Ошибка при проверке токена:', error);
-        return false;
-    }
-}
-
-// Устанавливаем persistence и проверяем авторизацию
-async function initializeAuth() {
-    try {
-        // Устанавливаем persistence перед любыми операциями с auth
-        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        console.log('Firebase Auth persistence установлен на LOCAL');
-
-        // Проверяем текущего пользователя
-        const currentUser = auth.currentUser;
-        
-        if (currentUser) {
-            console.log('Текущий пользователь:', currentUser.email);
-            const token = await currentUser.getIdToken();
-            localStorage.setItem('authToken', token);
-            localStorage.setItem('lastSignedInUser', currentUser.email);
-        } else if (savedEmail && savedToken) {
-            console.log('Пытаемся восстановить сессию для:', savedEmail);
-            // Если есть сохраненные данные, но нет текущего пользователя,
-            // пробуем переавторизоваться
-            await signInWithGoogle();
-        }
-
-        // Устанавливаем слушатель изменения состояния авторизации
-        auth.onAuthStateChanged(async (user) => {
+// Добавляем Promise для отслеживания состояния авторизации
+let authInitialized = false;
+const authInitializedPromise = new Promise((resolve) => {
+    auth.onAuthStateChanged(async (user) => {
+        if (!authInitialized) {
+            authInitialized = true;
             if (user) {
                 console.log('Пользователь авторизован:', user.email);
                 localStorage.setItem('lastSignedInUser', user.email);
@@ -99,8 +62,24 @@ async function initializeAuth() {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('lastSignedInUser');
             }
-        });
+            resolve(user);
+        }
+    });
+});
 
+// Обновляем функцию инициализации авторизации
+async function initializeAuth() {
+    try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        console.log('Firebase Auth persistence установлен на LOCAL');
+
+        // Ждем инициализации авторизации
+        const user = await authInitializedPromise;
+        
+        // Не пытаемся автоматически авторизоваться
+        if (user) {
+            console.log('Пользователь уже авторизован:', user.email);
+        }
     } catch (error) {
         console.error('Ошибка при инициализации авторизации:', error);
     }
@@ -109,18 +88,23 @@ async function initializeAuth() {
 // Инициализируем авторизацию
 initializeAuth();
 
-// Функция для загрузки транзакций
+// Обновляем функцию загрузки транзакций
 async function loadTransactionsFromFirebase(limit = 1000) {
     try {
+        await authInitializedPromise;
+        
         const user = auth.currentUser;
         if (!user) {
-            console.error('Пользователь не авторизован');
-            return { transactions: [] };
+            // Если пользователь не авторизован, предлагаем войти
+            console.log('Для просмотра транзакций необходима авторизация');
+            const signedIn = await signInWithGoogle();
+            if (!signedIn) {
+                return { transactions: [] };
+            }
         }
 
-        // Получаем все транзакции и сортируем по дате на уровне Firestore
         const snapshot = await db.collection('users')
-            .doc(user.uid)
+            .doc(auth.currentUser.uid)
             .collection('transactions')
             .orderBy('date', 'desc')
             .get();
@@ -148,17 +132,24 @@ async function loadTransactionsFromFirebase(limit = 1000) {
     }
 }
 
-// Функция для сохранения транзакции
+// Обновляем функцию сохранения транзакции
 async function saveTransactionToFirebase(transaction) {
     try {
+        await authInitializedPromise;
+        
         const user = auth.currentUser;
         if (!user) {
-            throw new Error('Пользователь не авторизован');
+            // Если пользователь не авторизован, предлагаем войти
+            console.log('Для сохранения транзакции необходима авторизация');
+            const signedIn = await signInWithGoogle();
+            if (!signedIn) {
+                throw new Error('Не удалось авторизоваться');
+            }
         }
 
         // Проверяем, существует ли уже такая транзакция
         const existingDocs = await db.collection('users')
-            .doc(user.uid)
+            .doc(auth.currentUser.uid)
             .collection('transactions')
             .where('id', '==', transaction.id)
             .get();
@@ -168,13 +159,13 @@ async function saveTransactionToFirebase(transaction) {
             return existingDocs.docs[0].id;
         }
 
-        // Сохраняем транзакцию с оригинальной датой
+        // Сохраняем транзакцию
         const docRef = await db.collection('users')
-            .doc(user.uid)
+            .doc(auth.currentUser.uid)
             .collection('transactions')
             .add({
                 ...transaction,
-                userId: user.uid,
+                userId: auth.currentUser.uid,
                 created: firebase.firestore.FieldValue.serverTimestamp()
             });
 
@@ -186,17 +177,24 @@ async function saveTransactionToFirebase(transaction) {
     }
 }
 
-// Функция для удаления транзакции
+// Обновляем функцию удаления транзакции
 async function deleteTransactionFromFirebase(docId) {
     try {
+        await authInitializedPromise;
+        
         const user = auth.currentUser;
         if (!user) {
-            throw new Error('Пользователь не авторизован');
+            // Если пользователь не авторизован, предлагаем войти
+            console.log('Для удаления транзакции необходима авторизация');
+            const signedIn = await signInWithGoogle();
+            if (!signedIn) {
+                throw new Error('Не удалось авторизоваться');
+            }
         }
 
         console.log('Удаление транзакции с ID:', docId);
         await db.collection('users')
-            .doc(user.uid)
+            .doc(auth.currentUser.uid)
             .collection('transactions')
             .doc(docId)
             .delete();
@@ -213,13 +211,10 @@ async function deleteTransactionFromFirebase(docId) {
 async function signInWithGoogle() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
+        // Убираем принудительный выбор аккаунта
         const result = await auth.signInWithPopup(provider);
         console.log('Успешная авторизация:', result.user.email);
         
-        // Сохраняем токен сразу после авторизации
         const token = await result.user.getIdToken();
         localStorage.setItem('authToken', token);
         localStorage.setItem('lastSignedInUser', result.user.email);
