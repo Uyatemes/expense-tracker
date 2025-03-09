@@ -196,7 +196,7 @@ body {
         padding: 16px; /* Уменьшаем внутренние отступы */
         width: auto; /* Автоматическая ширина */
         margin: 0 8px; /* Добавляем боковые отступы */
-        border-radius: 20px; /* Немного уменьшаем скругление */
+        border-radius: 28px; /* Немного уменьшаем скругление */
     }
 
     .total-amount {
@@ -1199,4 +1199,252 @@ select:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.transaction-card {
+    position: relative;
+    border-radius: 28px;
+    padding: 16px 16px;
+    margin: 0;
+    z-index: 2;
+    background-color: var(--md-sys-color-surface-container);
+    transition: transform 0.2s ease-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.card-wrapper.will-delete .transaction-card {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+[data-theme="dark"] .card-wrapper.will-delete .transaction-card {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+.delete-indicator {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-sys-color-on-error-container);
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.transaction-card.will-delete .delete-indicator {
+    opacity: 1;
+}
+
+.transaction-card.deleting {
+    animation: slideOutRight 0.3s ease forwards;
+}
+
+@keyframes slideOutRight {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.transaction-card:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
+.transaction-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.transaction-date {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+}
+
+.transaction-description {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.transaction-amount {
+    font-weight: 500;
+    font-size: 16px;
+    white-space: nowrap;
+    padding: 8px 16px;
+    border-radius: 16px;
+}
+
+.transaction-amount.income {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.transaction-amount.expense {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-left: 8px;
+    cursor: pointer;
+    color: var(--icon-color);
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    border-radius: 50%;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    background: var(--hover-color);
+}
+
+.no-transactions {
+    text-align: center;
+    padding: 32px;
+    color: var(--secondary-text-color);
+    font-size: 16px;
+}
+
+.payment-type {
+    width: fit-content;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.card-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.delete-background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 80px;
+    background-color: #DC3545;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.delete-text {
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-text svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.card-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    margin-bottom: 8px;
+}
+
+.card-wrapper.will-delete .transaction-card {
+    background-color: #FFF5F5;
+}
+
+[data-theme="dark"] .card-wrapper.will-delete .transaction-card {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+[data-theme="dark"] .delete-background {
+    background-color: #DC3545;
+}
+
+.transaction-card {
+    position: relative;
+    border-radius: 28px;
+    padding: 16px 16px;
+    margin: 0;
+    z-index: 2;
+    background-color: var(--md-sys-color-surface-container);
+    transition: transform 0.2s ease-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.transaction-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.transaction-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.transaction-date {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.transaction-description {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    word-wrap: break-word;
+}
+
+.payment-type {
+    font-size: 12px;
+    color: #959595;
+    padding: 2px 8px;
+    border-radius: 28px;
+    display: inline-block;
+}
+
+.transaction-amount {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.no-transactions {
+    text-align: center;
+    padding: 24px;
+    color: #666;
+    font-size: 14px;
+}
+
+@keyframes slideOutLeft {
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+}
+
+.transaction-card.deleting {
+    animation: slideOutLeft 0.3s ease forwards;
 } 
