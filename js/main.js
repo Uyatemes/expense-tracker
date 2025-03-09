@@ -160,74 +160,201 @@ class ExpenseManager {
     }
 
     async addTransaction(transaction) {
-        console.log('ExpenseManager: Добавление транзакции:', transaction);
-        
-        if (this.isProduction) {
-            try {
-                // Проверяем авторизацию
+        try {
+            // Проверяем авторизацию
+            if (this.isProduction) {
                 const user = firebase.auth().currentUser;
                 if (!user) {
                     throw new Error('Необходима авторизация');
                 }
+            }
 
-                // Подготавливаем данные транзакции
-                const newTransaction = {
-                    ...transaction,
-                    userId: user.uid,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    date: new Date().toISOString()
-                };
+            // Проверяем на дубликаты за последние 5 минут
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+            const duplicates = this.transactions.filter(t => 
+                t.amount === transaction.amount &&
+                t.description.toLowerCase() === transaction.description.toLowerCase() &&
+                t.paymentType === transaction.paymentType &&
+                new Date(t.date) > fiveMinutesAgo
+            );
 
-                // Проверяем на дубликаты (в течение последних 5 секунд)
-                const fiveSecondsAgo = new Date(Date.now() - 5000);
-                const duplicates = this.transactions.filter(t => 
-                    t.amount === transaction.amount &&
-                    t.description === transaction.description &&
-                    new Date(t.date) > fiveSecondsAgo
-                );
+            if (duplicates.length > 0) {
+                const confirmed = await new Promise(resolve => {
+                    const message = `
+                        Найдена похожая транзакция за последние 5 минут:
+                        Сумма: ${Math.abs(duplicates[0].amount)} ₸
+                        Описание: ${duplicates[0].description}
+                        
+                        Вы уверены, что хотите добавить еще одну такую же транзакцию?
+                    `;
+                    resolve(confirm(message));
+                });
 
-                if (duplicates.length > 0) {
-                    console.log('Обнаружен дубликат транзакции, пропускаем');
-                    return null;
+                if (!confirmed) {
+                    throw new Error('Транзакция отменена пользователем');
                 }
+            }
 
+            // Подготавливаем данные транзакции
+            const newTransaction = {
+                ...transaction,
+                userId: this.isProduction ? firebase.auth().currentUser.uid : 'local',
+                timestamp: this.isProduction ? firebase.firestore.FieldValue.serverTimestamp() : new Date(),
+                date: new Date().toISOString()
+            };
+
+            let savedTransaction;
+
+            if (this.isProduction) {
                 // Сохраняем в Firebase
                 const docRef = await firebase.firestore()
                     .collection('users')
-                    .doc(user.uid)
+                    .doc(firebase.auth().currentUser.uid)
                     .collection('transactions')
                     .add(newTransaction);
 
-                // Добавляем в локальный массив с ID документа
-                const savedTransaction = {
+                // Создаем объект транзакции с ID документа
+                savedTransaction = {
                     ...newTransaction,
                     docId: docRef.id
                 };
-                
-                this.transactions.unshift(savedTransaction);
-                
-            } catch (error) {
-                console.error('Ошибка при сохранении в Firebase:', error);
-                throw error;
+            } else {
+                savedTransaction = {
+                    ...newTransaction,
+                    id: Date.now()
+                };
             }
-        } else {
-            // В локальной версии сохраняем в localStorage
-            const newTransaction = {
-                ...transaction,
-                id: Date.now(),
-                date: new Date().toISOString()
-            };
-            this.transactions.unshift(newTransaction);
-            this.saveToLocalStorage();
+
+            // Добавляем в начало массива транзакций
+            this.transactions.unshift(savedTransaction);
+
+            // Создаем и добавляем новую карточку транзакции в DOM
+            const container = document.getElementById('expensesTableBody');
+            if (container) {
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'card-wrapper';
+                
+                const deleteBackground = document.createElement('div');
+                deleteBackground.className = 'delete-background';
+                deleteBackground.innerHTML = `
+                    <div class="delete-text">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </div>
+                `;
+                
+                const card = document.createElement('div');
+                card.className = 'transaction-card';
+
+                const date = new Date(savedTransaction.date);
+                const formattedDate = date.toLocaleDateString('ru-RU');
+                const formattedAmount = this.formatAmount(Math.abs(savedTransaction.amount));
+                const paymentTypeText = savedTransaction.paymentType === 'halyk' ? 'Halyk' : 'Kaspi';
+
+                card.innerHTML = `
+                    <div class="transaction-content">
+                        <div class="transaction-info">
+                            <div class="transaction-date">${formattedDate}</div>
+                            <div class="transaction-description">
+                                ${savedTransaction.description}
+                            </div>
+                            <div class="payment-type">${paymentTypeText}</div>
+                        </div>
+                        <div class="transaction-amount ${savedTransaction.amount < 0 ? 'expense' : 'income'}">
+                            ${savedTransaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
+                        </div>
+                    </div>
+                `;
+
+                // Добавляем обработчики для свайпа
+                let startX = 0;
+                let currentX = 0;
+                let isDragging = false;
+
+                const handleTouchStart = (e) => {
+                    startX = e.touches[0].clientX;
+                    isDragging = true;
+                    cardWrapper.style.transition = 'none';
+                };
+
+                const handleTouchMove = (e) => {
+                    if (!isDragging) return;
+                    
+                    currentX = e.touches[0].clientX;
+                    const diffX = currentX - startX;
+                    
+                    if (diffX > 0) return;
+                    
+                    const swipeX = Math.max(diffX, -100);
+                    card.style.transform = `translateX(${swipeX}px)`;
+                    
+                    deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
+                    
+                    if (Math.abs(swipeX) > 75) {
+                        cardWrapper.classList.add('will-delete');
+                    } else {
+                        cardWrapper.classList.remove('will-delete');
+                    }
+                };
+
+                const handleTouchEnd = () => {
+                    if (!isDragging) return;
+                    
+                    isDragging = false;
+                    cardWrapper.style.transition = 'transform 0.3s ease-out';
+                    
+                    const diffX = currentX - startX;
+                    
+                    if (diffX < -75) {
+                        card.style.transform = 'translateX(-100%)';
+                        deleteBackground.style.opacity = '1';
+                        setTimeout(() => {
+                            this.deleteTransaction(savedTransaction.docId || savedTransaction.id);
+                        }, 300);
+                    } else {
+                        card.style.transform = '';
+                        deleteBackground.style.opacity = '0';
+                    }
+                };
+
+                card.addEventListener('touchstart', handleTouchStart);
+                card.addEventListener('touchmove', handleTouchMove);
+                card.addEventListener('touchend', handleTouchEnd);
+
+                cardWrapper.appendChild(deleteBackground);
+                cardWrapper.appendChild(card);
+                
+                // Добавляем новую карточку в начало списка
+                if (container.firstChild) {
+                    container.insertBefore(cardWrapper, container.firstChild);
+                } else {
+                    container.appendChild(cardWrapper);
+                }
+
+                // Прокручиваем к новой транзакции
+                container.scrollTop = 0;
+            }
+
+            // Обновляем итоги
+            this.updateTotals(this.transactions);
+            
+            // Обновляем графики, если они есть
+            if (typeof window.updateCharts === 'function') {
+                window.updateCharts();
+            }
+
+            // Сохраняем в локальное хранилище, если не в production
+            if (!this.isProduction) {
+                this.saveToLocalStorage();
+            }
+
+            return savedTransaction;
+            
+        } catch (error) {
+            console.error('Ошибка при сохранении транзакции:', error);
+            throw error;
         }
-        
-        this.renderTransactions();
-        if (typeof window.updateCharts === 'function') {
-            window.updateCharts();
-        }
-        this.updateTotals(this.transactions);
-        
-        return transaction;
     }
 
     async deleteTransaction(id) {
@@ -323,44 +450,121 @@ class ExpenseManager {
             return;
         }
 
-        transactions.forEach(transaction => {
-            const card = document.createElement('div');
-            card.className = `transaction-card ${transaction.amount < 0 ? 'expense' : 'income'}`;
+        // Удаляем дубликаты перед отображением
+        const uniqueTransactions = this.removeDuplicates(transactions);
 
-            const paymentTypeDisplay = transaction.paymentType === 'kaspi-gold' ? 'Каспи Голд' :
-                                     transaction.paymentType === 'kaspi-pay' ? 'Каспи Пэй' :
-                                     transaction.paymentType === 'halyk' ? 'Халык' : 'Не указан';
-
-            card.innerHTML = `
-                <div class="transaction-header">
-                    <span class="transaction-date">${this.formatDate(transaction.date)}</span>
-                    <span class="transaction-payment-type">
-                        ${getPaymentTypeIcon(transaction.paymentType)}
-                        ${paymentTypeDisplay}
-                    </span>
-                </div>
-                <div class="transaction-body">
-                    <span class="transaction-description">${transaction.description}</span>
-                    <span class="transaction-amount">${this.formatAmount(transaction.amount)} ₸</span>
-                </div>
-                <button class="delete-transaction" data-id="${transaction.docId || transaction.id}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        uniqueTransactions.forEach(transaction => {
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = 'card-wrapper';
+            
+            const deleteBackground = document.createElement('div');
+            deleteBackground.className = 'delete-background';
+            deleteBackground.innerHTML = `
+                <div class="delete-text">
+                    <svg viewBox="0 0 24 24">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                     </svg>
-                </button>
+                </div>
+            `;
+            
+            const card = document.createElement('div');
+            card.className = 'transaction-card';
+
+            const date = new Date(transaction.date);
+            const formattedDate = date.toLocaleDateString('ru-RU');
+            const formattedAmount = this.formatAmount(Math.abs(transaction.amount));
+            
+            // Нормализация типа платежа
+            let normalizedPaymentType = transaction.paymentType;
+            if (typeof normalizedPaymentType === 'string') {
+                normalizedPaymentType = normalizedPaymentType.toLowerCase();
+                if (normalizedPaymentType.includes('каспи') || normalizedPaymentType.includes('kaspi')) {
+                    normalizedPaymentType = 'kaspi-gold';
+                } else if (normalizedPaymentType.includes('халык') || normalizedPaymentType.includes('halyk')) {
+                    normalizedPaymentType = 'halyk';
+                }
+            }
+            
+            const paymentTypeText = normalizedPaymentType === 'halyk' ? 'Halyk' : 'Kaspi';
+
+            card.innerHTML = `
+                <div class="transaction-content">
+                    <div class="transaction-info">
+                        <div class="transaction-date">${formattedDate}</div>
+                        <div class="transaction-description">
+                            ${transaction.description}
+                        </div>
+                        <div class="payment-type">${paymentTypeText}</div>
+                    </div>
+                    <div class="transaction-amount ${transaction.amount < 0 ? 'expense' : 'income'}">
+                        ${transaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
+                    </div>
+                </div>
             `;
 
-            // Добавляем обработчик для кнопки удаления
-            const deleteButton = card.querySelector('.delete-transaction');
-            deleteButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                const id = e.currentTarget.getAttribute('data-id');
-                if (id) {
-                    this.showConfirmDialog(id);
+            // Добавляем обработчики для свайпа
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            const handleTouchStart = (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+                cardWrapper.style.transition = 'none';
+            };
+
+            const handleTouchMove = (e) => {
+                if (!isDragging) return;
+                
+                currentX = e.touches[0].clientX;
+                const diffX = currentX - startX;
+                
+                if (diffX > 0) return; // Запрещаем свайп вправо
+                
+                // Ограничиваем свайп до -100px
+                const swipeX = Math.max(diffX, -100);
+                card.style.transform = `translateX(${swipeX}px)`;
+                
+                // Показываем красный фон при свайпе
+                deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
+                
+                // Если свайп больше 75px, показываем индикатор удаления
+                if (Math.abs(swipeX) > 75) {
+                    cardWrapper.classList.add('will-delete');
+                } else {
+                    cardWrapper.classList.remove('will-delete');
                 }
-            });
-            
-            container.appendChild(card);
+            };
+
+            const handleTouchEnd = () => {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                cardWrapper.style.transition = 'transform 0.3s ease-out';
+                
+                const diffX = currentX - startX;
+                
+                if (diffX < -75) {
+                    // Удаляем транзакцию
+                    card.style.transform = 'translateX(-100%)';
+                    deleteBackground.style.opacity = '1';
+                    setTimeout(() => {
+                        this.deleteTransaction(transaction.docId || transaction.id);
+                    }, 300);
+                } else {
+                    // Возвращаем карточку на место
+                    card.style.transform = '';
+                    deleteBackground.style.opacity = '0';
+                }
+            };
+
+            card.addEventListener('touchstart', handleTouchStart);
+            card.addEventListener('touchmove', handleTouchMove);
+            card.addEventListener('touchend', handleTouchEnd);
+
+            cardWrapper.appendChild(deleteBackground);
+            cardWrapper.appendChild(card);
+            container.appendChild(cardWrapper);
         });
     }
 
@@ -584,7 +788,7 @@ class ExpenseManager {
             'Счет на оплату': 'Fika People, Fruitata, Абадан Пэй, RockCity, Coffee Man, Shygie.kz, ИП и ТОО, базары, магазины',
             'Зарплата': 'Зарплаты, авансы и выплаты сотрудникам',
             'Руководство': 'Ига, Ержан, Альфия, Сека',
-            'Долг': 'Долги, кредиты, займы',
+            'Долг': 'Долги, кредиты',
             'Прочее': 'Остальные операции'
         };
         
@@ -967,15 +1171,20 @@ class ExpenseManager {
                 'каспи': 'kaspi-gold',
                 'kaspi': 'kaspi-gold',
                 'каспий': 'kaspi-gold',
+                'kaspipay': 'kaspi-pay',
+                'каспипей': 'kaspi-pay',
+                'каспипэй': 'kaspi-pay',
                 'халык': 'halyk',
                 'halyk': 'halyk',
-                'халик': 'halyk'
+                'халик': 'halyk',
+                'народный': 'halyk'
             };
 
             // Ищем ключевые слова способа оплаты
             for (const word of words) {
-                if (paymentKeywords[word]) {
-                    paymentType = paymentKeywords[word];
+                const normalizedWord = word.toLowerCase().replace(/[^а-яa-z]/g, '');
+                if (paymentKeywords[normalizedWord]) {
+                    paymentType = paymentKeywords[normalizedWord];
                     break;
                 }
             }
@@ -1035,7 +1244,8 @@ class ExpenseManager {
                 amount: type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
                 description: cleanDescription,
                 paymentType: paymentType || 'kaspi-gold',
-                date: new Date().toISOString()
+                date: new Date().toISOString(),
+                type: type // Добавляем тип транзакции
             };
 
             // Проверяем авторизацию перед сохранением
@@ -1052,10 +1262,18 @@ class ExpenseManager {
                 if (result) {
                     const responseMessage = document.createElement('div');
                     responseMessage.className = 'message system';
-                    const paymentTypeText = transaction.paymentType === 'halyk' ? 'Халык' : 'Каспи';
+                    const paymentTypeText = transaction.paymentType === 'halyk' ? 'Halyk' : 'Kaspi';
                     responseMessage.textContent = `✅ ${type === 'expense' ? 'Расход' : 'Доход'} на сумму ${Math.abs(amount)} ₸ через ${paymentTypeText} успешно добавлен`;
                     chatMessages.appendChild(responseMessage);
                     input.value = '';
+
+                    // Обновляем итоги
+                    this.updateTotals(this.transactions);
+                    
+                    // Обновляем графики, если они есть
+                    if (typeof window.updateCharts === 'function') {
+                        window.updateCharts();
+                    }
                 }
             }).catch(error => {
                 const errorMessage = document.createElement('div');
@@ -1077,6 +1295,23 @@ class ExpenseManager {
 
         // Прокручиваем чат вниз
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Добавляем новый метод для удаления дубликатов
+    removeDuplicates(transactions) {
+        const seen = new Map();
+        return transactions.filter(transaction => {
+            // Создаем уникальный ключ для транзакции
+            const key = `${transaction.amount}_${transaction.description.toLowerCase()}_${transaction.paymentType}_${new Date(transaction.date).toDateString()}`;
+            
+            if (seen.has(key)) {
+                console.log('Найден дубликат:', transaction);
+                return false;
+            }
+            
+            seen.set(key, true);
+            return true;
+        });
     }
 }
 
@@ -1219,7 +1454,7 @@ function renderExpenses() {
 function getPaymentTypeIcon(type) {
     const icons = {
         'kaspi-gold': `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 4H4C2.89 4 2.01 4.89 2.01 6L2 18C2 19.11 2.89 20 4 20H20C21.11 20 22 19.11 22 18V6C22 4.89 21.11 4 20 4ZM20 18H4V12H20V18ZM20 8H4V6H20V8Z"/>
+            <path d="M20 4H4C2.89 4 2.01 4.89 2.01 6L2 18C2 19.11 2.89 20 4 20ZM20 18H4V12H20V18ZM20 8H4V6H20V8Z"/>
         </svg>`,
         'kaspi-pay': `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17 2H7C5.89 2 5 2.89 5 4V20C5 21.11 5.89 22 7 22H17C18.11 22 19 21.11 19 20V4C19 2.89 18.11 2 17 2ZM17 20H7V4H17V20Z"/>
