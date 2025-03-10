@@ -37,6 +37,7 @@ class ExpenseManager {
 
         this.currentTransactionToDelete = null;
         this.initializeModal();
+        this.initializeQuickButtons();
 
         if (this.isProduction) {
             // Слушаем изменения авторизации
@@ -129,12 +130,17 @@ class ExpenseManager {
                 .get();
 
             // Преобразуем документы в массив транзакций
-            this.transactions = snapshot.docs.map(doc => ({
+            const loadedTransactions = snapshot.docs.map(doc => ({
                 ...doc.data(),
                 docId: doc.id
             }));
             
-            console.log(`ExpenseManager: Загружено ${this.transactions.length} транзакций`);
+            console.log(`ExpenseManager: Загружено ${loadedTransactions.length} транзакций (до удаления дубликатов)`);
+            
+            // Удаляем дубликаты
+            this.transactions = this.removeDuplicates(loadedTransactions);
+            
+            console.log(`ExpenseManager: Осталось ${this.transactions.length} транзакций (после удаления дубликатов)`);
             
             // Обновляем отображение
             this.renderTransactions();
@@ -638,29 +644,33 @@ class ExpenseManager {
     updateTotals(transactions) {
         console.log('ExpenseManager: Начало updateTotals');
         
-        // Считаем итоги
+        // Выводим все транзакции для проверки
+        console.log('Все транзакции:', transactions);
+        
+        // Считаем итоги с учетом знака и типа
         const totals = transactions.reduce((acc, t) => {
-            const amount = parseFloat(t.amount);
-            if (amount > 0) {
-                acc.income += amount;
+            const amount = Math.abs(parseFloat(t.amount));
+            // Если тип указан явно, используем его
+            if (t.type === 'income' || (t.amount > 0 && t.type !== 'expense')) {
+                acc.totalIncome += amount;
             } else {
-                acc.expense += Math.abs(amount);
+                acc.totalExpense += amount;
             }
             return acc;
-        }, { income: 0, expense: 0 });
+        }, { totalIncome: 0, totalExpense: 0 });
         
         console.log('Посчитанные итоги:', totals);
         
-        // Обновляем отображение
+        // Обновляем отображение с учетом вложенных элементов
         const incomeElement = document.querySelector('#totalIncome .total-amount');
         const expenseElement = document.querySelector('#totalExpense .total-amount');
         
         if (incomeElement) {
-            incomeElement.textContent = `${totals.income.toLocaleString('ru-RU')} ₸`;
+            incomeElement.textContent = `${totals.totalIncome.toLocaleString('ru-RU')} ₸`;
         }
         
         if (expenseElement) {
-            expenseElement.textContent = `${totals.expense.toLocaleString('ru-RU')} ₸`;
+            expenseElement.textContent = `${totals.totalExpense.toLocaleString('ru-RU')} ₸`;
         }
     }
 
@@ -769,8 +779,24 @@ class ExpenseManager {
     }
 
     generatePDFContent() {
-        const transactions = this.getFilteredTransactions();
-        const { totalIncome, totalExpense } = this.calculateTotals(transactions);
+        // Получаем транзакции и удаляем дубликаты
+        const filteredTransactions = this.getFilteredTransactions();
+        console.log('Всего транзакций до удаления дубликатов:', filteredTransactions.length);
+        
+        // Удаляем дубликаты
+        const transactions = this.removeDuplicates(filteredTransactions);
+        console.log('Транзакций после удаления дубликатов:', transactions.length);
+        
+        // Считаем итоги по уникальным транзакциям
+        const totals = transactions.reduce((acc, t) => {
+            const amount = Math.abs(parseFloat(t.amount));
+            if (t.amount > 0) {
+                acc.totalIncome += amount;
+            } else {
+                acc.totalExpense += amount;
+            }
+            return acc;
+        }, { totalIncome: 0, totalExpense: 0 });
         
         // Получаем текущую дату и время
         const now = new Date();
@@ -782,6 +808,12 @@ class ExpenseManager {
             minute: '2-digit',
             second: '2-digit'
         });
+        
+        // Сортируем транзакции по дате (от новых к старым)
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Остальной код генерации PDF остается без изменений
+        const { totalIncome, totalExpense } = this.calculateTotals(transactions);
         
         // Описания категорий
         const categoryDescriptions = {
@@ -962,7 +994,7 @@ class ExpenseManager {
                         'полиграфия'
                     ];
                     return suppliers.some(s => desc.includes(s.toLowerCase())) ||
-                           desc.startsWith('ип') && !desc.includes('налог') ||
+                           (desc.startsWith('ип') && !desc.includes('налог')) ||
                            desc.startsWith('тоо');
                 }
             },
@@ -992,7 +1024,12 @@ class ExpenseManager {
                     return desc.includes('долг') || 
                            desc.includes('кредо') || 
                            desc.includes('займ') ||
-                           desc.includes('в долг');
+                           desc.includes('в долг') ||
+                           desc.includes('талгат') ||
+                           desc.includes('д талгат') ||
+                           desc.includes('ерзат') ||
+                           desc.includes('гульназ') ||
+                           desc.includes('енлик');
                 }
             }
         ];
@@ -1312,6 +1349,94 @@ class ExpenseManager {
             seen.set(key, true);
             return true;
         });
+    }
+
+    // Добавляем новый метод для инициализации кнопок быстрого ввода
+    initializeQuickButtons() {
+        const input = document.getElementById('user-input');
+        if (!input) return;
+
+        const quickButtonsContainer = document.createElement('div');
+        quickButtonsContainer.className = 'quick-buttons';
+
+        const buttons = [
+            { text: 'Расход', value: 'расход', colorClass: 'expense-btn', pair: 'приход' },
+            { text: 'Приход', value: 'приход', colorClass: 'income-btn', pair: 'расход' },
+            { text: 'Kaspi', value: 'каспи', colorClass: 'kaspi-btn', pair: 'халык' },
+            { text: 'Halyk', value: 'халык', colorClass: 'halyk-btn', pair: 'каспи' }
+        ];
+
+        buttons.forEach(button => {
+            const btn = document.createElement('button');
+            btn.textContent = button.text;
+            btn.className = `quick-button ${button.colorClass}`;
+
+            // Добавляем эффект пульсации при клике
+            btn.addEventListener('click', (e) => {
+                // Создаем эффект пульсации
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                
+                const x = e.clientX - rect.left - size/2;
+                const y = e.clientY - rect.top - size/2;
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+
+                // Обработка текста в поле ввода
+                const currentValue = input.value;
+                const lowerValue = currentValue.toLowerCase();
+                const cursorPos = input.selectionStart;
+                
+                // Проверяем наличие парного слова
+                const pairWord = button.pair;
+                const currentWord = button.value;
+                
+                if (lowerValue.includes(pairWord)) {
+                    // Заменяем парное слово на текущее
+                    const newValue = currentValue.replace(new RegExp(pairWord, 'i'), currentWord);
+                    input.value = newValue;
+                    input.setSelectionRange(cursorPos, cursorPos);
+                } else if (!lowerValue.includes(currentWord)) {
+                    // Добавляем новое слово с пробелами
+                    const beforeCursor = currentValue.slice(0, cursorPos);
+                    const afterCursor = currentValue.slice(cursorPos);
+                    
+                    const needSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(' ');
+                    const needSpaceAfter = afterCursor.length > 0 && !afterCursor.startsWith(' ');
+                    
+                    const newValue = beforeCursor + 
+                                   (needSpaceBefore ? ' ' : '') + 
+                                   currentWord + 
+                                   (needSpaceAfter ? ' ' : '') + 
+                                   afterCursor;
+                    
+                    input.value = newValue;
+                    const newCursorPos = cursorPos + currentWord.length + 
+                                       (needSpaceBefore ? 1 : 0) + 
+                                       (needSpaceAfter ? 1 : 0);
+                    input.setSelectionRange(newCursorPos, newCursorPos);
+                }
+                
+                // Фокусируемся на поле ввода
+                input.focus();
+            });
+
+            quickButtonsContainer.appendChild(btn);
+        });
+
+        // Находим кнопку отправки сообщения
+        const sendButton = document.getElementById('send-message');
+        if (sendButton) {
+            // Добавляем контейнер с кнопками перед кнопкой отправки
+            sendButton.parentNode.insertBefore(quickButtonsContainer, sendButton);
+        }
     }
 }
 
