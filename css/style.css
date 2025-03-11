@@ -1042,6 +1042,7 @@ select:focus {
 }
 
 [data-theme="dark"] #send-message {
+    width: -webkit-fill-available;
     background: var(--dark-button-bg, #2D3748);
     color: var(--dark-text, #E8E8E8);
     border: 1px solid var(--dark-border, #3A3B3D);
@@ -1577,22 +1578,384 @@ select:focus {
 #user-input {
     width: -webkit-fill-available;
     padding: 12px 16px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--md-sys-color-outline);
     border-radius: 28px;
     font-size: 16px;
     line-height: 1.5;
-    color: #333;
-    background: #fff;
-    transition: border-color 0.2s ease;
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface);
+    transition: all 0.2s ease;
     outline: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 #user-input:focus {
-    border-color: #1a73e8;
-    box-shadow: 0 1px 3px rgba(26, 115, 232, 0.2);
+    border-color: var(--md-sys-color-primary);
+    box-shadow: var(--md-elevation-2);
 }
 
 #user-input::placeholder {
-    color: #757575;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Стили для поля ввода с выбранным поставщиком */
+#user-input[data-has-supplier="true"] {
+    padding-left: 16px;
+    border-color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-surface-container-low);
+}
+
+/* Стили для кнопки поставщиков */
+.suppliers-btn {
+    background-color: var(--md-sys-color-primary-container) !important;
+    color: var(--md-sys-color-on-primary-container) !important;
+    padding: 0 16px;
+    height: 36px;
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suppliers-btn::after {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    transition: transform 0.2s ease;
+}
+
+.suppliers-btn:hover {
+    background-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary) !important;
+    box-shadow: var(--md-elevation-1);
+}
+
+.suppliers-btn:hover::after {
+    transform: translateY(2px);
+}
+
+/* Стили для элементов списка поставщиков */
+.supplier-item {
+    background-color: var(--md-sys-color-surface-container-low);
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.supplier-item.active {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.supplier-item.active::after {
+    content: '';
+    display: block;
+    width: 18px;
+    height: 18px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.supplier-item:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+    box-shadow: var(--md-elevation-1);
+}
+
+.supplier-item:active {
+    transform: scale(0.98);
+}
+
+.supplier-item.active:hover {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .supplier-item.active {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+[data-theme="dark"] .supplier-item.active:hover {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+[data-theme="dark"] #user-input[data-has-supplier="true"] {
+    background-color: var(--md-sys-color-surface-container-low);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* Анимации */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.suppliers-modal.show {
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.suppliers-modal.show .suppliers-content {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Стили для скроллбара в списке поставщиков */
+.suppliers-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.suppliers-list::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 4px;
+}
+
+.suppliers-list::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 4px;
+}
+
+.suppliers-list::-webkit-scrollbar-thumb:hover {
+    background: var(--md-sys-color-outline-variant);
+}
+
+/* Стили для модального окна поставщиков */
+.suppliers-modal {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.suppliers-modal.show {
+    display: block;
+}
+
+.suppliers-content {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--md-sys-color-surface);
+    border-radius: 28px 28px 0 0;
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--md-elevation-3);
+}
+
+.suppliers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.suppliers-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.suppliers-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+}
+
+.suppliers-close:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.suppliers-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+    padding: 4px;
+}
+
+/* Темная тема для модального окна */
+[data-theme="dark"] .suppliers-content {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+[data-theme="dark"] .suppliers-close {
+    color: var(--md-sys-color-on-surface);
+}
+
+[data-theme="dark"] .suppliers-close:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.date-group {
+    margin-bottom: 16px;
+    background: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--surface-variant);
+    color: var(--on-surface-variant);
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.date-label {
+    font-weight: 600;
+}
+
+.date-summary {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.date-summary .income-total {
+    color: var(--success);
+}
+
+.date-summary .expense-total {
+    color: var(--error);
+}
+
+.transaction-time {
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    margin-right: 8px;
+}
+
+/* Обновляем стили для карточек внутри группы */
+.date-group .card-wrapper:last-child {
+    margin-bottom: 0;
+}
+
+.date-group .transaction-card {
+    border-radius: 0;
+    margin: 0;
+    border-bottom: 1px solid var(--outline-variant);
+}
+
+.date-group .card-wrapper:last-child .transaction-card {
+    border-bottom: none;
+}
+
+/* Анимация появления групп */
+.date-group {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Обновляем стили для темной темы */
+[data-theme="dark"] .date-header {
+    background: var(--surface-container-high);
+    border-bottom-color: var(--outline);
+}
+
+[data-theme="dark"] .date-group .transaction-card {
+    border-bottom-color: var(--outline);
+}
+
+.message {
+    background: var(--surface-container, #F5F5F5);
+    color: var(--on-surface, #1F1F1F);
+    border: 1px solid var(--outline-variant, #E0E0E0);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.message.user {
+    background: var(--primary-container, #E8F5E9);
+    color: var(--on-primary-container, #1B5E20);
+    border-color: var(--outline-variant, #C8E6C9);
+}
+
+.message.error {
+    background: var(--error-container, #FFEBEE);
+    color: var(--on-error-container, #B71C1C);
+    border-color: var(--outline-variant, #FFCDD2);
+}
+
+.payment-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.payment-info .dot {
+    color: var(--text-secondary);
+}
+
+.transaction-category {
+    font-size: 12px;
+    color: #959595;
+    padding: 2px 8px;
+    border-radius: 28px;
+    display: inline-block;
+    background-color: var(--md-sys-color-surface-container-high);
 } 

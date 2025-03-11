@@ -19,8 +19,12 @@ class ExpenseManager {
         };
         
         // Определяем, используем ли мы Firebase
-        const hostname = window.location.hostname;
-        this.isProduction = hostname === 'uyatemes.github.io' || hostname === '192.168.3.10';
+        const hostname = window.location.host;
+        this.isProduction = hostname === 'uyatemes.github.io' || 
+                           hostname === '192.168.3.10' || 
+                           hostname === '192.168.3.10:8080' || 
+                           hostname === 'localhost:8080' ||
+                           hostname === '10.131.1.174:8080';
         console.log('Режим работы:', this.isProduction ? 'Production' : 'Local');
         
         // Привязываем методы к контексту
@@ -72,9 +76,12 @@ class ExpenseManager {
         });
 
         // Добавляем обработчик для кнопки "Загрузить еще"
-        document.getElementById('loadMoreButton').addEventListener('click', () => {
-            this.loadMoreTransactions();
-        });
+        const loadMoreButton = document.getElementById('loadMoreButton');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', () => {
+                this.loadMoreTransactions();
+            });
+        }
     }
 
     async initialize() {
@@ -234,113 +241,8 @@ class ExpenseManager {
             // Добавляем в начало массива транзакций
             this.transactions.unshift(savedTransaction);
 
-            // Создаем и добавляем новую карточку транзакции в DOM
-            const container = document.getElementById('expensesTableBody');
-            if (container) {
-                const cardWrapper = document.createElement('div');
-                cardWrapper.className = 'card-wrapper';
-                
-                const deleteBackground = document.createElement('div');
-                deleteBackground.className = 'delete-background';
-                deleteBackground.innerHTML = `
-                    <div class="delete-text">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                        </svg>
-                    </div>
-                `;
-                
-                const card = document.createElement('div');
-                card.className = 'transaction-card';
-
-                const date = new Date(savedTransaction.date);
-                const formattedDate = date.toLocaleDateString('ru-RU');
-                const formattedAmount = this.formatAmount(Math.abs(savedTransaction.amount));
-                const paymentTypeText = savedTransaction.paymentType === 'halyk' ? 'Halyk' : 'Kaspi';
-
-                card.innerHTML = `
-                    <div class="transaction-content">
-                        <div class="transaction-info">
-                            <div class="transaction-date">${formattedDate}</div>
-                            <div class="transaction-description">
-                                ${savedTransaction.description}
-                            </div>
-                            <div class="payment-type">${paymentTypeText}</div>
-                        </div>
-                        <div class="transaction-amount ${savedTransaction.amount < 0 ? 'expense' : 'income'}">
-                            ${savedTransaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
-                        </div>
-                    </div>
-                `;
-
-                // Добавляем обработчики для свайпа
-                let startX = 0;
-                let currentX = 0;
-                let isDragging = false;
-
-                const handleTouchStart = (e) => {
-                    startX = e.touches[0].clientX;
-                    isDragging = true;
-                    cardWrapper.style.transition = 'none';
-                };
-
-                const handleTouchMove = (e) => {
-                    if (!isDragging) return;
-                    
-                    currentX = e.touches[0].clientX;
-                    const diffX = currentX - startX;
-                    
-                    if (diffX > 0) return;
-                    
-                    const swipeX = Math.max(diffX, -100);
-                    card.style.transform = `translateX(${swipeX}px)`;
-                    
-                    deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
-                    
-                    if (Math.abs(swipeX) > 75) {
-                        cardWrapper.classList.add('will-delete');
-                    } else {
-                        cardWrapper.classList.remove('will-delete');
-                    }
-                };
-
-                const handleTouchEnd = () => {
-                    if (!isDragging) return;
-                    
-                    isDragging = false;
-                    cardWrapper.style.transition = 'transform 0.3s ease-out';
-                    
-                    const diffX = currentX - startX;
-                    
-                    if (diffX < -75) {
-                        card.style.transform = 'translateX(-100%)';
-                        deleteBackground.style.opacity = '1';
-                        setTimeout(() => {
-                            this.deleteTransaction(savedTransaction.docId || savedTransaction.id);
-                        }, 300);
-                    } else {
-                        card.style.transform = '';
-                        deleteBackground.style.opacity = '0';
-                    }
-                };
-
-                card.addEventListener('touchstart', handleTouchStart);
-                card.addEventListener('touchmove', handleTouchMove);
-                card.addEventListener('touchend', handleTouchEnd);
-
-                cardWrapper.appendChild(deleteBackground);
-                cardWrapper.appendChild(card);
-                
-                // Добавляем новую карточку в начало списка
-                if (container.firstChild) {
-                    container.insertBefore(cardWrapper, container.firstChild);
-                } else {
-                    container.appendChild(cardWrapper);
-                }
-
-                // Прокручиваем к новой транзакции
-                container.scrollTop = 0;
-            }
+            // Добавляем транзакцию в DOM
+            this.addTransactionToDOM(savedTransaction);
 
             // Обновляем итоги
             this.updateTotals(this.transactions);
@@ -459,118 +361,53 @@ class ExpenseManager {
         // Удаляем дубликаты перед отображением
         const uniqueTransactions = this.removeDuplicates(transactions);
 
-        uniqueTransactions.forEach(transaction => {
-            const cardWrapper = document.createElement('div');
-            cardWrapper.className = 'card-wrapper';
-            
-            const deleteBackground = document.createElement('div');
-            deleteBackground.className = 'delete-background';
-            deleteBackground.innerHTML = `
-                <div class="delete-text">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
-                </div>
-            `;
-            
-            const card = document.createElement('div');
-            card.className = 'transaction-card';
-
+        // Группируем транзакции по дате
+        const groupedTransactions = uniqueTransactions.reduce((groups, transaction) => {
             const date = new Date(transaction.date);
-            const formattedDate = date.toLocaleDateString('ru-RU');
-            const formattedAmount = this.formatAmount(Math.abs(transaction.amount));
+            const dateKey = date.toLocaleDateString('ru-RU');
             
-            // Нормализация типа платежа
-            let normalizedPaymentType = transaction.paymentType;
-            if (typeof normalizedPaymentType === 'string') {
-                normalizedPaymentType = normalizedPaymentType.toLowerCase();
-                if (normalizedPaymentType.includes('каспи') || normalizedPaymentType.includes('kaspi')) {
-                    normalizedPaymentType = 'kaspi-gold';
-                } else if (normalizedPaymentType.includes('халык') || normalizedPaymentType.includes('halyk')) {
-                    normalizedPaymentType = 'halyk';
-                }
+            if (!groups[dateKey]) {
+                groups[dateKey] = [];
             }
-            
-            const paymentTypeText = normalizedPaymentType === 'halyk' ? 'Halyk' : 'Kaspi';
+            groups[dateKey].push(transaction);
+            return groups;
+        }, {});
 
-            card.innerHTML = `
-                <div class="transaction-content">
-                    <div class="transaction-info">
-                        <div class="transaction-date">${formattedDate}</div>
-                        <div class="transaction-description">
-                            ${transaction.description}
-                        </div>
-                        <div class="payment-type">${paymentTypeText}</div>
-                    </div>
-                    <div class="transaction-amount ${transaction.amount < 0 ? 'expense' : 'income'}">
-                        ${transaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
+        // Сортируем даты в обратном порядке (новые сверху)
+        const sortedDates = Object.keys(groupedTransactions).sort((a, b) => {
+            return new Date(b.split('.').reverse().join('-')) - new Date(a.split('.').reverse().join('-'));
+        });
+
+        sortedDates.forEach(dateKey => {
+            // Создаем заголовок группы с датой
+            const dateGroup = document.createElement('div');
+            dateGroup.className = 'date-group';
+            dateGroup.innerHTML = `
+                <div class="date-header">
+                    <div class="date-label">${dateKey}</div>
+                    <div class="date-summary">
+                        <span class="income-total">+${this.formatAmount(
+                            groupedTransactions[dateKey].reduce((sum, t) => sum + (t.amount > 0 ? Math.abs(t.amount) : 0), 0)
+                        )} ₸</span>
+                        <span class="expense-total">-${this.formatAmount(
+                            groupedTransactions[dateKey].reduce((sum, t) => sum + (t.amount < 0 ? Math.abs(t.amount) : 0), 0)
+                        )} ₸</span>
                     </div>
                 </div>
             `;
+            container.appendChild(dateGroup);
 
-            // Добавляем обработчики для свайпа
-            let startX = 0;
-            let currentX = 0;
-            let isDragging = false;
+            // Сортируем транзакции внутри группы по времени (от новых к старым)
+            const sortedTransactions = groupedTransactions[dateKey].sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                return dateB.getTime() - dateA.getTime(); // Используем getTime() для более точного сравнения
+            });
 
-            const handleTouchStart = (e) => {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-                cardWrapper.style.transition = 'none';
-            };
-
-            const handleTouchMove = (e) => {
-                if (!isDragging) return;
-                
-                currentX = e.touches[0].clientX;
-                const diffX = currentX - startX;
-                
-                if (diffX > 0) return; // Запрещаем свайп вправо
-                
-                // Ограничиваем свайп до -100px
-                const swipeX = Math.max(diffX, -100);
-                card.style.transform = `translateX(${swipeX}px)`;
-                
-                // Показываем красный фон при свайпе
-                deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
-                
-                // Если свайп больше 75px, показываем индикатор удаления
-                if (Math.abs(swipeX) > 75) {
-                    cardWrapper.classList.add('will-delete');
-                } else {
-                    cardWrapper.classList.remove('will-delete');
-                }
-            };
-
-            const handleTouchEnd = () => {
-                if (!isDragging) return;
-                
-                isDragging = false;
-                cardWrapper.style.transition = 'transform 0.3s ease-out';
-                
-                const diffX = currentX - startX;
-                
-                if (diffX < -75) {
-                    // Удаляем транзакцию
-                    card.style.transform = 'translateX(-100%)';
-                    deleteBackground.style.opacity = '1';
-                    setTimeout(() => {
-                        this.deleteTransaction(transaction.docId || transaction.id);
-                    }, 300);
-                } else {
-                    // Возвращаем карточку на место
-                    card.style.transform = '';
-                    deleteBackground.style.opacity = '0';
-                }
-            };
-
-            card.addEventListener('touchstart', handleTouchStart);
-            card.addEventListener('touchmove', handleTouchMove);
-            card.addEventListener('touchend', handleTouchEnd);
-
-            cardWrapper.appendChild(deleteBackground);
-            cardWrapper.appendChild(card);
-            container.appendChild(cardWrapper);
+            // Добавляем транзакции группы
+            sortedTransactions.forEach(transaction => {
+                this.addTransactionToDOM(transaction);
+            });
         });
     }
 
@@ -788,15 +625,7 @@ class ExpenseManager {
         console.log('Транзакций после удаления дубликатов:', transactions.length);
         
         // Считаем итоги по уникальным транзакциям
-        const totals = transactions.reduce((acc, t) => {
-            const amount = Math.abs(parseFloat(t.amount));
-            if (t.amount > 0) {
-                acc.totalIncome += amount;
-            } else {
-                acc.totalExpense += amount;
-            }
-            return acc;
-        }, { totalIncome: 0, totalExpense: 0 });
+        const totals = this.calculateTotals(transactions);
         
         // Получаем текущую дату и время
         const now = new Date();
@@ -813,7 +642,7 @@ class ExpenseManager {
         transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         // Остальной код генерации PDF остается без изменений
-        const { totalIncome, totalExpense } = this.calculateTotals(transactions);
+        const { totalIncome, totalExpense } = totals;
         
         // Описания категорий
         const categoryDescriptions = {
@@ -1180,12 +1009,6 @@ class ExpenseManager {
         const text = input.value.trim();
         if (!text) return;
 
-        // Добавляем сообщение пользователя
-        const userMessage = document.createElement('div');
-        userMessage.className = 'message user';
-        userMessage.textContent = text;
-        chatMessages.appendChild(userMessage);
-
         try {
             // Разбиваем ввод на слова и приводим к нижнему регистру
             const words = text.toLowerCase().split(' ').filter(word => word.length > 0);
@@ -1252,8 +1075,8 @@ class ExpenseManager {
                     }
                 }
 
-                // Если слово не является служебным, добавляем его к описанию
-                if (!paymentKeywords[word] && 
+                // Добавляем слово к описанию, если это не служебное слово
+                if (!paymentKeywords[word.toLowerCase()] && 
                     !word.match(/^[+-]?\d+$/) &&
                     !['расход', 'приход', 'доход', 'трата', 'плюс', 'минус', '+', '-'].includes(word)) {
                     description.push(word);
@@ -1265,8 +1088,14 @@ class ExpenseManager {
                 type = 'expense';
             }
 
-            // Формируем описание
-            const cleanDescription = description.join(' ').trim();
+            // Формируем описание, сохраняя оригинальный регистр слов из input.value
+            const inputWords = input.value.split(' ');
+            const cleanDescription = inputWords.filter(word => {
+                const lowerWord = word.toLowerCase();
+                return !paymentKeywords[lowerWord.replace(/[^а-яa-z]/g, '')] && 
+                       !word.match(/^[+-]?\d+$/) &&
+                       !['расход', 'приход', 'доход', 'трата', 'плюс', 'минус', '+', '-'].includes(lowerWord);
+            }).join(' ').trim();
 
             // Проверяем обязательные поля
             if (!amount) {
@@ -1282,7 +1111,7 @@ class ExpenseManager {
                 description: cleanDescription,
                 paymentType: paymentType || 'kaspi-gold',
                 date: new Date().toISOString(),
-                type: type // Добавляем тип транзакции
+                type: type
             };
 
             // Проверяем авторизацию перед сохранением
@@ -1311,6 +1140,9 @@ class ExpenseManager {
                     if (typeof window.updateCharts === 'function') {
                         window.updateCharts();
                     }
+
+                    // Убираем автоматическую прокрутку чата
+                    // chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }).catch(error => {
                 const errorMessage = document.createElement('div');
@@ -1330,8 +1162,8 @@ class ExpenseManager {
             chatMessages.appendChild(errorMessage);
         }
 
-        // Прокручиваем чат вниз
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Убираем автоматическую прокрутку чата
+        // chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     // Добавляем новый метод для удаления дубликатов
@@ -1363,17 +1195,104 @@ class ExpenseManager {
             { text: 'Расход', value: 'расход', colorClass: 'expense-btn', pair: 'приход' },
             { text: 'Приход', value: 'приход', colorClass: 'income-btn', pair: 'расход' },
             { text: 'Kaspi', value: 'каспи', colorClass: 'kaspi-btn', pair: 'халык' },
-            { text: 'Halyk', value: 'халык', colorClass: 'halyk-btn', pair: 'каспи' }
+            { text: 'Halyk', value: 'халык', colorClass: 'halyk-btn', pair: 'каспи' },
+            { text: 'Поставщики', value: '', colorClass: 'suppliers-btn', isModal: true }
         ];
+
+        // Создаем модальное окно для поставщиков
+        const suppliersModal = document.createElement('div');
+        suppliersModal.className = 'suppliers-modal';
+        suppliersModal.innerHTML = `
+            <div class="suppliers-content">
+                <div class="suppliers-header">
+                    <h3>Поставщики</h3>
+                    <button class="close-suppliers">&times;</button>
+                </div>
+                <div class="suppliers-list">
+                    ${this.getSuppliersList().map(supplier => `
+                        <button class="supplier-item" data-value="${supplier.value}">
+                            ${supplier.name}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(suppliersModal);
+
+        // Обработчик закрытия модального окна
+        const closeBtn = suppliersModal.querySelector('.close-suppliers');
+        closeBtn.addEventListener('click', () => {
+            suppliersModal.classList.remove('show');
+        });
+
+        // Обработчик клика вне модального окна
+        suppliersModal.addEventListener('click', (e) => {
+            if (e.target === suppliersModal) {
+                suppliersModal.classList.remove('show');
+            }
+        });
+
+        // Обработчик выбора поставщика
+        const supplierItems = suppliersModal.querySelectorAll('.supplier-item');
+        supplierItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const supplierValue = item.dataset.value;
+                const currentValue = input.value;
+                
+                // Удаляем предыдущего активного поставщика
+                supplierItems.forEach(si => si.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Ищем существующего поставщика в тексте
+                const suppliers = this.getSuppliersList().map(s => s.value);
+                let newValue = currentValue;
+                
+                // Заменяем существующего поставщика или добавляем нового
+                const supplierFound = suppliers.some(supplier => {
+                    if (newValue.toLowerCase().includes(supplier)) {
+                        newValue = newValue.toLowerCase().replace(supplier, supplierValue);
+                        return true;
+                    }
+                    return false;
+                });
+                
+                // Если поставщик не найден, добавляем нового
+                if (!supplierFound) {
+                    const cursorPos = input.selectionStart;
+                    const beforeCursor = currentValue.slice(0, cursorPos);
+                    const afterCursor = currentValue.slice(cursorPos);
+                    
+                    const needSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(' ');
+                    const needSpaceAfter = afterCursor.length > 0 && !afterCursor.startsWith(' ');
+                    
+                    newValue = beforeCursor + 
+                             (needSpaceBefore ? ' ' : '') + 
+                             supplierValue + 
+                             (needSpaceAfter ? ' ' : '') + 
+                             afterCursor;
+                }
+                
+                input.value = newValue;
+                input.setAttribute('data-has-supplier', 'true');
+                
+                suppliersModal.classList.remove('show');
+                input.focus();
+            });
+        });
 
         buttons.forEach(button => {
             const btn = document.createElement('button');
             btn.textContent = button.text;
             btn.className = `quick-button ${button.colorClass}`;
 
-            // Добавляем эффект пульсации при клике
             btn.addEventListener('click', (e) => {
-                // Создаем эффект пульсации
+                if (button.isModal) {
+                    // Показываем модальное окно поставщиков
+                    suppliersModal.classList.add('show');
+                    return;
+                }
+
+                // Существующий код для обычных кнопок
                 const ripple = document.createElement('span');
                 ripple.className = 'ripple';
 
@@ -1389,54 +1308,258 @@ class ExpenseManager {
                 btn.appendChild(ripple);
                 setTimeout(() => ripple.remove(), 600);
 
-                // Обработка текста в поле ввода
-                const currentValue = input.value;
-                const lowerValue = currentValue.toLowerCase();
-                const cursorPos = input.selectionStart;
-                
-                // Проверяем наличие парного слова
-                const pairWord = button.pair;
-                const currentWord = button.value;
-                
-                if (lowerValue.includes(pairWord)) {
-                    // Заменяем парное слово на текущее
-                    const newValue = currentValue.replace(new RegExp(pairWord, 'i'), currentWord);
-                    input.value = newValue;
-                    input.setSelectionRange(cursorPos, cursorPos);
-                } else if (!lowerValue.includes(currentWord)) {
-                    // Добавляем новое слово с пробелами
-                    const beforeCursor = currentValue.slice(0, cursorPos);
-                    const afterCursor = currentValue.slice(cursorPos);
+                if (!button.isModal) {
+                    const currentValue = input.value;
+                    const lowerValue = currentValue.toLowerCase();
+                    const cursorPos = input.selectionStart;
                     
-                    const needSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(' ');
-                    const needSpaceAfter = afterCursor.length > 0 && !afterCursor.startsWith(' ');
+                    const pairWord = button.pair;
+                    const currentWord = button.value;
                     
-                    const newValue = beforeCursor + 
-                                   (needSpaceBefore ? ' ' : '') + 
-                                   currentWord + 
-                                   (needSpaceAfter ? ' ' : '') + 
-                                   afterCursor;
-                    
-                    input.value = newValue;
-                    const newCursorPos = cursorPos + currentWord.length + 
-                                       (needSpaceBefore ? 1 : 0) + 
-                                       (needSpaceAfter ? 1 : 0);
-                    input.setSelectionRange(newCursorPos, newCursorPos);
+                    if (lowerValue.includes(pairWord)) {
+                        const newValue = currentValue.replace(new RegExp(pairWord, 'i'), currentWord);
+                        input.value = newValue;
+                        input.setSelectionRange(cursorPos, cursorPos);
+                    } else if (!lowerValue.includes(currentWord)) {
+                        const beforeCursor = currentValue.slice(0, cursorPos);
+                        const afterCursor = currentValue.slice(cursorPos);
+                        
+                        const needSpaceBefore = beforeCursor.length > 0 && !beforeCursor.endsWith(' ');
+                        const needSpaceAfter = afterCursor.length > 0 && !afterCursor.startsWith(' ');
+                        
+                        const newValue = beforeCursor + 
+                                       (needSpaceBefore ? ' ' : '') + 
+                                       currentWord + 
+                                       (needSpaceAfter ? ' ' : '') + 
+                                       afterCursor;
+                        
+                        input.value = newValue;
+                        const newCursorPos = cursorPos + currentWord.length + 
+                                           (needSpaceBefore ? 1 : 0) + 
+                                           (needSpaceAfter ? 1 : 0);
+                        input.setSelectionRange(newCursorPos, newCursorPos);
+                    }
                 }
                 
-                // Фокусируемся на поле ввода
                 input.focus();
             });
 
             quickButtonsContainer.appendChild(btn);
         });
 
-        // Находим кнопку отправки сообщения
         const sendButton = document.getElementById('send-message');
         if (sendButton) {
-            // Добавляем контейнер с кнопками перед кнопкой отправки
             sendButton.parentNode.insertBefore(quickButtonsContainer, sendButton);
         }
+    }
+
+    getSuppliersList() {
+        return [
+            { name: 'Fika People', value: 'fika people' },
+            { name: 'Fruitata', value: 'fruitata' },
+            { name: 'Абадан Пэй', value: 'абадан пэй' },
+            { name: 'RockCity', value: 'rockcity' },
+            { name: 'Coffee Man', value: 'coffee man' },
+            { name: 'Shygie.kz', value: 'shygie.kz' },
+            { name: 'Юзаев Талгат', value: 'юзаев талгат' },
+            { name: 'Илахунов', value: 'илахунов' },
+            { name: 'Дана Пэй', value: 'дана пэй' }
+        ];
+    }
+
+    // Добавляем новый метод для добавления одной транзакции
+    addTransactionToDOM(transaction) {
+        const container = document.getElementById('expensesTableBody');
+        if (!container) return;
+
+        const date = new Date(transaction.date);
+        const dateKey = date.toLocaleDateString('ru-RU');
+        
+        // Ищем существующую группу для этой даты
+        let dateGroup = Array.from(container.children).find(
+            group => group.querySelector('.date-label')?.textContent === dateKey
+        );
+
+        // Если группа не найдена, создаем новую
+        if (!dateGroup) {
+            dateGroup = document.createElement('div');
+            dateGroup.className = 'date-group';
+            dateGroup.innerHTML = `
+                <div class="date-header">
+                    <div class="date-label">${dateKey}</div>
+                    <div class="date-summary">
+                        <span class="income-total">+${this.formatAmount(0)} ₸</span>
+                        <span class="expense-total">-${this.formatAmount(0)} ₸</span>
+                    </div>
+                </div>
+            `;
+            // Вставляем новую группу в начало контейнера
+            container.insertBefore(dateGroup, container.firstChild);
+        }
+
+        // Создаем карточку транзакции
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'card-wrapper';
+        
+        const deleteBackground = document.createElement('div');
+        deleteBackground.className = 'delete-background';
+        deleteBackground.innerHTML = `
+            <div class="delete-text">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+            </div>
+        `;
+
+        const card = document.createElement('div');
+        card.className = 'transaction-card';
+
+        const formattedTime = date.toLocaleTimeString('ru-RU', { 
+            hour: '2-digit', 
+            minute: '2-digit'
+        });
+        const formattedAmount = this.formatAmount(Math.abs(transaction.amount));
+        const paymentTypeText = transaction.paymentType === 'halyk' ? 'Halyk' : 'Kaspi';
+
+        card.innerHTML = `
+            <div class="transaction-content">
+                <div class="transaction-info">
+                    <div class="transaction-time">${formattedTime}</div>
+                    <div class="transaction-description">
+                        ${transaction.description}
+                    </div>
+                    <div class="payment-info">
+                        <span class="payment-type">${paymentTypeText}</span>
+                        <span class="transaction-category">${this.categorizeDescription(transaction.description)}</span>
+                    </div>
+                </div>
+                <div class="transaction-amount ${transaction.amount < 0 ? 'expense' : 'income'}">
+                    ${transaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчики для свайпа
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        const handleTouchStart = (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            cardWrapper.style.transition = 'none';
+        };
+
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            currentX = e.touches[0].clientX;
+            const diffX = currentX - startX;
+            if (diffX > 0) return;
+            const swipeX = Math.max(diffX, -100);
+            card.style.transform = `translateX(${swipeX}px)`;
+            deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
+            cardWrapper.classList.toggle('will-delete', Math.abs(swipeX) > 75);
+        };
+
+        const handleTouchEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            cardWrapper.style.transition = 'transform 0.3s ease-out';
+            const diffX = currentX - startX;
+            
+            if (diffX < -75) {
+                const modal = document.getElementById('confirmDialog');
+                const confirmBtn = document.getElementById('confirmDelete');
+                const cancelBtn = document.getElementById('cancelDelete');
+                
+                const modalText = document.querySelector('#confirmDialog .modal-text');
+                if (modalText) {
+                    modalText.innerHTML = `
+                        <div>Вы действительно хотите удалить транзакцию?</div>
+                        <div class="transaction-info">
+                            <div class="transaction-description">${transaction.description}</div>
+                            <div class="transaction-amount ${transaction.amount < 0 ? 'expense' : 'income'}">
+                                ${transaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
+                            </div>
+                        </div>
+                    `;
+                }
+
+                modal.classList.add('show');
+
+                const handleConfirm = () => {
+                    this.deleteTransaction(transaction.docId || transaction.id);
+                    modal.classList.remove('show');
+                    // Удаляем обработчики после использования
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                };
+
+                const handleCancel = () => {
+                    card.style.transform = '';
+                    deleteBackground.style.opacity = '0';
+                    modal.classList.remove('show');
+                };
+
+                confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
+            } else {
+                card.style.transform = '';
+                deleteBackground.style.opacity = '0';
+            }
+        };
+
+        card.addEventListener('touchstart', handleTouchStart);
+        card.addEventListener('touchmove', handleTouchMove);
+        card.addEventListener('touchend', handleTouchEnd);
+
+        cardWrapper.appendChild(deleteBackground);
+        cardWrapper.appendChild(card);
+
+        // Вставляем карточку в начало группы после заголовка
+        const header = dateGroup.querySelector('.date-header');
+        
+        // Получаем все существующие карточки в группе
+        const existingCards = Array.from(dateGroup.querySelectorAll('.card-wrapper'));
+        
+        // Находим позицию для вставки новой карточки
+        const transactionTime = date.getHours() * 60 + date.getMinutes(); // Конвертируем время в минуты
+        
+        const insertPosition = existingCards.find(existingCard => {
+            const existingTimeText = existingCard.querySelector('.transaction-time')?.textContent;
+            if (!existingTimeText) return true;
+            
+            const [hours, minutes] = existingTimeText.split(':').map(Number);
+            const existingTime = hours * 60 + minutes;
+            
+            return transactionTime > existingTime;
+        });
+
+        if (insertPosition) {
+            dateGroup.insertBefore(cardWrapper, insertPosition);
+        } else {
+            // Если не нашли позицию или нет карточек, добавляем после заголовка
+            if (header.nextSibling) {
+                dateGroup.insertBefore(cardWrapper, header.nextSibling);
+            } else {
+                dateGroup.appendChild(cardWrapper);
+            }
+        }
+
+        // Обновляем итоги для группы
+        const transactions = this.transactions.filter(t => 
+            new Date(t.date).toLocaleDateString('ru-RU') === dateKey
+        );
+        const income = transactions.reduce((sum, t) => sum + (t.amount > 0 ? Math.abs(t.amount) : 0), 0);
+        const expense = transactions.reduce((sum, t) => sum + (t.amount < 0 ? Math.abs(t.amount) : 0), 0);
+
+        const incomeTotal = dateGroup.querySelector('.income-total');
+        const expenseTotal = dateGroup.querySelector('.expense-total');
+        if (incomeTotal) incomeTotal.textContent = `+${this.formatAmount(income)} ₸`;
+        if (expenseTotal) expenseTotal.textContent = `-${this.formatAmount(expense)} ₸`;
+
+        // Убираем автоматическую прокрутку
+        // cardWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
