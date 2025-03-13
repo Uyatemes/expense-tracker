@@ -8,15 +8,23 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
-# Зависимости
+# Зависимости и сборки
 node_modules/
-vendor/
+dist/
+build/
 
-# Логи
+# Логи и временные файлы
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.env
+.env.local
+.env.*.local
+
+# Кэш
+.cache/
+.temp/
 
 # Локальные файлы конфигурации
 .env

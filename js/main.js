@@ -275,6 +275,12 @@ class ExpenseManager {
                 throw new Error('Необходима авторизация');
             }
 
+            // Закрываем модальное окно подтверждения
+            const confirmDialog = document.getElementById('confirmDialog');
+            if (confirmDialog) {
+                confirmDialog.classList.remove('show');
+            }
+
             // Удаляем из Firebase
             await firebase.firestore()
                 .collection('users')
@@ -512,8 +518,83 @@ class ExpenseManager {
     }
 
     showConfirmDialog(id) {
-        const modal = document.getElementById('confirmDialog');
-        this.currentTransactionToDelete = id;
+        let modal = document.getElementById('confirmDialog');
+        if (!modal) {
+            // Создаем модальное окно для подтверждения
+            modal = document.createElement('div');
+            modal.id = 'confirmDialog';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content confirm-dialog">
+                    <div class="modal-header">
+                        <h3>Подтверждение удаления</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Вы уверены, что хотите удалить эту транзакцию?</p>
+                        <div class="loader" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Удаление транзакции...</p>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="cancelDelete" class="action-button">Отмена</button>
+                        <button id="confirmDelete" class="action-button delete-action">Удалить</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Удаляем старые обработчики, создавая клоны кнопок
+        const confirmBtn = modal.querySelector('#confirmDelete');
+        const cancelBtn = modal.querySelector('#cancelDelete');
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        // Добавляем новые обработчики
+        newConfirmBtn.addEventListener('click', async () => {
+            const loader = modal.querySelector('.loader');
+            const actions = modal.querySelector('.modal-actions');
+            const body = modal.querySelector('.modal-body p');
+            
+            // Показываем лоадер и скрываем кнопки
+            if (loader) loader.style.display = 'flex';
+            if (actions) actions.style.display = 'none';
+            if (body) body.style.display = 'none';
+            
+            try {
+                await this.deleteTransaction(id);
+            } catch (error) {
+                console.error('Ошибка при удалении:', error);
+                alert('Не удалось удалить транзакцию. Попробуйте еще раз.');
+            } finally {
+                if (modal) {
+                    modal.classList.remove('show');
+                    setTimeout(() => {
+                        if (loader) loader.style.display = 'none';
+                        if (actions) actions.style.display = 'flex';
+                        if (body) body.style.display = 'block';
+                    }, 300);
+                }
+            }
+        });
+
+        newCancelBtn.addEventListener('click', () => {
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Закрытие по клику вне модального окна
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+
+        // Показываем модальное окно
         modal.classList.add('show');
     }
 
@@ -646,7 +727,7 @@ class ExpenseManager {
         
         // Описания категорий
         const categoryDescriptions = {
-            'Счет на оплату': 'Fika People, Fruitata, Абадан Пэй, RockCity, Coffee Man, Shygie.kz, ИП и ТОО, базары, магазины',
+            'Счет на оплату': 'Fika People, Fruitata, Ип Абадан, RockCity, Coffee Man, Shygie.kz, Sandi Group, базары, магазины',
             'Зарплата': 'Зарплаты, авансы и выплаты сотрудникам',
             'Руководство': 'Ига, Ержан, Альфия, Сека',
             'Долг': 'Долги, кредиты',
@@ -817,9 +898,9 @@ class ExpenseManager {
                 category: 'Счет на оплату',
                 test: (desc) => {
                     const suppliers = [
-                        'fika people', 'fruitata', 'абадан пэй', 'ип абадан',
+                        'fika people', 'fruitata', 'sandi group', 'ип абадан',
                         'rockcity', 'coffee man', 'shygie.kz', 'юзаев талгат',
-                        'илахунов', 'дана пэй', 'базар', 'магазин', 'доставка',
+                        'илахунов', 'ип дана', 'базар', 'магазин', 'доставка',
                         'полиграфия'
                     ];
                     return suppliers.some(s => desc.includes(s.toLowerCase())) ||
@@ -1357,13 +1438,14 @@ class ExpenseManager {
         return [
             { name: 'Fika People', value: 'fika people' },
             { name: 'Fruitata', value: 'fruitata' },
-            { name: 'Абадан Пэй', value: 'абадан пэй' },
+            { name: 'ИП АБАДАН', value: 'ИП АБАДАН' },
             { name: 'RockCity', value: 'rockcity' },
             { name: 'Coffee Man', value: 'coffee man' },
             { name: 'Shygie.kz', value: 'shygie.kz' },
             { name: 'Юзаев Талгат', value: 'юзаев талгат' },
             { name: 'Илахунов', value: 'илахунов' },
-            { name: 'Дана Пэй', value: 'дана пэй' }
+            { name: 'Sandi Group', value: 'Sandi Group' },
+            { name: 'ИП Дана', value: 'ип дана' }
         ];
     }
 
@@ -1393,7 +1475,6 @@ class ExpenseManager {
                     </div>
                 </div>
             `;
-            // Вставляем новую группу в начало контейнера
             container.insertBefore(dateGroup, container.firstChild);
         }
 
@@ -1401,16 +1482,6 @@ class ExpenseManager {
         const cardWrapper = document.createElement('div');
         cardWrapper.className = 'card-wrapper';
         
-        const deleteBackground = document.createElement('div');
-        deleteBackground.className = 'delete-background';
-        deleteBackground.innerHTML = `
-            <div class="delete-text">
-                <svg viewBox="0 0 24 24">
-                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                </svg>
-            </div>
-        `;
-
         const card = document.createElement('div');
         card.className = 'transaction-card';
 
@@ -1439,81 +1510,11 @@ class ExpenseManager {
             </div>
         `;
 
-        // Добавляем обработчики для свайпа
-        let startX = 0;
-        let currentX = 0;
-        let isDragging = false;
+        // Добавляем обработчик клика для показа деталей
+        card.addEventListener('click', () => {
+            this.showTransactionDetails(transaction);
+        });
 
-        const handleTouchStart = (e) => {
-            startX = e.touches[0].clientX;
-            isDragging = true;
-            cardWrapper.style.transition = 'none';
-        };
-
-        const handleTouchMove = (e) => {
-            if (!isDragging) return;
-            currentX = e.touches[0].clientX;
-            const diffX = currentX - startX;
-            if (diffX > 0) return;
-            const swipeX = Math.max(diffX, -100);
-            card.style.transform = `translateX(${swipeX}px)`;
-            deleteBackground.style.opacity = (Math.abs(swipeX) / 100).toString();
-            cardWrapper.classList.toggle('will-delete', Math.abs(swipeX) > 75);
-        };
-
-        const handleTouchEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            cardWrapper.style.transition = 'transform 0.3s ease-out';
-            const diffX = currentX - startX;
-            
-            if (diffX < -75) {
-                const modal = document.getElementById('confirmDialog');
-                const confirmBtn = document.getElementById('confirmDelete');
-                const cancelBtn = document.getElementById('cancelDelete');
-                
-                const modalText = document.querySelector('#confirmDialog .modal-text');
-                if (modalText) {
-                    modalText.innerHTML = `
-                        <div>Вы действительно хотите удалить транзакцию?</div>
-                        <div class="transaction-info">
-                            <div class="transaction-description">${transaction.description}</div>
-                            <div class="transaction-amount ${transaction.amount < 0 ? 'expense' : 'income'}">
-                                ${transaction.amount < 0 ? '-' : '+'} ${formattedAmount} ₸
-                            </div>
-                        </div>
-                    `;
-                }
-
-                modal.classList.add('show');
-
-                const handleConfirm = () => {
-                    this.deleteTransaction(transaction.docId || transaction.id);
-                    modal.classList.remove('show');
-                    // Удаляем обработчики после использования
-                    confirmBtn.removeEventListener('click', handleConfirm);
-                    cancelBtn.removeEventListener('click', handleCancel);
-                };
-
-                const handleCancel = () => {
-                    card.style.transform = '';
-                    deleteBackground.style.opacity = '0';
-                    modal.classList.remove('show');
-                };
-
-                confirmBtn.addEventListener('click', handleConfirm);
-                cancelBtn.addEventListener('click', handleCancel);
-            } else {
-                card.style.transform = '';
-                deleteBackground.style.opacity = '0';
-            }
-        };
-
-        card.addEventListener('touchstart', handleTouchStart);
-        card.addEventListener('touchmove', handleTouchMove);
-        card.addEventListener('touchend', handleTouchEnd);
-
-        cardWrapper.appendChild(deleteBackground);
         cardWrapper.appendChild(card);
 
         // Вставляем карточку в начало группы после заголовка
@@ -1523,7 +1524,7 @@ class ExpenseManager {
         const existingCards = Array.from(dateGroup.querySelectorAll('.card-wrapper'));
         
         // Находим позицию для вставки новой карточки
-        const transactionTime = date.getHours() * 60 + date.getMinutes(); // Конвертируем время в минуты
+        const transactionTime = date.getHours() * 60 + date.getMinutes();
         
         const insertPosition = existingCards.find(existingCard => {
             const existingTimeText = existingCard.querySelector('.transaction-time')?.textContent;
@@ -1538,7 +1539,6 @@ class ExpenseManager {
         if (insertPosition) {
             dateGroup.insertBefore(cardWrapper, insertPosition);
         } else {
-            // Если не нашли позицию или нет карточек, добавляем после заголовка
             if (header.nextSibling) {
                 dateGroup.insertBefore(cardWrapper, header.nextSibling);
             } else {
@@ -1557,9 +1557,113 @@ class ExpenseManager {
         const expenseTotal = dateGroup.querySelector('.expense-total');
         if (incomeTotal) incomeTotal.textContent = `+${this.formatAmount(income)} ₸`;
         if (expenseTotal) expenseTotal.textContent = `-${this.formatAmount(expense)} ₸`;
+    }
 
-        // Убираем автоматическую прокрутку
-        // cardWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    createTransactionCard(transaction) {
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = 'card-wrapper';
+        
+        const card = document.createElement('div');
+        card.className = 'transaction-card';
+        // Добавляем обработчик клика для открытия модального окна
+        card.addEventListener('click', () => this.showTransactionDetails(transaction));
+        
+        // ... существующий код создания карточки ...
+        
+        return cardWrapper;
+    }
+
+    showTransactionDetails(transaction) {
+        // Создаем или получаем модальное окно
+        let modal = document.querySelector('.transaction-details-modal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.className = 'transaction-details-modal';
+            document.body.appendChild(modal);
+        }
+
+        // Обновляем содержимое модального окна
+        modal.innerHTML = `
+            <div class="transaction-details-content">
+                <div class="loader" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Загрузка деталей...</p>
+                </div>
+                <div class="transaction-details-header">
+                    <div class="transaction-details-title">Детали транзакции</div>
+                    <button class="transaction-details-close">✕</button>
+                </div>
+                <div class="transaction-details-info">
+                    <div class="detail-item">
+                        <div class="detail-label">Дата и время</div>
+                        <div class="detail-value">${new Date(transaction.date).toLocaleString('ru-RU')}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Описание</div>
+                        <div class="detail-value">${transaction.description}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Сумма</div>
+                        <div class="detail-value ${transaction.amount < 0 ? 'expense' : 'income'}">
+                            ${transaction.amount < 0 ? '-' : '+'} ${this.formatAmount(Math.abs(transaction.amount))} ₸
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Тип оплаты</div>
+                        <div class="detail-value">${transaction.paymentType === 'halyk' ? 'Halyk' : 'Kaspi'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Категория</div>
+                        <div class="detail-value">${this.categorizeDescription(transaction.description)}</div>
+                    </div>
+                </div>
+                <div class="transaction-details-actions">
+                    <button class="action-button delete-action" data-id="${transaction.docId || transaction.id}">Удалить транзакцию</button>
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчики событий
+        const closeBtn = modal.querySelector('.transaction-details-close');
+        const deleteBtn = modal.querySelector('.delete-action');
+        const modalContent = modal.querySelector('.transaction-details-content');
+
+        // Удаляем старые обработчики
+        modal.replaceWith(modal.cloneNode(true));
+        modal = document.querySelector('.transaction-details-modal');
+
+        // Добавляем новые обработчики
+        modal.querySelector('.transaction-details-close').addEventListener('click', () => this.closeTransactionDetails());
+        
+        modal.querySelector('.delete-action').addEventListener('click', (e) => {
+            const transactionId = e.target.dataset.id;
+            this.showConfirmDialog(transactionId);
+            this.closeTransactionDetails();
+        });
+
+        // Закрытие по клику вне контента
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeTransactionDetails();
+            }
+        });
+
+        // Показываем модальное окно
+        modal.style.display = 'block';
+        requestAnimationFrame(() => {
+            modal.classList.add('show');
+        });
+    }
+
+    closeTransactionDetails() {
+        const modal = document.querySelector('.transaction-details-modal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
     }
 }
 

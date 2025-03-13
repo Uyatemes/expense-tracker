@@ -2,6 +2,13 @@
 :root {
     /* Системные настройки */
     color-scheme: light dark;
+
+    /* Цвета для кнопок */
+    --expense-color: #d93025;
+    --income-color: #188038;
+    --kaspi-color: #FF0000;
+    --halyk-color: #004225;
+    --suppliers-color: #1a73e8;
 }
 
 /* Светлая тема (по умолчанию) */
@@ -1413,7 +1420,7 @@ select:focus {
 }
 
 .transaction-description {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     margin-bottom: 4px;
     word-wrap: break-word;
@@ -1462,66 +1469,88 @@ select:focus {
 
 /* Базовые стили для всех быстрых кнопок */
 .quick-button {
-    padding: 0 16px;
-    height: 36px;
-    border: none;
-    border-radius: 18px;
+    border: 2px solid;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    outline: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s ease;
 }
 
 /* Стили для разных типов кнопок */
 .expense-btn {
-    background: rgba(217, 48, 37, 0.1);
-    color: #d93025;
-}
-
-.income-btn {
-    background: rgba(24, 128, 56, 0.1);
-    color: #188038;
-}
-
-.kaspi-btn {
-    background: rgba(255, 0, 0, 0.1);
-    color: #FF0000;
-}
-
-.halyk-btn {
-    background: rgba(0, 66, 37, 0.1);
-    color: #004225;
-}
-
-/* Эффекты при наведении */
-.quick-button:hover {
-    box-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.07);
+    color: var(--expense-color);
+    border-color: var(--expense-color);
 }
 
 .expense-btn:hover {
-    background: rgba(217, 48, 37, 0.18);
+    background: var(--expense-color);
+    color: white;
+}
+
+.income-btn {
+    color: var(--income-color);
+    border-color: var(--income-color);
 }
 
 .income-btn:hover {
-    background: rgba(24, 128, 56, 0.18);
+    background: var(--income-color);
+    color: white;
+}
+
+.kaspi-btn {
+    color: var(--kaspi-color);
+    border-color: var(--kaspi-color);
 }
 
 .kaspi-btn:hover {
-    background: rgba(255, 0, 0, 0.18);
+    background: var(--kaspi-color);
+    color: white;
+}
+
+.halyk-btn {
+    color: var(--halyk-color);
+    border-color: var(--halyk-color);
 }
 
 .halyk-btn:hover {
-    background: rgba(0, 66, 37, 0.18);
+    background: var(--halyk-color);
+    color: white;
+}
+
+.suppliers-btn {
+    color: var(--suppliers-color);
+    border-color: var(--suppliers-color);
+}
+
+.suppliers-btn:hover {
+    background: var(--suppliers-color);
+    color: white;
+}
+
+.quick-button.active {
+    color: white;
+}
+
+.expense-btn.active {
+    background: var(--expense-color);
+}
+
+.income-btn.active {
+    background: var(--income-color);
+}
+
+.kaspi-btn.active {
+    background: var(--kaspi-color);
+}
+
+.halyk-btn.active {
+    background: var(--halyk-color);
+}
+
+.suppliers-btn.active {
+    background: var(--suppliers-color);
 }
 
 /* Эффекты при нажатии */
@@ -1957,5 +1986,128 @@ select:focus {
     padding: 2px 8px;
     border-radius: 28px;
     display: inline-block;
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* Стили для модального окна деталей транзакции */
+.transaction-details-modal {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.transaction-details-modal.show {
+    display: block;
+    opacity: 1;
+}
+
+.transaction-details-content {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background-color: var(--md-sys-color-surface);
+    border-radius: 28px 28px 0 0;
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--md-elevation-3);
+    transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transaction-details-modal.show .transaction-details-content {
+    bottom: 0;
+}
+
+.transaction-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.transaction-details-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.transaction-details-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    border-radius: 50%;
+}
+
+.transaction-details-close:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.transaction-details-info {
+    display: grid;
+    gap: 16px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.detail-value {
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.transaction-details-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.action-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-action {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.delete-action:hover {
+    background-color: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error);
+}
+
+/* Темная тема для модального окна */
+[data-theme="dark"] .transaction-details-content {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+[data-theme="dark"] .transaction-details-close:hover {
     background-color: var(--md-sys-color-surface-container-high);
 } 
