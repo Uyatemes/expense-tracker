@@ -1,0 +1,656 @@
+.top-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: var(--md-sys-color-surface-container);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-right: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface);
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background: var(--md-sys-color-surface-container-highest);
+}
+
+.back-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.container-suppliers {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.add-supplier-form {
+    background: var(--md-sys-color-surface-container);
+    border-radius: 28px;
+    padding: 24px;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.form-group input {
+    width: -webkit-fill-available;
+    padding: 12px 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 12px;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+}
+
+.submit-button {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+    background: var(--md-sys-color-primary-container);
+}
+
+.suppliers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.supplier-card {
+    background: var(--md-sys-color-surface-container);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.supplier-info {
+    flex-grow: 1;
+}
+
+.supplier-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.supplier-value {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.delete-supplier {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--md-sys-color-error);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.delete-supplier:hover {
+    background: var(--md-sys-color-error-container);
+}
+
+.delete-supplier svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Стили для меню */
+.menu-content {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background: var(--md-sys-color-surface);
+    transition: left 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.menu-content.open {
+    left: 0;
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--md-sys-color-surface);
+}
+
+.menu-header h3 {
+    margin: 0;
+    color: var(--md-sys-color-on-surface);
+    font-size: 20px;
+}
+
+.close-menu {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-items {
+    padding: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: background-color 0.2s;
+}
+
+.menu-item svg {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    fill: var(--md-sys-color-on-surface);
+}
+
+.menu-item:hover {
+    background: var(--md-sys-color-surface-variant);
+}
+
+.menu-item.active {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.menu-item.active svg {
+    fill: var(--md-sys-color-on-primary-container);
+}
+
+/* Затемнение фона при открытом меню */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    display: none;
+}
+
+.menu-overlay.open {
+    display: block;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-right: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface);
+    transition: background-color 0.2s;
+}
+
+.menu-button:hover {
+    background: var(--md-sys-color-surface-container-highest);
+}
+
+.menu-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Стили для header и кнопки назад */
+.header {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    margin-right: 16px;
+    border: none;
+    border-radius: 20px;
+    background: none;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.back-button:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.back-button:active {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.back-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0;
+}
+
+/* Поддержка темной темы */
+[data-theme="dark"] .header {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+}
+
+[data-theme="dark"] .back-button:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+[data-theme="dark"] .back-button:active {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* Основные стили */
+.suppliers-container {
+    padding: 16px;
+    max-width: 680px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+/* Стили для формы */
+.suppliers-card {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 28px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: var(--md-elevation-1);
+}
+
+.supplier-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    position: relative;
+}
+
+.md-input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 16px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.md-input:focus {
+    outline: none;
+    border-color: var(--md-sys-color-primary);
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.md-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 16px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.md-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.md-button:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+/* Стили для списка поставщиков */
+.suppliers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.supplier-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 16px;
+    transition: all 0.2s;
+}
+
+.supplier-info {
+    flex: 1;
+}
+
+.supplier-name {
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 4px;
+}
+
+.supplier-value {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background: none;
+    color: var(--md-sys-color-error);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+    background-color: var(--md-sys-color-error-container);
+}
+
+.delete-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Темная тема */
+[data-theme="dark"] .suppliers-card {
+    background-color: var(--md-sys-color-surface-container);
+}
+
+[data-theme="dark"] .md-input {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .suppliers-container {
+        padding: 12px;
+    }
+
+    .suppliers-card {
+        border-radius: 20px;
+        padding: 12px;
+    }
+
+    .md-button {
+        padding: 14px 20px;
+    }
+}
+
+.edit-button {
+    background: none;
+    border: none;
+    color: #1a73e8;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: auto;
+}
+
+.edit-button svg {
+    fill: currentColor;
+}
+
+.suppliers-edit-modal .modal-content {
+    width: 90%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.suppliers-edit-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.suppliers-edit-modal .supplier-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.suppliers-edit-modal .supplier-inputs {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+}
+
+.suppliers-edit-modal input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    flex: 1;
+}
+
+.suppliers-edit-modal .delete-supplier {
+    background: none;
+    border: none;
+    color: #d93025;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.suppliers-edit-modal .add-supplier {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 2px dashed #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 16px;
+    cursor: pointer;
+    color: #666;
+}
+
+.suppliers-edit-modal .save-suppliers {
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.suppliers-edit-modal .save-suppliers:hover {
+    background: #1557b0;
+}
+
+/* Темная тема */
+[data-theme="dark"] .suppliers-edit-modal .modal-content {
+    background: #1f1f1f;
+    color: #fff;
+}
+
+[data-theme="dark"] .suppliers-edit-modal input {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #fff;
+}
+
+[data-theme="dark"] .suppliers-edit-modal .add-supplier {
+    border-color: #404040;
+    color: #fff;
+}
+
+/* Добавляем стили для модального окна снизу */
+.supplier-modal {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: var(--md-sys-color-surface-container);
+    border-radius: 28px 28px 0 0;
+    padding: 20px;
+    transition: bottom 0.3s ease-in-out;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.supplier-modal.show {
+    bottom: 0;
+}
+
+.supplier-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.supplier-modal-title {
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.supplier-modal-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+}
+
+.supplier-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.supplier-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.modal-button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.modal-button.delete {
+    background: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+}
+
+.modal-button.save {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+    z-index: 999;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+} 

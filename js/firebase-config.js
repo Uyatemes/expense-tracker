@@ -1,93 +1,137 @@
-// Конфигурации Firebase для разных окружений
+// Проверяем, не был ли уже определен firebaseConfig
+if (typeof window.firebaseConfig === 'undefined') {
+    window.firebaseConfig = {
+        dev: {
+            // Конфигурация для тестовой версии
+            apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
+            authDomain: "raul-2024.firebaseapp.com",
+            projectId: "raul-2024",
+            storageBucket: "raul-2024.firebasestorage.app",
+            messagingSenderId: "96759916961",
+            appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
+        },
+        prod: {
+            // Такая же конфигурация для продакшена
+            apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
+            authDomain: "raul-2024.firebaseapp.com",
+            projectId: "raul-2024",
+            storageBucket: "raul-2024.firebasestorage.app",
+            messagingSenderId: "96759916961",
+            appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
+        }
+    };
+}
+
+if (typeof window.isProd === 'undefined') {
+    window.isProd = window.location.hostname === 'uyatemes.github.io';
+}
+
+if (typeof window.currentConfig === 'undefined') {
+    window.currentConfig = window.isProd ? window.firebaseConfig.prod : window.firebaseConfig.dev;
+}
+
+// Заменяем эту часть
 const firebaseConfig = {
-    dev: {
-        // Конфигурация для тестовой версии
-        apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
-        authDomain: "raul-2024.firebaseapp.com",
-        projectId: "raul-2024",
-        storageBucket: "raul-2024.firebasestorage.app",
-        messagingSenderId: "96759916961",
-        appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
-    },
-    prod: {
-        // Такая же конфигурация для продакшена
-        apiKey: "AIzaSyCPnjAWGRjR-MbMwnHCwEOjv9yYngXh9Fs",
-        authDomain: "raul-2024.firebaseapp.com",
-        projectId: "raul-2024",
-        storageBucket: "raul-2024.firebasestorage.app",
-        messagingSenderId: "96759916961",
-        appId: "1:96759916961:web:346b7801e4484b52d8c3e0"
-    }
+    // Ваши настройки Firebase
 };
 
-// Определяем текущее окружение
-const isProd = window.location.hostname === 'uyatemes.github.io';
-const currentConfig = isProd ? firebaseConfig.prod : firebaseConfig.dev;
-
-// Инициализируем Firebase
-const app = firebase.initializeApp(currentConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Проверяем сохраненную сессию и токен
-const savedEmail = localStorage.getItem('lastSignedInUser');
-const savedToken = localStorage.getItem('authToken');
-
-// Обновляем Promise для отслеживания состояния авторизации
-let authInitialized = false;
-const authInitializedPromise = new Promise((resolve) => {
-    auth.onAuthStateChanged(async (user) => {
-        if (!authInitialized) {
-            authInitialized = true;
-            if (user) {
-                console.log('Пользователь авторизован:', user.email);
-                localStorage.setItem('lastSignedInUser', user.email);
-                const token = await user.getIdToken();
-                localStorage.setItem('authToken', token);
-                updateAuthButtonState(true, user.email);
-            } else {
-                console.log('Пользователь не авторизован');
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('lastSignedInUser');
-                updateAuthButtonState(false);
-            }
-            resolve(user);
-        }
-    });
-});
-
-// Функция для обновления состояния кнопки авторизации
-function updateAuthButtonState(isAuthenticated, email = '') {
-    const authButton = document.getElementById('authButton');
-    const authButtonText = document.getElementById('authButtonText');
-    
-    if (isAuthenticated) {
-        authButtonText.textContent = email;
-        authButton.title = 'Нажмите для выхода';
-    } else {
-        authButtonText.textContent = 'Войти';
-        authButton.title = 'Нажмите для входа';
+// На правильную инициализацию
+// Инициализируем Firebase с правильной конфигурацией
+if (!firebase.apps.length) {
+    try {
+        firebase.initializeApp(window.currentConfig);
+        console.log('Firebase успешно инициализирован');
+    } catch (error) {
+        console.error('Ошибка при инициализации Firebase:', error);
     }
 }
 
-// Обработчик клика по кнопке авторизации
-document.getElementById('authButton').addEventListener('click', async () => {
-    const user = auth.currentUser;
-    if (user) {
-        // Если пользователь авторизован - выходим
-        try {
-            await auth.signOut();
-            console.log('Пользователь вышел из системы');
-            updateAuthButtonState(false);
-            // Очищаем локальное хранилище
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('lastSignedInUser');
-        } catch (error) {
-            console.error('Ошибка при выходе:', error);
+// Создаем глобальные ссылки на сервисы
+window.db = firebase.firestore();
+window.auth = firebase.auth();
+
+// Проверяем сохраненную сессию и токен
+if (typeof window.savedEmail === 'undefined') {
+    window.savedEmail = localStorage.getItem('lastSignedInUser');
+}
+
+if (typeof window.savedToken === 'undefined') {
+    window.savedToken = localStorage.getItem('authToken');
+}
+
+// Обновляем Promise для отслеживания состояния авторизации
+if (typeof window.authInitialized === 'undefined') {
+    window.authInitialized = false;
+    window.authInitializedPromise = new Promise((resolve) => {
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!window.authInitialized) {
+                window.authInitialized = true;
+                if (user) {
+                    console.log('Пользователь авторизован:', user.email);
+                    localStorage.setItem('lastSignedInUser', user.email);
+                    const token = await user.getIdToken();
+                    localStorage.setItem('authToken', token);
+                    updateAuthButtonState(user);
+                } else {
+                    console.log('Пользователь не авторизован');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('lastSignedInUser');
+                    updateAuthButtonState(null);
+                }
+                resolve(user);
+            }
+        });
+    });
+}
+
+// Функция для обновления состояния кнопки авторизации
+function updateAuthButtonState(user) {
+    const authButton = document.getElementById('authButton');
+    const authButtonText = document.getElementById('authButtonText');
+    
+    // Проверяем существование элементов перед использованием
+    if (authButton && authButtonText) {
+        if (user) {
+            authButtonText.textContent = 'Выйти';
+            authButton.onclick = () => {
+                firebase.auth().signOut().then(() => {
+                    console.log('Пользователь вышел из системы');
+                }).catch((error) => {
+                    console.error('Ошибка при выходе:', error);
+                });
+            };
+        } else {
+            authButtonText.textContent = 'Войти';
+            authButton.onclick = signInWithGoogle;
         }
-    } else {
-        // Если пользователь не авторизован - входим
-        await signInWithGoogle();
+    }
+}
+
+// Добавим функцию для безопасного использования loader
+function safeShowLoader() {
+    if (window.loaderManager) {
+        window.loaderManager.show();
+    }
+}
+
+function safeHideLoader() {
+    if (window.loaderManager) {
+        window.loaderManager.hide();
+    }
+}
+
+// Используем эти функции при инициализации Firebase
+firebase.auth().onAuthStateChanged(async user => {
+    safeShowLoader();
+    try {
+        if (user) {
+            // ... существующий код ...
+            if (window.expenseManager) {
+                await window.expenseManager.loadFromFirebase();
+            }
+        }
+    } finally {
+        safeHideLoader();
     }
 });
 
@@ -98,14 +142,14 @@ async function initializeAuth() {
         console.log('Firebase Auth persistence установлен на LOCAL');
 
         // Ждем инициализации авторизации
-        const user = await authInitializedPromise;
+        const user = await window.authInitializedPromise;
         
         // Просто обновляем состояние кнопки, без попытки автоматической авторизации
         if (user) {
             console.log('Пользователь уже авторизован:', user.email);
-            updateAuthButtonState(true, user.email);
+            updateAuthButtonState(user);
         } else {
-            updateAuthButtonState(false);
+            updateAuthButtonState(null);
         }
     } catch (error) {
         console.error('Ошибка при инициализации авторизации:', error);
@@ -118,15 +162,15 @@ initializeAuth();
 // Обновляем функцию загрузки транзакций
 async function loadTransactionsFromFirebase(limit = 1000) {
     try {
-        await authInitializedPromise;
+        await window.authInitializedPromise;
         
-        const user = auth.currentUser;
+        const user = window.auth.currentUser;
         if (!user) {
             console.log('Для просмотра транзакций необходима авторизация');
             return { transactions: [] }; // Просто возвращаем пустой массив без вызова авторизации
         }
 
-        const snapshot = await db.collection('users')
+        const snapshot = await window.db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .orderBy('date', 'desc')
@@ -179,7 +223,7 @@ async function saveTransactionToFirebase(transaction) {
     console.log('Начало сохранения транзакции:', transaction);
     
     try {
-        const user = auth.currentUser;
+        const user = window.auth.currentUser;
         if (!user) {
             console.error('Нет авторизованного пользователя');
             return null;
@@ -209,7 +253,7 @@ async function saveTransactionToFirebase(transaction) {
         console.log('Подготовленные данные транзакции:', transactionData);
 
         // Сохраняем транзакцию
-        const docRef = await db.collection('users')
+        const docRef = await window.db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .add(transactionData);
@@ -230,16 +274,16 @@ window.saveTransactionToFirebase = saveTransactionToFirebase;
 // Обновляем функцию удаления транзакции
 async function deleteTransactionFromFirebase(docId) {
     try {
-        await authInitializedPromise;
+        await window.authInitializedPromise;
         
-        const user = auth.currentUser;
+        const user = window.auth.currentUser;
         if (!user) {
             console.log('Для удаления транзакции необходима авторизация');
             return false;
         }
 
         console.log('Удаление транзакции с ID:', docId);
-        await db.collection('users')
+        await window.db.collection('users')
             .doc(user.uid)
             .collection('transactions')
             .doc(docId)
@@ -260,7 +304,7 @@ async function signInWithGoogle() {
         provider.setCustomParameters({
             prompt: 'select_account'
         });
-        const result = await auth.signInWithPopup(provider);
+        const result = await window.auth.signInWithPopup(provider);
         console.log('Успешная авторизация:', result.user.email);
         
         const token = await result.user.getIdToken();
@@ -272,4 +316,8 @@ async function signInWithGoogle() {
         console.error('Ошибка авторизации:', error);
         return false;
     }
-} 
+}
+
+// Экспортируем функции в глобальную область
+window.signInWithGoogle = signInWithGoogle;
+window.updateAuthButtonState = updateAuthButtonState; 

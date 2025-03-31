@@ -21,17 +21,19 @@
     }
   ],
   "version": "1.0.0",
-  "description": "Expense tracking application",
+  "description": "Expense Tracker Application",
   "main": "index.js",
   "scripts": {
     "build": "npm run copy-files && cap sync",
     "copy-files": "mkdir -p www && cp -r index.html css js www/",
     "add-android": "cap add android",
-    "start": "live-server --port=3000 --host=0.0.0.0"
+    "start": "http-server -p 8082 --cors",
+    "dev": "http-server --host 10.131.1.174 --port 8082"
   },
   "dependencies": {
     "@capacitor/core": "^5.0.0",
-    "@capacitor/android": "^5.0.0"
+    "@capacitor/android": "^5.0.0",
+    "http-server": "^14.1.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^5.0.0",
