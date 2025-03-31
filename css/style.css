@@ -36,7 +36,7 @@
     --md-sys-color-on-error: #FFFFFF;
     --md-sys-color-on-error-container: #c5221f;
     
-    --md-sys-color-outline: #dadce0;
+    --md-sys-color-outline: #919191;
     --md-sys-color-outline-variant: #f1f3f4;
     
     /* Тени */
@@ -159,33 +159,71 @@ body {
 
 /* Totals */
 .totals {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
 }
 
-.total-item {
-    background-color: var(--md-sys-color-surface);
-    padding: 1.5rem;
+.total-box {
+    flex: 1;
+    padding: 24px;
     border-radius: 28px;
+    background: var(--md-sys-color-surface-container);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.total-item.income {
-    background-color: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
-    padding: 24px;
+.total-box:hover {
+    box-shadow: var(--md-elevation-2);
+    background: var(--md-sys-color-surface-container-high);
 }
 
-.total-item.expense {
-    background-color: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
-    padding: 24px;
+.total-box .total-title {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 8px;
+    font-weight: 400;
 }
 
-.total-amount {
-    font-size: 24px;
-    font-weight: bold;
+.total-box .total-amount {
+    font-size: 34px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface);
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+    margin-bottom: 8px;
+}
+
+.total-box .comparison {
+    font-size: 0.9rem;
+    margin-top: 4px;
+    color: var(--md-sys-color-outline);
+}
+
+.total-box .comparison .diff-icon {
+    margin-right: 4px;
+}
+
+.total-box .comparison.increase .diff-icon,
+.total-box .comparison.increase .diff-amount {
+    color: var(--md-sys-color-error);
+}
+
+.total-box .comparison.decrease .diff-icon,
+.total-box .comparison.decrease .diff-amount {
+    color: var(--md-sys-color-primary);
+}
+
+.total-box .comparison .diff-text {
+    color: var(--md-sys-color-outline);
+    margin-left: 4px;
+}
+
+.total-box.expense .total-amount {
+    color: var(--md-sys-color-error);
+}
+
+/* Скрываем блок доходов */
+#totalIncome {
+    display: none;
 }
 
 /* Адаптация для мобильных устройств */
@@ -216,6 +254,14 @@ body {
     .total-label {
         font-size: 16px;
         margin-bottom: 4px;
+    }
+
+    .total-box {
+        padding: 20px;
+    }
+    
+    .total-box .total-amount {
+        font-size: 28px;
     }
 }
 
@@ -266,9 +312,7 @@ body {
 
 /* Filters */
 .date-filter {
-    background-color: var(--md-sys-color-surface-container);
     border-radius: 28px;
-    padding: 16px;
     margin: 16px 0;
 }
 
@@ -285,6 +329,7 @@ body {
     transition: background-color 0.2s;
     font-size: 1rem;
     margin-bottom: 8px;
+    width: -webkit-fill-available;
 }
 
 .date-range-button:hover {
@@ -934,7 +979,6 @@ select:focus {
 
 /* Контейнер для списка транзакций */
 #expensesTableBody {
-    margin-top: 20px;
     display: block !important;
     min-height: 50px;
     width: 100%;
@@ -1017,7 +1061,6 @@ select:focus {
 [data-theme="dark"] .chat-container {
     background: var(--dark-card-bg, #2A2B2D);
     color: var(--dark-text, #E8E8E8);
-    box-shadow: var(--dark-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 [data-theme="dark"] .chat-messages {
@@ -2111,3 +2154,273 @@ select:focus {
 [data-theme="dark"] .transaction-details-close:hover {
     background-color: var(--md-sys-color-surface-container-high);
 } 
+
+/* Стили для скелетонов */
+.skeleton-text {
+    position: relative;
+    overflow: hidden;
+    background: #e2e5e9;
+    border-radius: 4px;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-group .date-header {
+    opacity: 0.7;
+}
+
+.skeleton-card {
+    opacity: 0.7;
+}
+
+.skeleton-card .transaction-time {
+    width: 50px;
+    height: 16px;
+}
+
+.skeleton-card .transaction-description {
+    width: 200px;
+    height: 20px;
+    margin: 8px 0;
+}
+
+.skeleton-card .payment-type {
+    width: 80px;
+    height: 16px;
+}
+
+.skeleton-card .transaction-amount {
+    width: 100px;
+    height: 24px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: 200px 0;
+    }
+}
+
+/* Стили для состояния ошибки */
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.error-state svg {
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.error-state h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.error-state p {
+    margin: 0 0 16px;
+    font-size: 14px;
+}
+
+.retry-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.retry-button:hover {
+    background: var(--primary-color-dark);
+}
+
+/* Стили для скелетона в модальном окне */
+.transaction-details-modal .skeleton-text {
+    display: block;
+    width: 100%;
+    height: 20px;
+    margin: 8px 0;
+}
+
+.transaction-details-modal .detail-label.skeleton-text {
+    width: 30%;
+    height: 16px;
+}
+
+.transaction-details-modal .detail-value.skeleton-text {
+    width: 70%;
+    height: 20px;
+}
+
+.transaction-details-modal .action-button.skeleton-text {
+    width: 150px;
+    height: 40px;
+    border-radius: 4px;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin-right: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface);
+    transition: background-color 0.2s;
+}
+
+.menu-button:hover {
+    background: var(--md-sys-color-surface-container-highest);
+}
+
+.menu-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Стили для нижней навигации Material 3 */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background-color: var(--md-sys-color-surface-container);
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0;
+    min-width: 64px;
+    max-width: 96px;
+    flex: 1;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface-variant);
+    gap: 4px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.bottom-nav-item .material-icons {
+    font-size: 24px;
+    transition: all 0.2s ease;
+}
+
+.bottom-nav-item .bottom-nav-label {
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+/* Активное состояние */
+.bottom-nav-item.active {
+    color: var(--md-sys-color-primary);
+}
+
+.bottom-nav-item.active .material-icons {
+    color: var(--md-sys-color-primary);
+}
+
+/* Индикатор активного элемента */
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 32px;
+    background-color: var(--md-sys-color-primary);
+    opacity: 0.1;
+    border-radius: 16px;
+}
+
+/* Эффект при наведении */
+.bottom-nav-item:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-radius: 16px;
+}
+
+/* Эффект нажатия */
+.bottom-nav-item:active {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+/* Состояние disabled */
+.bottom-nav-item.disabled {
+    opacity: 0.38;
+    pointer-events: none;
+}
+
+/* Стиль для плашки "Скоро" */
+.coming-soon {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+/* Стили для уведомления */
+.notification {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    padding: 12px 24px;
+    border-radius: 16px;
+    box-shadow: var(--md-elevation-2);
+    z-index: 1001;
+    opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+    text-align: center;
+    font-size: 14px;
+    pointer-events: none;
+    margin-bottom: env(safe-area-inset-bottom);
+}
+
+.notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* Темная тема для уведомления */
+[data-theme="dark"] .notification {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.amount {
+    margin-top: 8px;
+    font-size: 20px;
+    font-weight: 900;
+}

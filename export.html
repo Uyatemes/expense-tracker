@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экспорт данных</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/export.css">
+    <!-- Добавляем Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <!-- Конфигурация Firebase должна быть загружена после SDK -->
+    <script src="js/firebase-config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Экспорт данных</h1>
+        
+        <!-- Фильтры и экспорт -->
+        <section class="date-filter">
+            <button id="dateRangeButton" class="date-range-button">
+                <i class="material-icons">date_range</i>
+                <span id="dateRangeText">Загрузка...</span>
+            </button>
+            <button id="exportPDF" class="export-btn">
+                <i class="material-icons">download</i>
+                Экспорт PDF
+            </button>
+        </section>
+
+        <!-- Добавляем контейнер для предпросмотра транзакций -->
+        <section class="transactions-preview">
+            <!-- Здесь будут отображаться транзакции -->
+        </section>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <span class="material-icons">home</span>
+            <span class="bottom-nav-label">Главная</span>
+        </a>
+        <a href="#" class="bottom-nav-item stats-link">
+            <span class="material-icons">query_stats</span>
+            <span class="bottom-nav-label">Статистика</span>
+        </a>
+        <a href="export.html" class="bottom-nav-item active">
+            <span class="material-icons">description</span>
+            <span class="bottom-nav-label">Экспорт</span>
+        </a>
+        <a href="settings.html" class="bottom-nav-item">
+            <span class="material-icons">settings</span>
+            <span class="bottom-nav-label">Настройки</span>
+        </a>
+    </nav>
+
+    <!-- Порядок загрузки скриптов -->
+    <script src="js/main.js"></script>
+    <script src="js/export.js"></script>
+
+    <script>
+        // Ждем загрузки Firebase перед инициализацией менеджеров
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Ждем инициализации Firebase
+            await new Promise(resolve => {
+                if (firebase.apps.length) {
+                    resolve();
+                } else {
+                    firebase.initializeApp(window.currentConfig);
+                    firebase.auth().onAuthStateChanged(resolve);
+                }
+            });
+
+            // Инициализируем менеджеры
+            if (!window.expenseManager) {
+                window.expenseManager = new ExpenseManager();
+            }
+            
+            if (!window.exportManager) {
+                window.exportManager = new ExportManager();
+            }
+        });
+
+        // Определяем текущую тему из localStorage
+        function updateTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        
+        // Устанавливаем начальную тему
+        updateTheme();
+        
+        // Слушаем изменения в localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                updateTheme();
+            }
+        });
+    </script>
+
+    <div class="date-range-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Выберите период</h2>
+                <button class="close-modal">
+                    <i class="material-icons">close</i>
+                </button>
+            </div>
+            
+            <div class="period-options">
+                <button class="period-option">
+                    <i class="material-icons">calendar_today</i>
+                    <span>Сегодня</span>
+                </button>
+                <button class="period-option">
+                    <i class="material-icons">date_range</i>
+                    <span>За неделю</span>
+                </button>
+                <button class="period-option">
+                    <i class="material-icons">calendar_month</i>
+                    <span>За месяц</span>
+                </button>
+                <button class="period-option">
+                    <i class="material-icons">calendar_today</i>
+                    <span>Произвольный период</span>
+                </button>
+            </div>
+
+            <div class="custom-date-inputs">
+                <div class="input-group">
+                    <label>Начальная дата</label>
+                    <div class="input-container">
+                        <i class="material-icons">calendar_today</i>
+                        <input type="date" id="startDate">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Конечная дата</label>
+                    <div class="input-container">
+                        <i class="material-icons">calendar_today</i>
+                        <input type="date" id="endDate">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="cancel-btn">
+                    <i class="material-icons">close</i>
+                    Отмена
+                </button>
+                <button class="apply-btn">
+                    <i class="material-icons">check</i>
+                    Применить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавляем перед закрывающим тегом body -->
+    <script src="js/notifications.js"></script>
+</body>
+</html> 
+
+

@@ -1,0 +1,604 @@
+/* Основные переменные Material 3 */
+:root {
+    /* Светлая тема */
+    --md-sys-color-primary: #006495;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #cde5ff;
+    --md-sys-color-on-primary-container: #001e31;
+    --md-sys-color-surface: #fdfcff;
+    --md-sys-color-on-surface: #1a1c1e;
+    --md-sys-color-surface-container: #f3f1f4;
+    --md-sys-color-outline: #73777f;
+    --md-sys-color-surface-variant: #dfe2eb;
+    
+    /* Цвета для транзакций */
+    --income-color: #006e1c;
+    --expense-color: #ba1a1a;
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+    --md-sys-color-primary: #8fcdff;
+    --md-sys-color-on-primary: #003351;
+    --md-sys-color-primary-container: #004b73;
+    --md-sys-color-on-primary-container: #cde5ff;
+    --md-sys-color-surface: #1a1c1e;
+    --md-sys-color-on-surface: #e2e2e5;
+    --md-sys-color-surface-container: #2e3133;
+    --md-sys-color-outline: #8d9199;
+    --md-sys-color-surface-variant: #43474e;
+    
+    /* Цвета для транзакций в темной теме */
+    --income-color: #6ddb8d;
+    --expense-color: #ffb4ab;
+}
+
+/* Стили экспорта */
+.export-page-container {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+
+.export-page-container h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* Кнопки */
+.export-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 20px;
+    border: none;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-button:hover {
+    background-color: var(--md-sys-color-primary);
+    opacity: 0.9;
+}
+
+/* Стили для модального окна */
+.date-range-modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000;
+}
+
+.date-range-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    width: 100%;
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 28px 28px 0 0;
+    padding: 24px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.date-range-modal.show .modal-content {
+    transform: translateY(0);
+}
+
+/* Заголовок модального окна */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* Кнопка закрытия */
+.close-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.close-modal:hover {
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+/* Опции периода */
+.period-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.period-option {
+    background-color: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface);
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.period-option:hover {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.period-option i {
+    color: var(--md-sys-color-primary);
+}
+
+/* Поля ввода дат */
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-container .material-icons {
+    position: absolute;
+    left: 12px;
+    color: var(--md-sys-color-outline);
+}
+
+.input-container input {
+    width: 100%;
+    padding: 12px 12px 12px 44px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 16px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 16px;
+}
+
+/* Кнопки модального окна */
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--md-sys-color-outline);
+}
+
+.modal-buttons button {
+    padding: 12px 24px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-btn {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+}
+
+.apply-btn {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.cancel-btn:hover {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.apply-btn:hover {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.modal-buttons .material-icons {
+    font-size: 20px;
+}
+
+/* Стили для предпросмотра транзакций */
+.transactions-preview {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 28px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.preview-content {
+    color: var(--md-sys-color-on-surface);
+}
+
+.transactions-summary {
+    background-color: var(--md-sys-color-surface-variant);
+    padding: 12px 16px;
+    border-radius: 16px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+}
+
+.summary-row .income {
+    color: var(--md-sys-color-primary);
+}
+
+.summary-row .expense {
+    color: var(--md-sys-color-error);
+}
+
+/* Стили для таблицы */
+.transactions-preview table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactions-preview th,
+.transactions-preview td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--md-sys-color-outline);
+}
+
+.transactions-preview th {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+.transactions-preview td {
+    color: var(--md-sys-color-on-surface);
+}
+
+/* Стили для описания и категории */
+.transaction-description {
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-category {
+    font-size: 12px;
+    color: var(--md-sys-color-outline);
+}
+
+/* Стили для сумм */
+.transactions-preview .amount {
+    text-align: right;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.transactions-preview .income {
+    color: var(--income-color);
+}
+
+.transactions-preview .expense {
+    color: var(--expense-color);
+}
+
+/* Стили для итогов */
+.transactions-summary {
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-variant);
+}
+
+.summary-label {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
+}
+
+.summary-amount {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+}
+
+/* PDF стили - обновленные размеры шрифтов */
+.pdf-container {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 20px;
+}
+
+.pdf-container h2 {
+    font-size: 18px;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+    color: #1a1c1e;
+}
+
+.pdf-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.pdf-container th {
+    background-color: #F8F9FA !important;
+    color: #202124 !important;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.pdf-container td {
+    padding: 12px;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+/* Стили для описания и категории в PDF */
+.pdf-container .transaction-description {
+    display: flex;
+    flex-direction: column;
+}
+
+.pdf-container .transaction-description div:first-child {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #1a1c1e;
+}
+
+.pdf-container .transaction-category {
+    font-size: 12px;
+    color: #5F6368 !important;
+    margin-top: 2px;
+}
+
+/* Стили для сумм в PDF */
+.pdf-container .amount {
+    text-align: right;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.pdf-container .amount.income {
+    color: var(--md-sys-color-primary) !important;
+}
+
+.pdf-container .amount.expense {
+    color: var(--md-sys-color-error) !important;
+}
+
+/* Стили для итогов */
+.pdf-container .totals {
+    font-size: 14px;
+    margin: 16px 0;
+}
+
+.pdf-container .period {
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+/* Категория в PDF */
+.pdf-container .transaction-category {
+    color:  #000000;
+}
+
+/* Уведомления */
+.notification {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    border-radius: 16px;
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+/* Обновим стили для иконок */
+.material-icons {
+    font-size: 24px;
+}
+
+.period-option .material-icons {
+    color: var(--md-sys-color-on-surface);
+}
+
+.period-option:hover .material-icons {
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.input-container .material-icons {
+    position: absolute;
+    left: 12px;
+    color: var(--md-sys-color-outline);
+}
+
+.modal-buttons .material-icons {
+    font-size: 20px;
+}
+
+/* Удалим старые стили для затемнения фона */
+.date-range-modal::before {
+    display: none;
+}
+
+/* Стили для кнопок фильтра и экспорта */
+.date-range-button, .export-btn {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border: none;
+    border-radius: 20px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-range-button:hover,
+.export-btn:hover {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.date-range-button:hover .material-icons, 
+.export-btn:hover .material-icons {
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.date-range-button .material-icons, 
+.export-btn .material-icons {
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface);
+}
+
+.export-btn {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+.export-btn .material-icons {
+    color: var(--md-sys-color-on-primary);
+}
+
+.export-btn:hover {
+    opacity: 0.9;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+
+/* Стили для сводки по категориям в PDF */
+.pdf-container .category-name {
+    font-weight: 500;
+    color: #202124 !important;
+}
+
+.pdf-container .category-details {
+    font-size: 12px;
+    color: #5F6368 !important;
+    margin-top: 4px;
+}
+
+/* Стили для предпросмотра (не PDF) */
+.transactions-preview .category-name {
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.transactions-preview .category-details {
+    font-size: 10px;
+    color: var(--md-sys-color-outline);
+    line-height: 1.4;
+    font-style: italic;
+}
+
+/* Стили для страницы экспорта */
+body {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    min-height: 100vh;
+}
+
+.container {
+    padding: 16px;
+    padding-bottom: 80px; /* для bottom-nav */
+}
+
+.date-filter {
+    padding: 16px;
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 28px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.date-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-input-group label {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 8px;
+}
+
+.date-input-group input {
+    padding: 8px 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+}
+
+.export-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    border-radius: 28px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.export-btn:hover {
+    opacity: 0.9;
+}
+
+.export-btn i {
+    font-size: 20px;
+} 
