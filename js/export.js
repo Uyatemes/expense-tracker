@@ -181,43 +181,92 @@ class ExportManager {
 
     generatePDFContent() {
         const transactions = this.getFilteredTransactions();
-        const totals = this.calculateTotals(transactions);
+        const { totalIncome, totalExpense } = this.calculateTotals(transactions);
+        const dateRange = this.formatDateRange();
+        const [startStr, endStr] = dateRange.split(' - ');
 
-        const { totalIncome, totalExpense } = totals;
-        const exportDateTime = new Date().toLocaleString('ru-RU', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
+        // Сортируем транзакции по дате (от новых к старым)
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         return `
-            <div class="pdf-container">
-                <h1>Отчет по операциям</h1>
-                <div class="period">Период: ${this.formatDateRange()}</div>
-
-                <div class="totals">
-                    <div class="income">Приход: +${this.formatAmount(totalIncome)} ₸</div>
-                    <div class="expense">Расход: -${this.formatAmount(totalExpense)} ₸</div>
+            <div class="pdf-container" style="font-family: Arial, sans-serif; padding: 20px; color: #000;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <div>
+                        <h1 style="font-size: 24px; margin: 0 0 10px 0; color: #000;">ВЫПИСКА</h1>
+                        <div style="font-size: 14px; color: #666;">по счету за период ${startStr}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <svg class="app-logo" width="64" height="64" viewBox="0 0 685 321" style="fill: #808080;">
+                            <g>
+                                <path class="cls-1" d="m342.5,0C153.35,0,0,71.86,0,160.5s153.35,160.5,342.5,160.5,342.5-71.86,342.5-160.5S531.66,0,342.5,0Zm212.11,100.57c22.28,4.46,42.22,9.62,59.16,15.29,7.63,14.56,11.48,29.68,11.48,45.11,0,13.74-3.05,27.24-9.1,40.31-16.91,5.79-36.94,11.08-59.4,15.64,8.09-17.42,12.5-36.27,12.5-55.95,0-21.37-5.2-41.76-14.64-60.4Zm69.46,18.93c6.89,2.58,13.18,5.26,18.81,8.01,20.87,10.2,32.37,21.37,32.37,31.46s-11.11,20.88-31.28,30.93c-5.27,2.62-11.15,5.19-17.59,7.66,4.49-11.75,6.87-24,6.87-36.59,0-14.6-3.39-28.52-9.18-41.47Zm-34.58-64.91c27.59,14.24,49.16,30.71,64.13,48.98,9.59,11.7,16.16,23.81,19.66,36.18-10.18-10.71-28.68-20.63-53.73-29.33-10.13-18.41-24.95-34.55-41.26-47.45-20.26-16.03-43.24-27.36-66.88-37.44,26.5,4.6,54.21,16.74,78.08,29.06Zm-118.87-33.76c30.56,7.89,57.95,19.15,81.43,33.48,23.2,14.15,41.35,30.55,53.96,48.74.86,1.24,1.69,2.49,2.49,3.74-17.04-5.29-36.61-10.06-58.26-14.19-18.62-31.69-49.79-57.7-88.37-73.9,2.93.68,5.85,1.38,8.75,2.13Zm-135.58,159.33l-28.81-24.49h67.41c34.17,0,51.27-12.19,51.27-36.58s-17.1-35.14-51.27-35.14h-77.49v174.27h-42.06V56.58h119.55c31.1,0,54.77,5.29,71,15.85,16.23,10.56,24.34,25.83,24.34,45.8s-7.3,33.99-21.89,44.36c-14.6,10.37-36.01,16.13-64.24,17.28l92.47,78.35h-48.4l-91.88-78.06Zm126.83,123.08c40.38-16.96,72.65-44.66,90.9-78.38,21.93-4.28,41.67-9.2,58.75-14.67-1.68,2.93-3.52,5.83-5.51,8.7-12.61,18.19-30.76,34.59-53.96,48.74-23.48,14.33-50.87,25.59-81.43,33.48-2.9.75-5.82,1.45-8.75,2.13Zm191.75-84.87c-14.97,18.27-36.54,34.74-64.13,48.98-23.32,12.04-49.89,21.91-79.17,29.47,53.46-20.57,93.93-52.56,112.2-90.36,24.66-8.83,42.63-18.89,52.1-29.74-2.97,14.28-10,28.23-21,41.65Z"/>
+                            </g>
+                        </svg>
+                    </div>
                 </div>
 
-                <h1>Сводка по категориям</h1>
-                ${this.generateCategorySummary(transactions)}
+                <div style="margin-bottom: 30px; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <div style="font-size: 14px; display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Поступления:</span>
+                        <span style="color: #188038;">+${this.formatAmount(totalIncome)} ₸</span>
+                    </div>
+                    <div style="font-size: 14px; display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Расходы:</span>
+                        <span style="color: #d93025;">-${this.formatAmount(totalExpense)} ₸</span>
+                    </div>
+                </div>
 
-                <h1>Детализация операций</h1>
-                <table>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Описание</th>
-                        <th>Сумма</th>
-                    </tr>
-                    ${this.generateTransactionDetails(transactions)}
-                </table>
+                <div style="margin-bottom: 30px;">
+                    <div style="font-size: 16px; font-weight: 500; margin-bottom: 15px; color: #202124;">Сводка по категориям:</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #e0e0e0;">
+                                <th style="text-align: left; padding: 12px 8px; color: #5f6368; font-weight: 500;">Категория</th>
+                                <th style="text-align: right; padding: 12px 8px; color: #5f6368; font-weight: 500;">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.generateCategorySummary(transactions)}
+                        </tbody>
+                    </table>
+                </div>
 
-                <div style="text-align: right; font-size: 12px; color: #666;">
-                    Отчет сформирован: ${exportDateTime}
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 16px; font-weight: 500; margin-bottom: 15px; color: #202124;">История операций по карте:</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #e0e0e0;">
+                                <th style="text-align: left; padding: 12px 8px; color: #5f6368; font-weight: 500;">Дата</th>
+                                <th style="text-align: left; padding: 12px 8px; color: #5f6368; font-weight: 500;">Операция</th>
+                                <th style="text-align: left; padding: 12px 8px; color: #5f6368; font-weight: 500;">Детали</th>
+                                <th style="text-align: right; padding: 12px 8px; color: #5f6368; font-weight: 500;">Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactions.map(t => {
+                                const date = new Date(t.date).toLocaleDateString('ru-RU');
+                                const amount = this.formatAmount(Math.abs(t.amount));
+                                const operation = t.type === 'income' ? 'Пополнение' : 'Покупка';
+                                const category = this.categorizeDescription(t.description);
+                                return `
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px 8px; color: #202124;">${date}</td>
+                                        <td style="padding: 12px 8px; color: #202124;">${operation}</td>
+                                        <td style="padding: 12px 8px;">
+                                            <div style="color: #202124;">${t.description}</div>
+                                            <div style="font-size: 12px; color: #5f6368; margin-top: 4px;">${category}</div>
+                                        </td>
+                                        <td style="text-align: right; padding: 12px 8px; color: ${t.type === 'income' ? '#188038' : '#d93025'};">
+                                            ${t.type === 'income' ? '+' : '-'} ${amount} ₸
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 30px; text-align: right; font-size: 12px; color: #5f6368;">
+                    Отчет сформирован: ${new Date().toLocaleString('ru-RU')}
                 </div>
             </div>
         `;
@@ -243,25 +292,19 @@ class ExportManager {
         const sortedCategories = Object.entries(categories)
             .sort(([, a], [, b]) => b.total - a.total);
 
-        return `
-            <table>
-                <tr>
-                    <th>Категория</th>
-                    <th>Сумма</th>
-                </tr>
-                ${sortedCategories.map(([category, data]) => `
-                    <tr>
-                        <td>
-                            <div class="category-name">${category}</div>
-                            <div class="category-details">
-                                ${[...new Set(data.transactions)].join(', ')}
-                            </div>
-                        </td>
-                        <td class="amount">${this.formatAmount(data.total)} ₸</td>
-                    </tr>
-                `).join('')}
-            </table>
-        `;
+        return sortedCategories.map(([category, data]) => `
+            <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 8px; color: #202124;">
+                    <div style="font-weight: 500;">${category}</div>
+                    <div style="font-size: 12px; color: #5f6368; margin-top: 4px;">
+                        ${[...new Set(data.transactions)].join(', ')}
+                    </div>
+                </td>
+                <td style="text-align: right; padding: 12px 8px; color: #202124; font-weight: 500; white-space: nowrap;">
+                    ${this.formatAmount(data.total)} ₸
+                </td>
+            </tr>
+        `).join('');
     }
 
     generateTransactionDetails(transactions) {
@@ -307,12 +350,13 @@ class ExportManager {
 
     formatDateRange() {
         const startDate = this.dateFilters.from
-            ? new Date(this.dateFilters.from).toLocaleDateString('ru-RU')
-            : 'начало';
-        const endDate = this.dateFilters.to
-            ? new Date(this.dateFilters.to).toLocaleDateString('ru-RU')
-            : 'конец';
-        return `${startDate} — ${endDate}`;
+            ? new Date(this.dateFilters.from).toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            })
+            : '';
+        return startDate;
     }
 
     formatAmount(amount) {

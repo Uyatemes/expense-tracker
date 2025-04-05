@@ -90,12 +90,13 @@ class AIExpenseAssistant {
 
         // Определяем способ оплаты/категорию
         const category = words.includes('каспий') ? 'kaspi' : 
-                        words.includes('халык') ? 'halyk' : 'other';
+                        words.includes('халык') ? 'halyk' : 
+                        words.includes('наличные') ? 'cash' : 'other';
 
         // Собираем описание (все слова после суммы и типа операции)
         const description = words
             .filter(w => isNaN(w))
-            .filter(w => !['расход', 'приход', 'каспий', 'халык'].includes(w))
+            .filter(w => !['расход', 'приход', 'каспий', 'халык', 'наличные'].includes(w))
             .join(' ');
 
         return {

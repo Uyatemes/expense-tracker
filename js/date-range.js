@@ -200,49 +200,66 @@ function getDateRange(period) {
     return { startDate, endDate };
 }
 
-// Установка начального периода
-const initialRange = getDateRange('week');
-updateDateRangeText(initialRange.startDate, initialRange.endDate);
-window.expenseManager.setDateFilter(initialRange.startDate, initialRange.endDate);
-
-// Обработчик изменения типа периода
-document.querySelectorAll('input[name="period"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        customDateRange.style.display = e.target.value === 'custom' ? 'block' : 'none';
-        
-        if (e.target.value !== 'custom') {
-            const { startDate, endDate } = getDateRange(e.target.value);
-            startDateInput.value = formatDateForInput(startDate);
-            endDateInput.value = formatDateForInput(endDate);
-        }
-    });
-});
-
-// Открытие модального окна
-dateRangeButton.addEventListener('click', () => {
-    dateRangeModal.classList.add('active');
-    console.log('Modal opened');
-});
-
-// Закрытие по кнопке отмены
-cancelButton.addEventListener('click', () => {
-    dateRangeModal.classList.remove('active');
-    console.log('Modal closed by cancel');
-});
-
-applyButton.addEventListener('click', () => {
-    const selectedPeriod = document.querySelector('input[name="period"]:checked').value;
-    const { startDate, endDate } = getDateRange(selectedPeriod);
-    
-    updateDateRangeText(startDate, endDate);
-    window.expenseManager.setDateFilter(startDate, endDate);
-    dateRangeModal.classList.remove('active');
-});
-
-// Закрытие по клику вне окна
-dateRangeModal.addEventListener('click', (e) => {
-    if (e.target === dateRangeModal) {
-        dateRangeModal.classList.remove('active');
-        console.log('Modal closed by outside click');
+class DateRangeManager {
+    constructor() {
+        // Ждем загрузку DOM и необходимых элементов
+        this.initialize();
     }
+
+    async initialize() {
+        // Ждем загрузку DOM
+        if (document.readyState !== 'complete') {
+            await new Promise(resolve => window.addEventListener('load', resolve));
+        }
+
+        // Инициализируем элементы
+        this.dateRangeText = document.getElementById('dateRangeText');
+        this.dateRangeModal = document.querySelector('.date-range-modal');
+        
+        if (!this.dateRangeText) {
+            console.warn('Элемент dateRangeText не найден');
+            return;
+        }
+
+        // Устанавливаем начальный диапазон
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+        const endDate = new Date();
+        
+        this.setDateFilter(startDate, endDate);
+    }
+
+    setDateFilter(startDate, endDate) {
+        if (!this.dateRangeText) return;
+
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.updateDateRangeText();
+
+        // Проверяем наличие exportManager
+        if (window.exportManager && typeof window.exportManager.setDateFilter === 'function') {
+            window.exportManager.setDateFilter(startDate, endDate);
+        }
+    }
+
+    updateDateRangeText() {
+        if (!this.dateRangeText) return;
+
+        const formatDate = (date) => {
+            return date.toLocaleDateString('ru-RU');
+        };
+
+        this.dateRangeText.textContent = `${formatDate(this.startDate)} - ${formatDate(this.endDate)}`;
+    }
+}
+
+// Создаем экземпляр после загрузки всех зависимостей
+document.addEventListener('DOMContentLoaded', () => {
+    // Ждем инициализацию ExpenseManager
+    const checkDependencies = setInterval(() => {
+        if (window.expenseManager) {
+            clearInterval(checkDependencies);
+            window.dateRangeManager = new DateRangeManager();
+        }
+    }, 100);
 }); 

@@ -2424,3 +2424,23 @@ select:focus {
     font-size: 20px;
     font-weight: 900;
 }
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-direction: column;
+}
+
+.chat-input-row input[type="text"] {
+    flex: 1;
+}
+
+.chat-date-picker {
+    background: #222;
+    color: #fff;
+    border: 1px solid var(--dark-border, #3A3B3D);
+    border-radius: 8px;
+    padding: 6px 8px;
+    width: -webkit-fill-available;
+}

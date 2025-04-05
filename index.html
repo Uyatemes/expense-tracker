@@ -35,7 +35,10 @@
                 </div>
             </div>
             <div class="chat-input">
-                <input type="text" id="user-input" placeholder="Введите сумму и описание...">
+                <div class="chat-input-row">
+                    <input type="text" id="user-input" placeholder="Введите сумму и описание...">
+                    <input type="date" id="chat-date" class="chat-date-picker" value="">
+                </div>
                 <button id="send-message">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
@@ -43,6 +46,7 @@
                 </button>
             </div>
         </section>
+
 
         <!-- Итоги -->
         <div class="totals">
@@ -120,11 +124,16 @@
                     <input type="text" id="expenseDescription" required>
                 </div>
                 <div class="form-group">
+                    <label for="expenseDate">Дата</label>
+                    <input type="date" id="expenseDate" class="form-control">
+                </div>
+                <div class="form-group">
                     <label for="paymentType">Способ оплаты</label>
                     <select id="paymentType" required>
                         <option value="kaspi-gold">Каспи Голд</option>
                         <option value="kaspi-pay">Каспи Пэй</option>
                         <option value="halyk">Халык</option>
+                        <option value="cash">Наличные</option>
                     </select>
                 </div>
                 <div class="modal-buttons">
@@ -147,7 +156,6 @@
     <script src="js/theme.js"></script>
     <script src="js/main.js"></script>
     <script src="js/date-range.js"></script>
-    <script src="js/charts.js"></script>
     <script src="js/notifications.js"></script>
 
     <!-- Нижнее меню -->
