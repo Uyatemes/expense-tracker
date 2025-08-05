@@ -71,9 +71,16 @@ if (!window.ExpenseManager) {
                 this.loadFromLocalStorage();
                 
                 firebase.auth().onAuthStateChanged(async user => {
-                    console.log('Состояние авторизации изменилось:', user ? user.email : 'не авторизован');
+                    console.log('Состояние авторизации изменилось:', {
+                        user: user ? { email: user.email, uid: user.uid } : null,
+                        isProduction: this.isProduction,
+                        currentPage: this.currentPage
+                    });
                     if (user) {
+                        console.log('Пользователь авторизован, загружаем данные из Firebase');
                         await this.loadFromFirebase();
+                    } else {
+                        console.log('Пользователь не авторизован');
                     }
                 });
         } else {
@@ -192,12 +199,19 @@ if (!window.ExpenseManager) {
                 
                 // Проверяем авторизацию
                 const user = firebase.auth().currentUser;
+                console.log('Проверка пользователя в loadFromFirebase:', {
+                    user: user ? { uid: user.uid, email: user.email } : null,
+                    isProduction: this.isProduction,
+                    currentPage: this.currentPage
+                });
+                
                 if (!user) {
                     console.log('Пользователь не авторизован');
                     return;
                 }
 
                 // Получаем транзакции из Firestore
+                console.log('Запрос транзакций из Firebase для пользователя:', user.uid);
                 const snapshot = await firebase.firestore()
                     .collection('users')
                     .doc(user.uid)
@@ -205,23 +219,36 @@ if (!window.ExpenseManager) {
                     .orderBy('date', 'desc')
                     .get();
 
+                console.log('Получено документов из Firebase:', snapshot.docs.length);
+
                 // Преобразуем документы в массив транзакций
                 const loadedTransactions = snapshot.docs.map(doc => ({
                     ...doc.data(),
                     docId: doc.id
                 }));
                 
+                console.log('Загруженные транзакции из Firebase:', loadedTransactions.length);
+                
                 // Объединяем с существующими транзакциями и удаляем дубликаты
+                const beforeMerge = this.transactions.length;
                 this.transactions = this.removeDuplicates([...loadedTransactions, ...this.transactions]);
+                console.log('Транзакции после объединения:', {
+                    было: beforeMerge,
+                    загружено: loadedTransactions.length,
+                    стало: this.transactions.length
+                });
                 
                 // Сохраняем в localStorage для кэширования
                 this.saveToLocalStorage();
                 
                 // Обновляем отображение только на главной странице
                 if (this.currentPage === 'index.html') {
+                    console.log('Обновляем отображение на главной странице');
                     this.renderTransactions();
-        this.updateTotals(this.transactions);
-    }
+                    this.updateTotals(this.transactions);
+                } else {
+                    console.log('Не обновляем отображение - не главная страница:', this.currentPage);
+                }
 
             } catch (error) {
                 console.error('Ошибка при загрузке из Firebase:', error);
