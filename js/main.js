@@ -234,6 +234,12 @@ if (!window.ExpenseManager) {
                 // Проверяем авторизацию
                 if (this.isProduction) {
                     const user = firebase.auth().currentUser;
+                    console.log('Проверка авторизации в production:', {
+                        isProduction: this.isProduction,
+                        user: user ? { uid: user.uid, email: user.email } : null,
+                        firebaseInitialized: !!firebase.apps.length
+                    });
+                    
                     if (!user) {
                         console.error('9. Ошибка: необходима авторизация');
                         throw new Error('Необходима авторизация');
@@ -280,17 +286,28 @@ if (!window.ExpenseManager) {
 
                 if (this.isProduction) {
                     // Сохраняем в Firebase
-                    const docRef = await firebase.firestore()
-                        .collection('users')
-                        .doc(firebase.auth().currentUser.uid)
-                        .collection('transactions')
-                        .add(newTransaction);
+                    try {
+                        const docRef = await firebase.firestore()
+                            .collection('users')
+                            .doc(firebase.auth().currentUser.uid)
+                            .collection('transactions')
+                            .add(newTransaction);
 
-                    // Создаем объект транзакции с ID документа
-                    savedTransaction = {
-                        ...newTransaction,
-                        docId: docRef.id
-                    };
+                        // Создаем объект транзакции с ID документа
+                        savedTransaction = {
+                            ...newTransaction,
+                            docId: docRef.id
+                        };
+                        console.log('Транзакция успешно сохранена в Firebase с ID:', docRef.id);
+                    } catch (firebaseError) {
+                        console.error('Ошибка при сохранении в Firebase:', firebaseError);
+                        // Если Firebase недоступен, сохраняем локально
+                        savedTransaction = {
+                            ...newTransaction,
+                            id: Date.now()
+                        };
+                        console.log('Транзакция сохранена локально из-за ошибки Firebase');
+                    }
                 } else {
                     savedTransaction = {
                         ...newTransaction,
@@ -314,10 +331,8 @@ if (!window.ExpenseManager) {
             window.updateCharts();
         }
         
-                // Сохраняем в локальное хранилище, если не в production
-                if (!this.isProduction) {
-                    this.saveToLocalStorage();
-                }
+                // Сохраняем в локальное хранилище для кэширования
+                this.saveToLocalStorage();
 
                 console.log('10. Транзакция успешно добавлена');
                 return savedTransaction;
