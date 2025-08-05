@@ -1085,7 +1085,12 @@ if (!window.ExpenseManager) {
                                 const isManagement = desc.includes(name);
                             const isNotSupplier = !desc.startsWith('ип');
                             const isNotTransport = !desc.includes('такси');
-                                return isManagement && isNotSupplier && isNotTransport;
+                                // Проверяем, что это не долг
+                                const isNotDebt = !desc.includes('долг') && 
+                                                !desc.includes('кредо') && 
+                                                !desc.includes('займ') && 
+                                                !desc.includes('в долг');
+                                return isManagement && isNotSupplier && isNotTransport && isNotDebt;
                         });
                     }
                 },

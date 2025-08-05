@@ -490,8 +490,17 @@ class StatsManager {
             return 'Долг';
         }
 
-        // Проверка на долг (только если нет Ерлан)
-        if (descNorm.includes('долг')) {
+        // Проверка на долг (включая Ига)
+        if (descNorm.includes('долг') || 
+            descNorm.includes('кредо') || 
+            descNorm.includes('займ') || 
+            descNorm.includes('в долг') ||
+            descNorm.includes('талгат') ||
+            descNorm.includes('д талгат') ||
+            descNorm.includes('ерзат') ||
+            descNorm.includes('гульназ') ||
+            descNorm.includes('енлик') ||
+            (descNorm.includes('ига') && (descNorm.includes('долг') || descNorm.includes('кредо') || descNorm.includes('займ')))) {
             return 'Долг';
         }
 
