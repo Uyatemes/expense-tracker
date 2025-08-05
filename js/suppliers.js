@@ -166,17 +166,17 @@ class SuppliersManager {
         const valueInput = document.getElementById('supplierValue');
         
         const name = nameInput.value.trim();
-        const value = valueInput.value.trim().toLowerCase();
+        const shortName = valueInput.value.trim();
+        const value = name.toLowerCase();
 
         try {
             // Проверяем на дубликаты
             const isDuplicate = this.suppliers.some(s => 
-                s.value.toLowerCase() === value || 
                 s.name.toLowerCase() === name.toLowerCase()
             );
 
             if (isDuplicate) {
-                alert('Такой поставщик уже существует');
+                alert('Поставщик с таким названием уже существует');
                 return;
             }
 
@@ -188,6 +188,7 @@ class SuppliersManager {
                 .add({
                     name,
                     value,
+                    shortName,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -247,8 +248,8 @@ class SuppliersManager {
                 </div>
                 <div class="form-group">
                     <input type="text" class="md-input supplier-value-input" 
-                           value="${supplier.value}" 
-                           placeholder="Значение для поиска">
+                           value="${supplier.shortName || supplier.value}" 
+                           placeholder="Сокращенное название">
                 </div>
                 <div class="supplier-modal-actions">
                     <button class="modal-button delete">
@@ -306,13 +307,11 @@ class SuppliersManager {
             const nameInput = modal.querySelector('.supplier-name-input');
             const valueInput = modal.querySelector('.supplier-value-input');
             
-            const updatedSupplier = {
-                ...supplier,
-                name: nameInput.value.trim(),
-                value: valueInput.value.trim().toLowerCase()
-            };
+            const name = nameInput.value.trim();
+            const shortName = valueInput.value.trim();
+            const value = name.toLowerCase();
 
-            if (!updatedSupplier.name || !updatedSupplier.value) {
+            if (!name || !value) {
                 alert('Заполните все поля');
                 return;
             }
@@ -323,7 +322,7 @@ class SuppliersManager {
                     .doc(this.user.uid)
                     .collection('suppliers')
                     .doc(supplier.id)
-                    .update(updatedSupplier);
+                    .update({ name, value, shortName });
 
                 closeModal();
             } catch (error) {
@@ -347,21 +346,38 @@ class SuppliersManager {
             return;
         }
 
-        this.suppliers.forEach(supplier => {
-            const item = document.createElement('div');
-            item.className = 'supplier-item';
-            item.innerHTML = `
+        const sortedSuppliers = [...this.suppliers].sort((a, b) => 
+            (a.name || '').localeCompare(b.name || '')
+        );
+
+        for (const supplier of sortedSuppliers) {
+            const supplierEl = document.createElement('div');
+            supplierEl.className = 'supplier-item';
+            supplierEl.innerHTML = `
                 <div class="supplier-info">
-                    <div class="supplier-name">${supplier.name}</div>
-                    <div class="supplier-value">${supplier.value}</div>
+                    <span class="supplier-name">${supplier.name}</span>
+                    <span class="supplier-value">${supplier.shortName || supplier.value}</span>
+                </div>
+                <div class="supplier-actions">
+                    <button class="edit-btn" data-id="${supplier.id}">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                        </svg>
+                    </button>
+                    <button class="delete-btn" data-id="${supplier.id}">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </button>
                 </div>
             `;
 
-            // Добавляем обработчик клика на элемент
-            item.addEventListener('click', () => this.showSupplierModal(supplier));
+            // Добавляем обработчики событий
+            supplierEl.querySelector('.edit-btn').addEventListener('click', () => this.showSupplierModal(supplier));
+            supplierEl.querySelector('.delete-btn').addEventListener('click', () => this.deleteSupplier(supplier.id));
 
-            this.suppliersList.appendChild(item);
-        });
+            this.suppliersList.appendChild(supplierEl);
+        }
     }
 
     // Добавляем метод для очистки слушателя при уходе со страницы

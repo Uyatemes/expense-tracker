@@ -1,0 +1,534 @@
+.stats-filters {
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.period-selector {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.period-btn {
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 24px;
+    background: var(--md-sys-color-surface-container-high, #f3f3f3);
+    color: var(--md-sys-color-on-surface, #222);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(60,60,60,0.04);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    outline: none;
+    min-width: 90px;
+    min-height: 40px;
+    letter-spacing: 0.01em;
+    margin-bottom: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.period-btn:hover {
+    background: var(--md-sys-color-surface-container-highest, #e0e0e0);
+    color: var(--md-sys-color-primary, #0061a4);
+}
+
+.period-btn.active {
+    background: var(--md-sys-color-primary, #0061a4);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,97,164,0.10);
+    border: none;
+}
+
+.period-btn:active {
+    background: var(--md-sys-color-primary-container, #cce5ff);
+    color: var(--md-sys-color-primary, #0061a4);
+}
+
+.custom-period {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.date-input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.summary-card {
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.summary-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.summary-card .amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.summary-card.income .amount {
+    color: #4CAF50;
+}
+
+.summary-card.expense .amount {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.summary-card.balance .amount {
+    color: var(--primary-color);
+}
+
+.trend {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chart-card {
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+}
+
+.chart-card h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.top-expenses {
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin-bottom: 80px;
+}
+
+.top-expenses h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color);
+}
+
+.top-expenses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: var(--bg-color);
+    border-radius: 8px;
+}
+
+.expense-item .description {
+    color: var(--text-color);
+}
+
+.expense-item .amount {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.expense-category {
+    background: #fff !important;
+    border-radius: 28px;
+    padding: 16px 16px;
+    margin-bottom: 14px;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-header h4 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.category-total {
+    font-weight: 500;
+}
+
+.category-transactions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.expense-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.expense-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.expense-description {
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.expense-amount {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.debt-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.debt-details .income {
+    color: #4CAF50;
+    font-size: 0.9em;
+}
+
+.debt-details .expense {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.debt-details .category-total {
+    font-weight: bold;
+}
+
+.debt-details .category-total.positive {
+    color: #4CAF50;
+}
+
+.debt-details .category-total.negative {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+}
+
+.debt-balance {
+    color: var(--text-primary) !important;
+    font-weight: bold;
+}
+
+/* Стили для раскрывающихся блоков */
+.category-header.collapsible {
+    cursor: pointer;
+}
+
+.category-header.collapsible h4::after {
+    content: '▼';
+    font-size: 0.7em;
+    margin-left: 8px;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.category-header.collapsible.expanded h4::after {
+    transform: rotate(180deg);
+}
+
+.details-list {
+    background: #f6f8f6;
+    border-radius: 14px;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    padding: 0px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    transition: all 0.2s;
+}
+html[data-theme="dark"] .details-list {
+    background: #232725;
+}
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #e0e0e0;
+    flex-direction: row;
+}
+html[data-theme="dark"] .detail-item {
+    border-bottom: 1px solid #333;
+}
+.detail-item:last-child {
+    border-bottom: none;
+}
+.detail-name {
+    font-size: 1em;
+    color: #222;
+}
+html[data-theme="dark"] .detail-name {
+    color: #f1f1f1;
+}
+.detail-amount {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.debt-breakdown {
+    font-size: 0.85em;
+    color: #777;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.debt-breakdown .positive {
+    color: #4CAF50;
+}
+
+.debt-breakdown .negative {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+}
+
+.debt-person-group .category-header {
+    padding: 5px 0;
+}
+
+.debt-person-group h5 {
+    font-weight: normal;
+}
+
+.trend-indicator {
+    font-size: 0.9em;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.trend-indicator.increase {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.trend-indicator.decrease {
+    color: #4CAF50;
+}
+
+@media (max-width: 768px) {
+    .stats-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+
+    .custom-period {
+        flex-direction: column;
+    }
+
+    .date-input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .expense-item {
+        grid-template-columns: 70px 1fr auto;
+        gap: 8px;
+    }
+
+    .expense-date {
+        font-size: 12px;
+    }
+
+    .expense-description {
+        font-size: 12px;
+    }
+
+    .expense-amount {
+        font-size: 12px;
+    }
+}
+
+html[data-theme="dark"] .expense-category {
+    background: #1E211F !important;
+}
+html[data-theme="light"] .expense-category {
+    background: #fff !important;
+}
+body.dark .expense-category .category-header h4,
+.dark .expense-category .category-header h4 {
+    color: #f1f1f1 !important;
+}
+body.dark .expense-category .detail-amount,
+.dark .expense-category .detail-amount {
+    color: #4caf50 !important;
+}
+body.dark .expense-category .detail-name,
+.dark .expense-category .detail-name {
+    color: #b0b0b0 !important;
+}
+
+.stat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.stat-card-title {
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.stat-card-amount {
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 16px;
+    padding: 8px 16px;
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+    margin-bottom: 8px;
+}
+.stat-card-amount.positive {
+    background: #e9f5e7 !important;
+    color: #228B22 !important;
+}
+.stat-card-amount.negative {
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+}
+html[data-theme="dark"] .stat-card-amount {
+    background: #223d29 !important;
+    color: #4caf50 !important;
+}
+
+html[data-theme="dark"] .stat-card-amount.negative {
+    background: #663d00 !important;
+    color: #ffddb9 !important;
+}
+
+html[data-theme="light"] .expense-category .stat-card-title {
+  color: #222 !important;
+}
+
+html[data-theme="light"] .expense-category .stat-card-amount {
+  background: #e9f5e7 !important;
+  color: #228B22 !important;
+}
+
+html[data-theme="light"] .expense-category .stat-card-amount.negative {
+  background-color: var(--md-sys-color-error-container, #fce8e6) !important;
+  color: var(--md-sys-color-on-error-container, #c5221f) !important;
+} 
+
+.custom-period .date-input {
+    border: none;
+    border-radius: 24px;
+    background: var(--md-sys-color-surface-container-high, #f3f3f3);
+    color: var(--md-sys-color-on-surface, #222);
+    font-size: 1rem;
+    padding: 0.7rem 1.2rem;
+    min-width: 140px;
+    min-height: 40px;
+    box-shadow: 0 1px 2px rgba(60,60,60,0.04);
+    transition: box-shadow 0.2s, background 0.2s;
+    outline: none;
+    margin-bottom: 2px;
+}
+.custom-period .date-input:focus {
+    box-shadow: 0 2px 8px rgba(0,97,164,0.10);
+    background: #e0f0ff;
+}
+
+.btn-apply {
+    border: none;
+    border-radius: 24px;
+    background: var(--md-sys-color-primary, #0061a4);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.7rem 1.5rem;
+    min-height: 40px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,97,164,0.10);
+    transition: background 0.2s, color 0.2s;
+    margin-left: 8px;
+}
+.btn-apply:hover {
+    background: var(--md-sys-color-primary-container, #cce5ff);
+    color: var(--md-sys-color-primary, #0061a4);
+} 
+
+/* Для тёмной темы */
+[data-theme="dark"] .summary-card.expense .amount {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .debt-details .expense {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .trend-indicator.increase {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .stat-card-amount.negative {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .debt-details .category-total.negative {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .debt-breakdown .negative {
+    background-color: #663d00;
+    color: #ffddb9;
+} 

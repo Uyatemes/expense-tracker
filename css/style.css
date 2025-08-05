@@ -195,7 +195,7 @@ body {
 .total-box .comparison {
     font-size: 0.9rem;
     margin-top: 4px;
-    color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-primary, #1a73e8);
 }
 
 .total-box .comparison .diff-icon {
@@ -213,12 +213,15 @@ body {
 }
 
 .total-box .comparison .diff-text {
-    color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-primary, #1a73e8);
     margin-left: 4px;
 }
 
 .total-box.expense .total-amount {
-    color: var(--md-sys-color-error);
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+    padding: 8px 16px;
+    border-radius: 16px;
 }
 
 /* Скрываем блок доходов */
@@ -304,8 +307,8 @@ body {
 }
 
 .transaction-amount.expense {
-    background-color: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
     padding: 8px 16px;
     border-radius: 16px;
 }
@@ -1341,8 +1344,10 @@ select:focus {
 }
 
 .transaction-amount.expense {
-    background-color: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
+    padding: 8px 16px;
+    border-radius: 16px;
 }
 
 .delete-btn {
@@ -2126,24 +2131,76 @@ select:focus {
 }
 
 .action-button {
-    flex: 1;
-    padding: 12px;
+    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 24px;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin: 0.5rem;
+}
+
+.save-action {
+    background: var(--md-sys-color-primary, #1a73e8);
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,115,232,0.10);
+}
+
+.save-action:hover {
+    background: var(--md-sys-color-primary-container, #e8f0fe);
+    color: var(--md-sys-color-primary, #1a73e8);
+    box-shadow: 0 4px 12px rgba(26,115,232,0.15);
 }
 
 .delete-action {
-    background-color: var(--md-sys-color-error-container);
-    color: var(--md-sys-color-on-error-container);
+    background-color: var(--md-sys-color-error-container, #fce8e6);
+    color: var(--md-sys-color-on-error-container, #c5221f);
 }
 
 .delete-action:hover {
-    background-color: var(--md-sys-color-error);
-    color: var(--md-sys-color-on-error);
+    background-color: var(--md-sys-color-error, #c5221f);
+    color: var(--md-sys-color-on-error, #ffffff);
+}
+
+.date-edit-input {
+    border: none;
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container-high, #f3f3f3);
+    color: var(--md-sys-color-on-surface, #222);
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 120px;
+    min-height: 36px;
+    box-shadow: 0 1px 2px rgba(60,60,60,0.04);
+    transition: box-shadow 0.2s, background 0.2s;
+    outline: none;
+    margin-right: 0.5rem;
+}
+
+.date-edit-input:focus {
+    box-shadow: 0 2px 8px rgba(0,97,164,0.10);
+    background: #e0f0ff;
+}
+
+.current-time {
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface-variant, #5F6368);
+    margin-top: 0.25rem;
+}
+
+[data-theme="dark"] .date-edit-input {
+    background: var(--md-sys-color-surface-container-high, #292B29);
+    color: var(--md-sys-color-on-surface, #E1E3DF);
+}
+
+[data-theme="dark"] .date-edit-input:focus {
+    background: var(--md-sys-color-primary-container, #005236);
+    box-shadow: 0 2px 8px rgba(103,219,167,0.10);
+}
+
+[data-theme="dark"] .current-time {
+    color: var(--md-sys-color-on-surface-variant, #BFC9C2);
 }
 
 /* Темная тема для модального окна */
@@ -2443,4 +2500,33 @@ select:focus {
     border-radius: 8px;
     padding: 6px 8px;
     width: -webkit-fill-available;
+}
+
+/* Для тёмной темы - зелёный цвет */
+[data-theme="dark"] .total-box .comparison {
+    color: var(--md-sys-color-primary, #67DBa7);
+}
+
+[data-theme="dark"] .total-box .comparison .diff-text {
+    color: var(--md-sys-color-primary, #67DBa7);
+}
+
+[data-theme="dark"] .total-box.expense .total-amount {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .transaction-amount.expense {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .delete-action {
+    background-color: #663d00;
+    color: #ffddb9;
+}
+
+[data-theme="dark"] .delete-action:hover {
+    background-color: #8b5a2b;
+    color: #ffddb9;
 }

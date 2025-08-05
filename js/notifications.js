@@ -27,12 +27,5 @@ function showNotification(message, duration = 2000) {
 
 // Добавляем обработчик для ссылки на статистику
 document.addEventListener('DOMContentLoaded', () => {
-    const statsLinks = document.querySelectorAll('.stats-link');
-    statsLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showNotification('Статистика будет доступна в следующем обновлении');
-        });
-    });
+    // Оставляем пустым для будущих уведомлений
 }); 

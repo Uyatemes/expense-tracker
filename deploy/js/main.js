@@ -653,7 +653,7 @@ class ExpenseManager {
                     ];
                     return suppliers.some(s => desc.includes(s.toLowerCase())) ||
                            (desc.startsWith('ип') && !desc.includes('налог')) ||
-                           desc.startsWith('тоо'));
+                           desc.startsWith('тоо');
                 }
             },
             {
@@ -679,6 +679,12 @@ class ExpenseManager {
             {
                 category: 'Долг',
                 test: (desc) => {
+                    // ПРОВЕРКА НА ЕРЛАН - ВСЕ РАСХОДЫ С ЕРЛАН = ДОЛГ
+                    if (desc.includes('ерлан')) {
+                        return true;
+                    }
+                    
+                    // Остальные проверки на долг
                     return desc.includes('долг') || 
                            desc.includes('кредо') || 
                            desc.includes('займ') ||

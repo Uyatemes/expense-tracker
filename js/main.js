@@ -420,15 +420,57 @@ if (!window.ExpenseManager) {
             if (expenseTotal) expenseTotal.textContent = `-${this.formatAmount(expense)} ₸`;
         }
 
-        updateTransaction(id, updatedTransaction) {
-            this.transactions = this.transactions.map(transaction => 
-                transaction.id === id ? {...updatedTransaction, id} : transaction
+        async updateTransaction(id, updatedTransaction) {
+            console.log('Обновление транзакции:', id, updatedTransaction);
+            
+            // Находим транзакцию по docId или id
+            const transactionIndex = this.transactions.findIndex(transaction => 
+                (transaction.docId === id) || (transaction.id === id)
             );
+            
+            if (transactionIndex === -1) {
+                console.error('Транзакция не найдена:', id);
+                return;
+            }
+            
+            // Обновляем транзакцию
+            const oldTransaction = this.transactions[transactionIndex];
+            const updatedData = { ...oldTransaction, ...updatedTransaction };
+            
+            // Если в production режиме, обновляем в Firebase
+            if (this.isProduction && firebase.auth().currentUser) {
+                try {
+                    await firebase.firestore()
+                        .collection('users')
+                        .doc(firebase.auth().currentUser.uid)
+                        .collection('transactions')
+                        .doc(id)
+                        .update(updatedData);
+                    console.log('Транзакция обновлена в Firebase');
+                } catch (error) {
+                    console.error('Ошибка при обновлении в Firebase:', error);
+                    return;
+                }
+            }
+            
+            // Обновляем в локальном массиве
+            this.transactions[transactionIndex] = updatedData;
+            
+            // Сохраняем в localStorage
+            this.saveToLocalStorage();
+            
+            // Обновляем отображение
             this.renderTransactions();
+            
+            // Обновляем графики, если они есть
             if (typeof window.updateCharts === 'function') {
                 window.updateCharts();
             }
+            
+            // Обновляем итоги
             this.updateTotals(this.transactions);
+            
+            console.log('Транзакция успешно обновлена');
         }
 
         setupDateFilter() {
@@ -681,8 +723,8 @@ if (!window.ExpenseManager) {
                             <div class="amount">+${this.formatAmount(currentTotals.totalIncome)} ₸</div>
                             <div class="comparison ${incomeDiff > 0 ? 'increase' : 'decrease'}">
                                 ${Math.abs(incomeDiff) > 0 ? `
-                                    <span class="diff-icon">${incomeDiff > 0 ? 'больше на' : 'меньше на'}</span>
-                                    <span class="diff-amount">
+                                    <span class="diff-icon" style="color:${incomeDiff < 0 ? 'var(--md-sys-color-error)' : 'inherit'};">${incomeDiff > 0 ? 'больше на' : 'меньше на'}</span>
+                                    <span class="diff-amount" style="color:${incomeDiff < 0 ? 'var(--md-sys-color-error)' : 'inherit'};">
                                         ${this.formatAmount(Math.abs(incomeDiff))} ₸
                                     </span>
                                     <span class="diff-text">
@@ -829,6 +871,15 @@ if (!window.ExpenseManager) {
             if (resetFilter) {
                 resetFilter.onclick = this.handleResetFilter;
             }
+
+            // Слушатель для синхронизации поставщиков между страницами
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'suppliersList') {
+                    console.log('Обновление поставщиков из другой вкладки');
+                    const suppliers = event.newValue ? JSON.parse(event.newValue) : [];
+                    this.updateSuppliersModal(suppliers);
+                }
+            });
 
             // Удаляем обработчик экспорта PDF, так как он теперь в export.js
             // const exportBtn = document.getElementById('exportPDF');
@@ -990,6 +1041,12 @@ if (!window.ExpenseManager) {
                 {
                     category: 'Долг',
                     test: (desc) => {
+                        // ПРОВЕРКА НА ЕРЛАН - ВСЕ РАСХОДЫ С ЕРЛАН = ДОЛГ
+                        if (desc.includes('ерлан')) {
+                            return true;
+                        }
+                        
+                        // Остальные проверки на долг
                         return desc.includes('долг') || 
                                desc.includes('кредо') || 
                                    desc.includes('займ') ||
@@ -1518,7 +1575,7 @@ if (!window.ExpenseManager) {
             }
 
             getSuppliersList() {
-                // Берем список поставщиков из localStorage, который обновляется в suppliers.js
+                // Берем список поставщиков из localStorage
                 const suppliersList = localStorage.getItem('suppliersList');
                 if (suppliersList) {
                     const suppliers = JSON.parse(suppliersList);
@@ -1534,19 +1591,8 @@ if (!window.ExpenseManager) {
                 // Если нет кэша, загружаем из Firebase
                 this.loadSuppliersFromFirebase();
 
-                // Возвращаем базовый список пока данные загружаются
-                return [
-                    { name: 'Fika People', value: 'fika people' },
-                    { name: 'Fruitata', value: 'fruitata' },
-                    { name: 'ИП АБАДАН', value: 'ИП АБАДАН' },
-                    { name: 'RockCity', value: 'rockcity' },
-                    { name: 'Coffee Man', value: 'coffee man' },
-                    { name: 'Shygie.kz', value: 'shygie.kz' },
-                    { name: 'Юзаев Талгат', value: 'юзаев талгат' },
-                    { name: 'Илахунов', value: 'илахунов' },
-                    { name: 'Sandi Group', value: 'Sandi Group' },
-                    { name: 'ИП Дана', value: 'ип дана' }
-                ];
+                // Возвращаем пустой список пока данные загружаются
+                return [];
             }
 
             async loadSuppliersFromFirebase() {
@@ -1555,7 +1601,10 @@ if (!window.ExpenseManager) {
                         return;
                     }
 
+                    const user = firebase.auth().currentUser;
                     const snapshot = await firebase.firestore()
+                        .collection('users')
+                        .doc(user.uid)
                         .collection('suppliers')
                         .orderBy('name')
                         .get();
@@ -1569,7 +1618,7 @@ if (!window.ExpenseManager) {
                     .filter(supplier => supplier.isActive); // только активные поставщики
 
                     // Кэшируем список поставщиков в localStorage
-                    localStorage.setItem('suppliers', JSON.stringify(suppliers));
+                    localStorage.setItem('suppliersList', JSON.stringify(suppliers));
 
                     // Обновляем модальное окно с поставщиками
                     this.updateSuppliersModal(suppliers);
@@ -1797,6 +1846,10 @@ if (!window.ExpenseManager) {
                     document.body.appendChild(modal);
                 }
 
+                // Форматируем дату для input
+                const transactionDate = new Date(transaction.date);
+                const formattedDate = transactionDate.toISOString().split('T')[0];
+
                 // Обновляем содержимое модального окна
                 modal.innerHTML = `
                     <div class="transaction-details-content">
@@ -1807,7 +1860,10 @@ if (!window.ExpenseManager) {
                         <div class="transaction-details-info">
                             <div class="detail-item">
                                 <div class="detail-label">Дата и время</div>
-                                <div class="detail-value">${new Date(transaction.date).toLocaleString('ru-RU')}</div>
+                                <div class="detail-value">
+                                    <input type="text" id="editTransactionDate" class="date-edit-input" value="${formattedDate}" placeholder="Выберите дату">
+                                    <div class="current-time">${transactionDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</div>
+                                </div>
                             </div>
                             <div class="detail-item">
                                 <div class="detail-label">Описание</div>
@@ -1829,12 +1885,49 @@ if (!window.ExpenseManager) {
                             </div>
                         </div>
                         <div class="transaction-details-actions">
+                            <button class="action-button save-action" data-id="${transaction.docId || transaction.id}">
+                                Сохранить изменения
+                            </button>
                             <button class="action-button delete-action" data-id="${transaction.docId || transaction.id}">
                                 Удалить транзакцию
                             </button>
                         </div>
                     </div>
                 `;
+
+                // Инициализируем flatpickr для поля даты
+                if (window.flatpickr) {
+                    flatpickr('#editTransactionDate', {
+                        dateFormat: 'Y-m-d',
+                        allowInput: true,
+                        locale: 'ru',
+                        disableMobile: true
+                    });
+                }
+
+                // Обработчик сохранения изменений
+                const saveBtn = modal.querySelector('.save-action');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', async (e) => {
+                        const transactionId = e.target.dataset.id;
+                        const newDate = document.getElementById('editTransactionDate').value;
+                        
+                        if (newDate) {
+                            console.log('Сохранение изменений для транзакции:', transactionId, 'Новая дата:', newDate);
+                            
+                            // Создаем новую дату с сохранением времени
+                            const currentTime = transactionDate;
+                            const newDateTime = new Date(newDate);
+                            newDateTime.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds());
+                            
+                            // Обновляем транзакцию
+                            await this.updateTransaction(transactionId, { date: newDateTime.toISOString() });
+                            
+                            // Закрываем модальное окно
+                            this.closeTransactionDetails();
+                        }
+                    });
+                }
 
                 // Обработчик удаления
                 const deleteBtn = modal.querySelector('.delete-action');
