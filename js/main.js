@@ -45,6 +45,7 @@ if (!window.ExpenseManager) {
         
             // Определяем текущую страницу
             this.currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            console.log('Определена текущая страница:', this.currentPage, 'pathname:', window.location.pathname);
             
             // Определяем режим работы
             const hostname = window.location.host;
@@ -527,15 +528,23 @@ if (!window.ExpenseManager) {
 
         renderTransactions() {
                 // Добавляем проверку на текущую страницу
-                if (this.currentPage !== 'index.html') return;
+                console.log('renderTransactions вызван, currentPage:', this.currentPage, 'pathname:', window.location.pathname);
+                if (this.currentPage !== 'index.html') {
+                    console.log('renderTransactions пропущен - не главная страница');
+                    return;
+                }
 
                 const container = document.getElementById('expensesTableBody');
-                if (!container) return;
+                if (!container) {
+                    console.log('container expensesTableBody не найден');
+                    return;
+                }
 
                 // Очищаем контейнер перед рендерингом
                 container.innerHTML = '';
 
                 const transactions = this.getFilteredTransactions();
+                console.log('Транзакций для отображения:', transactions.length);
                 if (transactions.length === 0) {
                     container.innerHTML = '<div class="no-transactions">Нет транзакций за выбранный период</div>';
             return;
